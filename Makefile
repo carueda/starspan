@@ -4,6 +4,9 @@
 #
 #
 
+# specify the GDAL source directory
+GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal
+
 INCLUDE := -Ivector -Iraster -Itraverser -Ijts \
          -I/usr/local/include
 		 
@@ -11,7 +14,7 @@ INCLUDE := -Ivector -Iraster -Itraverser -Ijts \
 INCLUDE += -I/usr/local/include/libshp
 
 # starspan_utilcc: vrt/vrtdataset.h not in /usr/local/include/  ;-(
-INCLUDE += -I/home/carueda/cstars/GDAL/gdal/frmts 
+INCLUDE += -I$(GDAL_SRC_DIR)/frmts 
 		 
 # See rasterizers/LineRasterizer.cc
 INCLUDE += -I/usr/local/include/agg2 

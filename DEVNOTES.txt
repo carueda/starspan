@@ -1,6 +1,13 @@
 starspan devnotes
 $Id$
 
+2004-09-07
+	Complete build process revised and reported in
+	http://starspan.casil.ucdavis.edu/?Build
+	Makefile: GDAL_SRC_DIR to specify where GDAL sources are
+	installed. A more general scheme (maybe via configure) is
+	still required for a smooth build.
+	
 2004-09-06
 	A second, more definitive definitive of the traverser module.
 	It now uses a LineRasterizer to process linestrings.
