@@ -9,8 +9,8 @@
 #include "Csv.h"       
 #include <fstream>       
 
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 
 /**
@@ -24,14 +24,14 @@ int starspan_update_csv(
 	// open input file
 	ifstream in_file(in_csv_filename);
 	if ( !in_file ) {
-		fprintf(stderr, "Couldn't open %s\n", in_csv_filename);
+		cerr<< "Couldn't open " <<in_csv_filename<< endl;
 		return 1;
 	}
 	Csv csv(in_file);
 	string line;
 	if ( !csv.getline(line) ) {
 		in_file.close();
-		fprintf(stderr, "Couldn't get header line from %s\n", in_csv_filename);
+		cerr<< "Couldn't get header line from " <<in_csv_filename<< endl;
 		return 1;
 	}
 	
@@ -57,12 +57,12 @@ int starspan_update_csv(
 	}
 	
 	if ( x_field_index < 0 || y_field_index < 0 ) {
-		fprintf(stdout, "Warning: No fields 'x' and/or 'y' not present in %s\n", in_csv_filename);
-		fprintf(stdout, "         Will try with col,row fields ...\n");
+		cout<< "Warning: No fields 'x' and/or 'y' not present in " <<in_csv_filename<<endl;
+		cout<< "         Will try with col,row fields ...\n";
 		use_xy = false;
 		if ( col_field_index < 0 || row_field_index < 0 ) {
 			in_file.close();
-			fprintf(stdout, "No fields 'col' and/or 'row' present in %s\n", in_csv_filename);
+			cout<< "No fields 'col' and/or 'row' present in " <<in_csv_filename<<endl;
 			return 1;
 		}
 	}
@@ -71,7 +71,7 @@ int starspan_update_csv(
 	ofstream out_file(out_csv_filename, ios::out);
 	if ( !out_file ) {
 		in_file.close();
-		fprintf(stderr, "Couldn't create %s\n", out_csv_filename);
+		cerr<< "Couldn't create " <<out_csv_filename<< endl;
 		return 1;
 	}
 
@@ -102,7 +102,7 @@ int starspan_update_csv(
 		for ( int b = 0; b < bands; b++ ) {
 			char field_name[1024];
 			sprintf(field_name, "Band_%d_%s", b+1, rast_name);
-			fprintf(stdout, "Creating field: %s\n", field_name);
+			cout<< "Creating field: " <<field_name<<endl;
 			out_file << "," << field_name;
 			next_field_index++;
 		}
@@ -116,9 +116,9 @@ int starspan_update_csv(
 	//
 	
 	// for each point point in input csv...
-	fprintf(stdout, "processing records...\n");
+	cout<< "processing records...\n";
 	for ( int record = 0; csv.getline(line); record++ ) {
-		fprintf(stdout, "record %d  ", record);
+		cout<< "record " <<record<< "  ";
 		//
 		// copy existing field values
 		//
@@ -140,12 +140,12 @@ int starspan_update_csv(
 		if ( use_xy ) {
 			x = atof(csv.getfield(x_field_index).c_str());
 			y = atof(csv.getfield(y_field_index).c_str());
-			fprintf(stdout, "x , y = %g , %g\n", x, y);
+			cout<< "x , y = " <<x<< " , " <<y<< endl;
 		}
 		else {
 			col = atoi(csv.getfield(col_field_index).c_str());
 			row = atoi(csv.getfield(row_field_index).c_str());
-			fprintf(stdout, "col , row = %d , %d\n", col, row);
+			cout<< "col , row = " <<col<< " , " <<row<< endl;
 			// make col and row 0-based:
 			--col;
 			--row;
@@ -163,7 +163,7 @@ int starspan_update_csv(
 			if ( use_xy ) {
 				// convert from (x,y) to (col,row) in this rast
 				rast->toColRow(x, y, &col, &row);
-				//fprintf(stdout, "x,y = %g , %g \n", x, y);
+				//cout<< "x,y = " <<x<< " , " <<y<< endl;
 			}
 			// else: (col,row) already given above.
 			
@@ -196,7 +196,7 @@ int starspan_update_csv(
 	in_file.close();
 	out_file.close();
 
-	fprintf(stdout, "finished.\n");
+	cout<< "finished.\n";
 	return 0;
 }
 		

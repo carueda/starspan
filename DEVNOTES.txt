@@ -3,6 +3,7 @@ $Id$
                                     
 
 2005-03-04 (0.961beta)
+	starspan_update_csv.cc: simple printf-to-cout changes
 	Minor text updates in starspan script.
 	
 2005-02-26 (0.961beta)                  
