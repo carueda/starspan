@@ -4,10 +4,8 @@
 #
 #
 
-#---------------------------------------------------------------------#
-#                    include platform specific settings
-#---------------------------------------------------------------------#
 # Choose the right include file from the <cgalroot>/make directory.
+# I'm using CGAL for polygon operations
 
 CGAL_MAKEFILE=/home/carueda/cstars/CGAL/CGAL-3.0.1/make/makefile_i686_Linux-2.4.20_g++-2.95
 include $(CGAL_MAKEFILE)
@@ -19,10 +17,6 @@ POLY_INCLUDE=-Ipolygon/
 # using vector_ogr
 OBJS=polygon/Polygon.o raster/Raster_gdal.o vector/Vector_ogr.o
 
-#---------------------------------------------------------------------#
-#                    compiler flags
-#---------------------------------------------------------------------#
-
 CXXFLAGS = \
            $(CGAL_CXXFLAGS) \
            $(LONG_NAME_PROBLEM_CXXFLAGS) \
@@ -31,10 +25,6 @@ CXXFLAGS = \
 		   $(VECTOR_INCLUDE) \
 		   $(RASTER_INCLUDE) \
 		   $(POLY_INCLUDE)
-
-#---------------------------------------------------------------------#
-#                    linker flags
-#---------------------------------------------------------------------#
 
 LIBPATH = \
           $(CGAL_LIBPATH) \
@@ -45,24 +35,19 @@ LDFLAGS = -lshp -lgdal \
           $(CGAL_LDFLAGS) 
 		  
 
-#---------------------------------------------------------------------#
-#                    target entries
-#---------------------------------------------------------------------#
-
 .PHONY= all install
 
-all:            \
-                starspan$(EXE_EXT) \
+all: starspan2
 
-starspan$(EXE_EXT): starspan2$(OBJ_EXT) $(OBJS)
-	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)starspan starspan2$(OBJ_EXT) $(OBJS) $(LDFLAGS)
+starspan2: starspan2$(OBJ_EXT) $(OBJS)
+	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)starspan2 starspan2$(OBJ_EXT) $(OBJS) $(LDFLAGS)
 
 install:
-	cp starspan$(EXE_EXT) ~/bin/ 
+	cp starspan2 ~/bin/ 
 
-#---------------------------------------------------------------------#
-#                    suffix rules
-#---------------------------------------------------------------------#
+starspan1: starspan1$(OBJ_EXT) $(OBJS)
+	$(CGAL_CXX) $(LIBPATH) $(EXE_OPT)starspan1 starspan1$(OBJ_EXT) $(OBJS) $(LDFLAGS)
+
 
 .cc$(OBJ_EXT):
 	$(CGAL_CXX) $(CXXFLAGS) $(OBJ_OPT) $<

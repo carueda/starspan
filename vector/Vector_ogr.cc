@@ -90,7 +90,7 @@ Vector::Vector(const char  *pszDataSource) {
 	OGRSFDriver* poDriver;
 	OGRDataSource* poDS = OGRSFDriverRegistrar::Open(pszDataSource, true, &poDriver);
     if( poDS == NULL ) {
-        fprintf(stderr, "Unable to open datasource `%s'\n");
+        fprintf(stderr, "Unable to open datasource `%s'\n", pszDataSource);
 		exit(1);
 	}
 	
