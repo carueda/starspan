@@ -389,7 +389,11 @@ void Traverser::traverse() {
 			continue;
 		}
 
-		fprintf(stdout, "\n\nINTERSECTION %s\n", intersection_geometry->getGeometryName());			
+		fprintf(stdout, 
+			"\n\nFID: %ld  INTERSECTION %s\n",
+			feature->GetFID(),
+			intersection_geometry->getGeometryName()
+		);			
 		
 		//
 		// notify observer about this feature
