@@ -6,6 +6,7 @@
 //
 
 #include "Progress.h"
+#include <iomanip>
 #include <cassert>
 
 Progress::Progress(long size, double perc_incr_, ostream& out)
@@ -14,6 +15,7 @@ Progress::Progress(long size, double perc_incr_, ostream& out)
 	assert( perc_incr > 0 );
 	next_perc = perc_incr;
 	writemsg(string("0% "));
+	oss << setprecision(2);
 }
 
 Progress::Progress(long size, ostream& out)
@@ -35,16 +37,16 @@ void Progress::update() {
 	if ( perc_incr > 0 ) {
 		curr_perc = 100.0 * curr / size;
 		if ( curr_perc >= next_perc ) {
-			ostringstream ostr;
-			ostr << curr_perc << "% ";
-			writemsg(ostr.str());
+			oss.str("");
+			oss << curr_perc << "% ";
+			writemsg(oss.str());
 			next_perc += perc_incr;
 		}
 	}
 	else if ( curr % size == 0 ) {
-		ostringstream ostr;
-		ostr << curr << " ";
-		writemsg(ostr.str());
+		oss.str("");
+		oss << curr << " ";
+		writemsg(oss.str());
 	}
 	curr += 1;
 }
@@ -53,9 +55,9 @@ void Progress::end() {
 	if ( perc_incr > 0 )
 		writemsg(string("100% "));
 	else {
-		ostringstream ostr;
-		ostr << curr-1 << " ";
-		writemsg(ostr.str());
+		oss.str("");
+		oss << curr-1 << " ";
+		writemsg(oss.str());
 	}
 }
 	

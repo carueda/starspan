@@ -47,6 +47,7 @@ private:
 	long curr;
 	string last_msg;
 	void writemsg(string msg);
+	ostringstream oss;
 };
 
 
