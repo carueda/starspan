@@ -42,21 +42,20 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	DBFHandle file;
-	bool includePixelLocation;
+	bool noColRow, noXY;
 	OGRFeature* currentFeature;
 	int next_record_index;
 	const char* select_fields;	
 
 	
 	/**
-	  * Creates fields: FID, col, row, fields-from-feature, bands-from-raster
+	  * Creates fields: 
+	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
 	  */
-	DBObserver(Traverser& tr, DBFHandle f, const char* select_fields_)
-	: file(f), select_fields(select_fields_) 
+	DBObserver(Traverser& tr, DBFHandle f, const char* select_fields_,
+		bool noColRow, bool noXY)
+	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields_) 
 	{
-		// PENDING maybe read this from a parameter
-		includePixelLocation = true;
-		
 		vect = tr.getVector();
 		global_info = 0;
 	}
@@ -95,7 +94,7 @@ public:
 		next_field_index++;
 		
 		// Create (col,row) fields, if so indicated
-		if ( includePixelLocation ) {
+		if ( !noColRow ) {
 			field_type = FTInteger;
 			field_width = 6;
 			field_precision = 0;
@@ -105,6 +104,22 @@ public:
 			next_field_index++;
 	
 			sprintf(field_name, "row");
+			fprintf(stdout, "Creating field: %s\n", field_name);
+			DBFAddField(file, field_name, field_type, field_width, field_precision);
+			next_field_index++;
+		}
+		
+		// Create (x,y) fields, if so indicated
+		if ( !noXY ) {
+			field_type = FTDouble;
+			field_width = 18;
+			field_precision = 3;
+			sprintf(field_name, "x");
+			fprintf(stdout, "Creating field: %s\n", field_name);
+			DBFAddField(file, field_name, field_type, field_width, field_precision);
+			next_field_index++;
+	
+			sprintf(field_name, "y");
 			fprintf(stdout, "Creating field: %s\n", field_name);
 			DBFAddField(file, field_name, field_type, field_width, field_precision);
 			next_field_index++;
@@ -236,7 +251,7 @@ public:
 		);
 		
 		// add (col,row) fields
-		if ( includePixelLocation ) {
+		if ( !noColRow ) {
 			DBFWriteIntegerAttribute(
 				file,
 				next_record_index,            // int iShape -- record number
@@ -248,6 +263,22 @@ public:
 				next_record_index,            // int iShape -- record number
 				next_field_index++,           // int iField,
 				row
+			);
+		}
+		
+		// add (x,y) fields
+		if ( !noXY ) {
+			DBFWriteDoubleAttribute(
+				file,
+				next_record_index,            // int iShape -- record number
+				next_field_index++,           // int iField,
+				ev.pixel.x
+			);
+			DBFWriteDoubleAttribute(
+				file,
+				next_record_index,            // int iShape -- record number
+				next_field_index++,           // int iField,
+				ev.pixel.y
 			);
 		}
 		
@@ -314,7 +345,9 @@ public:
 int starspan_db(
 	Traverser& tr,
 	const char* select_fields,
-	const char* filename
+	const char* filename,
+	bool noColRow,
+	bool noXY
 ) {
 	// create output file
 	DBFHandle file = DBFCreate(filename);
@@ -323,7 +356,7 @@ int starspan_db(
 		return 1;
 	}
 
-	DBObserver obs(tr, file, select_fields);	
+	DBObserver obs(tr, file, select_fields, noColRow, noXY);	
 	tr.setObserver(&obs);
 	tr.traverse();
 	

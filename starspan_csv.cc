@@ -56,20 +56,18 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	FILE* file;
-	bool includePixelLocation;
+	bool noColRow, noXY;
 	OGRFeature* currentFeature;
 	const char* select_fields;
 	
 	/**
 	  * Creates first line with column headers:
-	  *    FID, col, row, fields-from-feature, bands-from-raster
+	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
 	  */
-	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_)
-	: file(f), select_fields(select_fields_) 
+	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_,
+		bool noColRow, bool noXY)
+	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields_)
 	{
-		// PENDING maybe read this from a parameter
-		includePixelLocation = true;
-
 		vect = tr.getVector();
 		global_info = 0;
 	}
@@ -94,9 +92,15 @@ public:
 		fprintf(file, "FID");
 		
 		// Create (col,row) fields, if so indicated
-		if ( includePixelLocation ) {
+		if ( !noColRow ) {
 			fprintf(file, ",col");
 			fprintf(file, ",row");
+		}
+		
+		// Create (x,y) fields, if so indicated
+		if ( !noXY ) {
+			fprintf(file, ",x");
+			fprintf(file, ",y");
 		}
 		
 		// Create fields:
@@ -154,8 +158,13 @@ public:
 		fprintf(file, "%ld", currentFeature->GetFID());
 		
 		// add (col,row) fields
-		if ( includePixelLocation ) {
+		if ( !noColRow ) {
 			fprintf(file, ",%d,%d", col, row);
+		}
+		
+		// add (x,y) fields
+		if ( !noXY ) {
+			fprintf(file, ",%.3f,%.3f", ev.pixel.x, ev.pixel.y);
 		}
 		
 		// add attribute fields from source currentFeature to record:
@@ -203,7 +212,9 @@ public:
 int starspan_csv(
 	Traverser& tr,
 	const char* select_fields,
-	const char* filename
+	const char* filename,
+	bool noColRow,
+	bool noXY
 ) {
 	// create output file
 	FILE* file = fopen(filename, "w");
@@ -212,7 +223,7 @@ int starspan_csv(
 		return 1;
 	}
 
-	CSVObserver obs(tr, file, select_fields);	
+	CSVObserver obs(tr, file, select_fields, noColRow, noXY);	
 	tr.setObserver(&obs);
 	tr.traverse();
 	

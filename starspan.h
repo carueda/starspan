@@ -14,7 +14,7 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.5"
+#define STARSPAN_VERSION "0.5beta"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -32,13 +32,17 @@
   * @param tr Data traverser
   * @param select_fields comma-separated field names
   * @param db_filename output file name
+  * @param noColRow if true, no col,row fields will be included
+  * @param noXY if true, no x,y fields will be included
   *
   * @return 0 iff OK. 
   */
 int starspan_db(
 	Traverser& tr,
 	const char* select_fields,     // comma-separated field names
-	const char* db_filename
+	const char* db_filename,
+	bool noColRow,
+	bool noXY
 );
 
 
@@ -54,13 +58,17 @@ int starspan_db(
   * @param tr Data traverser
   * @param select_fields comma-separated field names
   * @param csv_filename output file name
+  * @param noColRow if true, no col,row fields will be included
+  * @param noXY if true, no x,y fields will be included
   *
   * @return 0 iff OK. 
   */
 int starspan_csv(
 	Traverser& tr, 
 	const char* select_fields,     // comma-separated field names
-	const char* csv_filename
+	const char* csv_filename,
+	bool noColRow,
+	bool noXY
 );
 
 /** Generates ENVI output
