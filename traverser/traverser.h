@@ -11,9 +11,11 @@
 #include "Vector.h"
 #include "rasterizers.h"
 
-#include <list.h>   // should be <list>
-#include <vector.h>   // should be <vector>
+#include <list>
+#include <vector>
 #include <stdio.h>
+
+using namespace std;
 
 
 /**

@@ -1,6 +1,7 @@
 /* Copyright (C) 1999 Lucent Technologies */
 /* Excerpted from 'The Practice of Programming' */
 /* by Brian W. Kernighan and Rob Pike */
+// updated by carueda 2004-09-16
 
 #ifndef Csv_h
 #define Csv_h
@@ -9,9 +10,7 @@
 #include <string>
 #include <vector>
 
-// updated by carueda 2004-09-16
-
-//using namespace std;
+using namespace std;
 
 class Csv {	// read and parse comma-separated values
 	// sample input: "LU",86.25,"11/4/1998","2:19PM",+4.0625
