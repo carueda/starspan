@@ -164,6 +164,7 @@ void Traverser::removeRasters() {
 		globalInfo.rastersUnion = 0;
 	}
 	rasts.clear();
+	memset(&summary, 0, sizeof(summary));
 }
 
 //

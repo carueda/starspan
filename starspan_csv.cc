@@ -55,6 +55,7 @@ class CSVObserver : public Observer {
 public:
 	GlobalInfo* global_info;
 	Vector* vect;
+	OGRLayer* poLayer;
 	OGRFeature* currentFeature;
 	vector<const char*>* select_fields;
 	bool write_header;
@@ -63,11 +64,15 @@ public:
 	/**
 	  * Creates a csv creator
 	  */
-	CSVObserver(Traverser& tr, vector<const char*>* select_fields, bool write_header, FILE* f)
-	: select_fields(select_fields), write_header(write_header), file(f)
+	CSVObserver(Vector* vect, vector<const char*>* select_fields, FILE* f)
+	: vect(vect), select_fields(select_fields), file(f)
 	{
-		vect = tr.getVector();
 		global_info = 0;
+		poLayer = vect->getLayer(0);
+		if ( !poLayer ) {
+			fprintf(stderr, "Couldn't fetch layer 0\n");
+			exit(1);
+		}
 	}
 	
 	/**
@@ -76,12 +81,6 @@ public:
 	  */
 	void init(GlobalInfo& info) {
 		global_info = &info;
-
-		OGRLayer* poLayer = vect->getLayer(0);
-		if ( !poLayer ) {
-			fprintf(stderr, "Couldn't fetch layer 0\n");
-			exit(1);
-		}
 
 		if ( write_header ) {
 			//		
@@ -216,7 +215,7 @@ public:
 	/**
 	  * does nothing
 	  */
-  void end() {}
+	void end() {}
 };
 
 
@@ -240,7 +239,12 @@ int starspan_csv(
 	}
 
 	Vector vect(vector_filename);
+
+	CSVObserver obs(&vect, select_fields, file);
+
 	Traverser tr;
+	tr.addObserver(&obs);
+
 	tr.setVector(&vect);
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
@@ -258,19 +262,15 @@ int starspan_csv(
 	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
-		bool write_header = i == 0;
+		obs.write_header = i == 0;
 		tr.removeRasters();
 		tr.addRaster(rasters[i]);
-		
-		Observer* obs = new CSVObserver(tr, select_fields, write_header, file);
-		tr.addObserver(obs);
 		
 		tr.traverse();
 
 		if ( globalOptions.report_summary ) {
 			tr.reportSummary();
 		}
-		tr.releaseObservers();
 	}
 	
 	fclose(file);
