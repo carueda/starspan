@@ -33,40 +33,6 @@ static DBFFieldType fieldtype_2_dbftype(OGRFieldType ft) {
 	}
 }
 
-/**
-  * Gets a value from a band as a double.
-  */
-static double extract_double_value(GDALDataType bandType, char* sign) {
-	double value;
-	switch(bandType) {
-		case GDT_Byte:
-			value = (double) *( (char*) sign );
-			break;
-		case GDT_UInt16:
-			value = (double) *( (unsigned short*) sign );
-			break;
-		case GDT_Int16:
-			value = (double) *( (short*) sign );
-			break;
-		case GDT_UInt32: 
-			value = (double) *( (unsigned int*) sign );
-			break;
-		case GDT_Int32:
-			value = (double) *( (int*) sign );
-			break;
-		case GDT_Float32:
-			value = (double) *( (float*) sign );
-			break;
-		case GDT_Float64:
-			value = (double) *( (double*) sign );
-			break;
-		default:
-			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
-			exit(1);
-	}
-	return value;
-}
-
 
 /**
   * Creates fields and populates the table.
@@ -312,7 +278,7 @@ public:
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
 			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-			double val = extract_double_value(bandType, sign);
+			double val = starspan_extract_double_value(bandType, sign);
 			
 			int ok = DBFWriteDoubleAttribute(
 				file,

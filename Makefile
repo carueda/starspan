@@ -30,10 +30,12 @@ INCLUDE += -I$(GDAL_SRC_DIR)/frmts
 		 
 # See rasterizers/LineRasterizer.cc
 INCLUDE += -I${AGG_PREFIX}/include/agg2 
-INCLUDE += -Ivector -Iraster -Itraverser -Irasterizers -Ijts		 
+INCLUDE += -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv		 
 
 
 SRCS = starspan_db.cc \
+       starspan_update_csv.cc \
+       starspan_update_dbf.cc \
        starspan_csv.cc \
        starspan_gen_envisl.cc \
        starspan_minirasters.cc \
@@ -43,7 +45,8 @@ SRCS = starspan_db.cc \
 	   traverser/traverser.cc \
 	   raster/Raster_gdal.cc \
 	   vector/Vector_ogr.cc \
-	   rasterizers/LineRasterizer.cc
+	   rasterizers/LineRasterizer.cc \
+	   csv/Csv.cc
 
 	   
 CXXFLAGS = -g -Wall \

@@ -5,6 +5,12 @@ $Id$
 	starspan2.cc: collect args before creating maing objects.
 	(arg processing might be based on getopt or similar in a future version.)
 	
+	New module csv to read CSV files--adapted from TPOP source code
+	http://cm.bell-labs.com/cm/cs/tpop/code.html
+	
+	New operation starspan_update_csv
+	New operation starspan_update_dbf
+	
 2004-09-13
 	General refactoring to allow the processing of multiple input rasters.
 	Traverser has now methods to specify data input objects; all object

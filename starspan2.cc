@@ -30,8 +30,10 @@ static void usage(const char* msg) {
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
 		"   inputs:\n"
-		"      -vector <filename>       An OGR recognized vector file.\n"
 		"      -raster <filenames>...   GDAL recognized raster files.\n"
+		"      -vector <filename>       An OGR recognized vector file.\n"
+		"      -update-csv <filename>   A CSV file with pixel locations.\n"
+		"      -update-dbf <filename>   A DBF file with pixel locations.\n"
 		"\n"
 		"   commands:\n"
 		"      -report              Shows info about given input files\n"
@@ -77,11 +79,12 @@ int main(int argc, char ** argv) {
 	bool envi_image = true;
 	const char*  select_fields = NULL;
 	const char*  dbf_name = NULL;
+	const char*  update_dbf_name = NULL;
 	const char*  csv_name = NULL;
+	const char*  update_csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
-	bool update = false;
 	
 	bool an_output_given = false;
 	
@@ -91,7 +94,7 @@ int main(int argc, char ** argv) {
 	long FID = -1;
 
 	//
-	// collect arguments  -- FIXME: use getopt later on
+	// collect arguments  -- TODO: use getopt later on
 	//
 	for ( int i = 1; i < argc; i++ ) {
 		
@@ -109,6 +112,18 @@ int main(int argc, char ** argv) {
 				usage("-raster: which raster files?");
 			if ( argv[i][0] == '-' ) 
 				--i;
+		}
+		
+		else if ( 0==strcmp("-update-csv", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-update-csv: which CSV file?");
+			update_csv_name = argv[i];
+		}
+		
+		else if ( 0==strcmp("-update-dbf", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-update-dbf: which DBF file?");
+			update_dbf_name = argv[i];
 		}
 		
 		// COMMANDS
@@ -184,10 +199,6 @@ int main(int argc, char ** argv) {
 			select_fields = argv[i];
 		}
 
-		else if ( 0==strcmp("-update", argv[i]) ) {
-			update = true;
-		}
-		
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
 		}
@@ -213,6 +224,36 @@ int main(int argc, char ** argv) {
 	Raster::init();
 	Vector::init();
 
+	
+	//
+	// dispatch -update* commands
+	//
+	if ( update_csv_name ) {
+		if ( !csv_name ) {
+			usage("-update-csv works with -csv. Please specify an existing CSV");
+		}
+		if ( vector_filename ) {
+			usage("-update-csv does not expect a vector input");
+		}
+		if ( raster_filenames.size() == 0 ) {
+			usage("-update-csv requires at least a raster input");
+		}
+		return starspan_update_csv(update_csv_name, raster_filenames, csv_name);
+	}
+	else if ( update_dbf_name ) {
+		if ( !dbf_name ) {
+			usage("-update-dbf works with -dbf. Please specify an existing DBF");
+		}
+		if ( vector_filename ) {
+			usage("-update-dbf does not expect a vector input");
+		}
+		if ( raster_filenames.size() == 0 ) {
+			usage("-update-dbf requires at least a raster input");
+		}
+		return starspan_update_dbf(update_dbf_name, raster_filenames, dbf_name);
+	}
+	
+	
 	// the traverser object	
 	Traverser tr;
 
