@@ -59,6 +59,7 @@ static void usage(const char* msg) {
 		"      --fid <FID>\n"
 		"      --skip_invalid_polys \n"
 		"      --nodata <value> \n"
+		"      --buffer <distance> [quadrantSegments] \n"
 		"      --progress [value] \n"
 		"      --RID_as_given \n"
 		"      --verbose \n"
@@ -94,6 +95,8 @@ int main(int argc, char ** argv) {
 	globalOptions.RID_as_given = false;
 	globalOptions.report_summary = true;
 	globalOptions.nodata = 0.0;
+	globalOptions.buffer.doit = false;
+	globalOptions.buffer.quadrantSegments = 1;
 	
 	
 	bool report_elapsed_time = true;
@@ -254,6 +257,15 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
 				usage("--nodata: value?");
 			globalOptions.nodata = atof(argv[i]);
+		}
+		
+		else if ( 0==strcmp("--buffer", argv[i]) ) {
+			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
+				usage("--buffer: distance?");
+			globalOptions.buffer.distance = atof(argv[i]);
+			if ( i+1 < argc && strncmp(argv[i+1], "--", 2) != 0 )
+				globalOptions.buffer.quadrantSegments = atoi(argv[++i]);
+			globalOptions.buffer.doit = true;
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {
@@ -427,7 +439,12 @@ int main(int argc, char ** argv) {
 			tr.addRaster(new Raster(raster_filenames[i]));
 		}
 	
-	
+		if ( globalOptions.buffer.doit ) { 
+			tr.setBufferParameters(
+				globalOptions.buffer.distance, globalOptions.buffer.quadrantSegments
+			);
+		}
+			
 		if ( csv_name || envi_name || mini_prefix || jtstest_filename) { 
 			if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
 				usage("Specified output option requires both a raster and a vector to proceed\n");

@@ -51,6 +51,13 @@ struct GlobalOptions {
 	
 	/** value used as nodata */
 	double nodata;
+	
+	// buffer information
+	struct {
+		bool doit;
+		double distance;
+		int quadrantSegments;
+	} buffer;
 };
 
 extern GlobalOptions globalOptions;
