@@ -20,7 +20,7 @@ public:
 	// finishes this module
 	static int end(void);
 	
-	// Creates a vector.
+	// Creates a vector object representing an existing file.
 	Vector(const char* filename);
 	
 	// destroys this vector.
