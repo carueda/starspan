@@ -463,11 +463,9 @@ int main(int argc, char ** argv) {
 		// release observers:
 		tr.releaseObservers();
 	}
-	else {
-		if ( !do_report && !mini_prefix )
-			usage("please specify a command\n");
-	}
 	
+	Vector::end();
+	Raster::end();
 	return 0;
 }
 

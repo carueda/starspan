@@ -9,6 +9,8 @@ $Id$
 		  for all intersections types except for polygons.  
 		  pixset is reset on a per feature basis, so potential duplication
 		  of pixels accross features won't be detected.
+		- There is a minor memory leak in GDAL 1.2.3 (geotiff.cpp:3787)
+		  that is already fixed in CVS. I will wait for next GDAL release.
 		  
 	Option -skip_invalid_polys. By default all polygons will be processed.
 		

@@ -16,6 +16,7 @@ int Raster::init() {
 }
 
 int Raster::end() {
+	GDALDestroyDriverManager();
 	return 0;
 }
 
