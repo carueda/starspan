@@ -24,7 +24,9 @@ public:
 	Vector* vect;
 	FILE* file;
 	vector<const char*> select_stats;
-	long currentFeatureID;
+	vector<const char*>* select_fields;
+	// is there a previous feature to be finalized?
+	bool previous;
 	void* bandValues_buffer;
 	double* bandValues;
 	
@@ -52,12 +54,13 @@ public:
 	/**
 	  * Creates a stats calculator
 	  */
-	StatsObserver(Traverser& tr, FILE* f, vector<const char*> select_stats)
-	: tr(tr), file(f), select_stats(select_stats)
+	StatsObserver(Traverser& tr, FILE* f, vector<const char*> select_stats,
+		vector<const char*>* select_fields
+	) : tr(tr), file(f), select_stats(select_stats), select_fields(select_fields)
 	{
 		vect = tr.getVector();
 		global_info = 0;
-		currentFeatureID = -1;
+		previous = false;
 		bandValues_buffer = 0;
 		bandValues = 0;
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
@@ -92,7 +95,7 @@ public:
 	  * finalizes current feature if any; closes the file
 	  */
 	void end() {
-		finalizeCurrentFeatureIfAny();
+		finalizePreviousFeatureIfAny();
 		if ( file ) {
 			fclose(file);
 			fprintf(stdout, "Stats: finished.\n");
@@ -143,6 +146,26 @@ public:
 
 		// Create FID field
 		fprintf(file, "FID");
+
+
+		// Create fields:
+		if ( select_fields ) {
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				fprintf(file, ",%s", *fname);
+			}
+		}
+		else {
+			// all fields from layer definition
+			OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
+			int feature_field_count = poDefn->GetFieldCount();
+			
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
+				const char* pfield_name = poField->GetNameRef();
+				fprintf(file, ",%s", pfield_name);
+			}
+		}
+		
 		
 		// Create numPixels field
 		fprintf(file, ",numPixels");
@@ -170,7 +193,7 @@ public:
 
 	/**
 	  * compute all results from current list of pixels.
-	  * Desired results are reported by finalizeCurrentFeatureIfAny.
+	  * Desired results are reported by finalizePreviousFeatureIfAny.
 	  */
 	void computeResults(void) {
 		// initialize results:
@@ -273,60 +296,87 @@ public:
 	}
 
 	/**
-	  * dispatches finalization of current feature
+	  * dispatches finalization of previous feature
 	  */
-	void finalizeCurrentFeatureIfAny(void) {
-		if ( currentFeatureID >= 0 ) {
-			// Add FID value:
-			fprintf(file, "%ld", currentFeatureID);
-			
-			// Add numPixels value:
-			fprintf(file, ",%d", pixels.size());
-			
-			computeResults();
-	 
-			// report desired results:
-			// (desired list is traversed to keep order according to column headers)
-			for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
-				if ( 0 == strcmp(*stat, "avg") ) {
-					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[AVG][j]);
-					}
-				}
-				else if ( 0 == strcmp(*stat, "stdev") ) {
-					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[STDEV][j]);
-					}
-				}
-				else if ( 0 == strcmp(*stat, "min") ) {
-					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[MIN][j]);
-					}
-				}
-				else if ( 0 == strcmp(*stat, "max") ) {
-					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[MAX][j]);
-					}
-				}
-				else {
-					fprintf(stderr, "Unrecognized stats %s\n", *stat);
-					exit(1);
+	void finalizePreviousFeatureIfAny(void) {
+		if ( !previous )
+			return;
+		
+		// Add numPixels value:
+		fprintf(file, ",%d", pixels.size());
+		
+		computeResults();
+ 
+		// report desired results:
+		// (desired list is traversed to keep order according to column headers)
+		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
+			if ( 0 == strcmp(*stat, "avg") ) {
+				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+					fprintf(file, ",%f", result_stats[AVG][j]);
 				}
 			}
-			fprintf(file, "\n");
-			currentFeatureID = -1;
-			pixels.clear();
+			else if ( 0 == strcmp(*stat, "stdev") ) {
+				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+					fprintf(file, ",%f", result_stats[STDEV][j]);
+				}
+			}
+			else if ( 0 == strcmp(*stat, "min") ) {
+				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+					fprintf(file, ",%f", result_stats[MIN][j]);
+				}
+			}
+			else if ( 0 == strcmp(*stat, "max") ) {
+				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+					fprintf(file, ",%f", result_stats[MAX][j]);
+				}
+			}
+			else {
+				fprintf(stderr, "Unrecognized stats %s\n", *stat);
+				exit(1);
+			}
 		}
+		fprintf(file, "\n");
+		pixels.clear();
+		previous = false;
 	}
 
 	/**
 	  * dispatches aggregation of current feature and prepares for next
 	  */
 	void intersectionFound(OGRFeature* feature) {
-		finalizeCurrentFeatureIfAny();
+		finalizePreviousFeatureIfAny();
 		
-		// be ready for new feature:
-		currentFeatureID = feature->GetFID();
+		//
+		// start info for new feature:
+		//
+		
+		// Add FID value:
+		fprintf(file, "%ld", feature->GetFID());
+
+
+		// add attribute fields from source feature to record:
+		if ( select_fields ) {
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				const int i = feature->GetFieldIndex(*fname);
+				if ( i < 0 ) {
+					fprintf(stderr, "\n\tField `%s' not found\n", *fname);
+					exit(1);
+				}
+				const char* str = feature->GetFieldAsString(i);
+				fprintf(file, ",%s", str);
+			}
+		}
+		else {
+			// all fields
+			int feature_field_count = feature->GetFieldCount();
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				const char* str = feature->GetFieldAsString(i);
+				fprintf(file, ",%s", str);
+			}
+		}
+		
+		// rest of record will be done by finalizePreviousFeatureIfAny
+		previous = true;
 	}
 	
 	
@@ -357,7 +407,7 @@ Observer* starspan_getStatsObserver(
 		return 0;
 	}
 
-	return new StatsObserver(tr, file, select_stats);	
+	return new StatsObserver(tr, file, select_stats, select_fields);	
 }
 		
 
