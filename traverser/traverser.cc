@@ -515,24 +515,33 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 					
 					if ( !noded )
 						noded = ln;
-					else
+					else {
 						noded = noded->Union(ln);
+						delete ln;
+					}
 				}
 				
-				// now, polygonize:
-				geos::Polygonizer polygonizer;
-				polygonizer.add(noded);
-				
-				// and process generated sub-polygons:
-				vector<geos::Polygon*>* polys = polygonizer.getPolygons();
-				cout << polys->size() << " sub-polys obtained\n";
-				for ( unsigned i = 0; i < polys->size(); i++ ) {
-					processValidPolygon((*polys)[i]);
-					delete (*polys)[i];
+				if ( noded ) {
+					// now, polygonize:
+					geos::Polygonizer polygonizer;
+					polygonizer.add(noded);
+					
+					// and process generated sub-polygons:
+					vector<geos::Polygon*>* polys = polygonizer.getPolygons();
+					if ( polys ) {
+						cout << polys->size() << " sub-polys obtained\n";
+						for ( unsigned i = 0; i < polys->size(); i++ ) {
+							processValidPolygon((*polys)[i]);
+							delete (*polys)[i];
+						}
+						delete polys;
+					}
+					else {
+						cerr << "could not generate sub-polys\n";
+					}
+					
+					delete noded;
 				}
-				delete polys;
-				
-				delete noded;
 			}
 			
 		}
