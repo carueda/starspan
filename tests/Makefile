@@ -18,7 +18,7 @@ test_miniraster:
 	${STARSPAN} \
 		--vector data/vector/starspan_testply.shp \
 		--raster data/raster/starspan2raster.img \
-		--mr generated/miniraster/myprefix_ \
+		--mini_rasters generated/miniraster/myprefix_ \
 		--in \
 		--nodata 1 \
 		--fid 3 
@@ -27,7 +27,7 @@ test_miniraster:
 	${STARSPAN} \
 		--vector data/vector/starspan_testply.shp \
 		--raster data/raster/starspan2raster.img \
-		--mr generated/miniraster/myprefix_buff2_ \
+		--mini_rasters generated/miniraster/myprefix_buff2_ \
 		--in \
 		--buffer 2 \
 		--fid 3
