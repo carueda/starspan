@@ -229,6 +229,11 @@ public:
 						fprintf(file, ",%f", result_stats[AVG][j]);
 					}
 				}
+				else if ( 0 == strcmp(*stat, "mode") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[MODE][j]);
+					}
+				}
 				else if ( 0 == strcmp(*stat, "stdev") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 						fprintf(file, ",%f", result_stats[STDEV][j]);
