@@ -183,6 +183,41 @@ void Traverser::getBandValuesForPixel(int col, int row) {
 }
 
 
+vector<double>* Traverser::getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows) {
+	if ( band_index <= 0 || band_index > globalInfo.bands.size() ) {
+		cerr<< "Traverser::getPixelValuesInBand: band_index " <<band_index<< " out of range\n";
+		return 0;
+	}
+	vector<double>* list = new vector<double>();
+	if ( !list )
+		return 0;
+	
+	GDALRasterBand* band = globalInfo.bands[band_index-1];
+	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
+		int col = colrow->col;
+		int row = colrow->row;
+		double value = 0.0;
+		int status = band->RasterIO(
+			GF_Read,
+			col, row,
+			1, 1,             // nXSize, nYSize
+			&value,           // pData
+			1, 1,             // nBufXSize, nBufYSize
+			GDT_Float64,      // eBufType
+			0, 0              // nPixelSpace, nLineSpace
+		);
+		
+		if ( status != CE_None ) {
+			fprintf(stdout, "Error reading band value, status= %d\n", status);
+			exit(1);
+		}
+		list->push_back(value);
+	}
+	return list;
+}
+
+
+
 //
 // (x,y) to (col,row) conversion
 //

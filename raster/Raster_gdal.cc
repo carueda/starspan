@@ -144,6 +144,48 @@ void* Raster::getBandValuesForPixel(int col, int row) {
 	return bandValues_buffer;
 }
 
+vector<double>* Raster::getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows) {
+	// Note that GDAL will raise an error if band is invalid,
+	GDALRasterBand* band = (GDALRasterBand*) GDALGetRasterBand(hDataset, band_index);
+	if ( !band )
+		return 0;
+	
+	vector<double>* list = new vector<double>();
+	if ( !list )
+		return 0;
+	
+	int width, height;
+	getSize(&width, &height, NULL);
+
+	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
+		int col = colrow->col;
+		int row = colrow->row;
+		double value = 0.0;
+		
+		if ( col < 0 || col >= width || row < 0 || row >= height ) {
+			// nothing:  keep the 0.0 value
+		}
+		else {
+			int status = band->RasterIO(
+				GF_Read,
+				col, row,
+				1, 1,             // nXSize, nYSize
+				&value,           // pData
+				1, 1,             // nBufXSize, nBufYSize
+				GDT_Float64,      // eBufType
+				0, 0              // nPixelSpace, nLineSpace
+			);
+			
+			if ( status != CE_None ) {
+				fprintf(stdout, "Error reading band value, status= %d\n", status);
+				exit(1);
+			}
+		}
+		list->push_back(value);
+	}
+	return list;
+}
+
 
 void Raster::report(FILE* file) {
 	fprintf(file, "%s\n", hDataset->GetDescription());

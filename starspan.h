@@ -10,22 +10,13 @@
 #include "Raster.h"           
 #include "Vector.h"       
 #include "traverser.h"       
+#include "Stats.h"       
 
 #include <stdio.h> // FILE
 
 
 #define STARSPAN_VERSION "0.84beta"
 
-
-// indices into stats arrays:
-enum {
-	CUM,     // cumulation
-	MIN,     // minimum
-	MAX,     // maximum
-	AVG,     // average
-	STDEV,   // std deviation--requires second pass
-	TOT_RESULTS
-};
 
 /////////////////////////////////////////////////////////////////////////////
 // some services:

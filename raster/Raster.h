@@ -9,7 +9,18 @@
 #include "gdal_priv.h"
 #include "ogr_srs_api.h"
 
-#include <stdio.h>  // FILE
+#include <vector>
+#include <cstdio>
+
+using namespace std;
+
+/** Location of pixel in 0-based (col,row) coordinates.
+  */
+struct CRPixel {
+	int col;
+	int row;
+	CRPixel(int col, int row) : col(col), row(row) {}
+};
 
 
 /** Represents a raster. */
@@ -46,6 +57,17 @@ public:
 	  * NULL is returned if (col,row) is invalid.
 	  */
 	void* getBandValuesForPixel(int col, int row);
+
+	/**
+	  * Returns a list of values corresponding to a given list of pixel
+	  * locations from a given band.
+	  * @param band_index Desired band. Note that 1 corresponds to the first band
+	  *              (to keep consistency with GDAL).
+	  * @param colrows Desired locations.
+	  * @return the list of corresponding values. Note that a 0.0 will be
+	  *          put in the list where (col,row) is not valid.
+	  */
+	vector<double>* getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows);
 	
 	/**
 	  * (x,y) to (col,row) conversion.

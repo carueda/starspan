@@ -14,6 +14,11 @@ $Id$
 	New starspan_getFeatureStatsByField
 	starspan_tuct2.cc: entry point: starspan_tuct_2(...)
 	First tests: OK
+	
+	New scheme for stats calculation: now based on a band-oriented fashion,
+	which should be more efficient according to GDAL model although efficiency
+	also depends on the specific interleave of raster datasets; in particular
+	BSQ is the preferred interleave for band-wise calculations.
 
 2004-10-04 (0.83beta)
 	starspan_stats.cc: new starspan_getFeatureStats(FID,vect,rast,stats)

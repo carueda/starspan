@@ -227,6 +227,17 @@ public:
 	}
 	
 	/**
+	  * Returns a list of values corresponding to a given list of pixel
+	  * locations from a given band.
+	  * @param band_index Desired band. Note that 1 corresponds to the first band
+	  *              in the first raster.
+	  * @param colrows Desired locations.
+	  * @return the list of corresponding values. Note that a 0.0 will be
+	  *          put in the list where (col,row) is not valid.
+	  */
+	vector<double>* getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows);
+	
+	/**
 	  * Reads in values from all bands (all given rasters) at pixel in (col,row).
 	  * Values are stored in bandValues_buffer.
 	  *

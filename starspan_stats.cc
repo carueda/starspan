@@ -7,6 +7,7 @@
 
 #include "starspan.h"           
 #include "traverser.h"       
+#include "Stats.h"       
 
 #include <iostream>
 #include <cstdlib>
@@ -32,12 +33,7 @@ public:
 	void* bandValues_buffer;
 	double* bandValues;
 	
-	struct Pixel {
-		int col;
-		int row;
-		Pixel(int col, int row) : col(col), row(row) {}
-	};
-	vector<Pixel> pixels;
+	vector<CRPixel> pixels;
 	
 	double* result_stats[TOT_RESULTS];
 	bool compute[TOT_RESULTS];
@@ -207,95 +203,16 @@ public:
 				result_stats[i][j] = 0.0;
 		}
 
-		for ( vector<Pixel>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
-			// first get buffer with all bands
-			tr.getBandValuesForPixel(pixel->col, pixel->row, bandValues_buffer);
-
-			// now get those values in double format:
-			char* ptr = (char*) bandValues_buffer;
-			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-				GDALDataType bandType = global_info->bands[j]->GetRasterDataType();
-				int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-				bandValues[j] = starspan_extract_double_value(bandType, ptr);
-				
-				// move to next piece of data in buffer:
-				ptr += typeSize;
-			}
-
-			// cumulate:
-			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-				result_stats[CUM][j] += bandValues[j]; 
-			}
-
-			// min and max:
-			if ( pixel == pixels.begin() ) {    
-				// first pixel: just take values
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					result_stats[MIN][j] = bandValues[j]; 
-					result_stats[MAX][j] = bandValues[j]; 
-				}
-			}
-			else {
-				// compare:
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					// min
-					if ( result_stats[MIN][j] > bandValues[j] ) 
-						result_stats[MIN][j] = bandValues[j];
-					
-					// max
-					if ( result_stats[MAX][j] < bandValues[j] ) 
-						result_stats[MAX][j] = bandValues[j]; 
-				}
-			}
-		}
+		Stats stats;
 		
-		// average
-		if ( pixels.size() > 0 ) {
-			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-				result_stats[AVG][j] = result_stats[CUM][j] / pixels.size();
-			}
-		}
+		for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 		
-		// Is a second pass required?
-		if ( compute[STDEV] ) {
-			
-			// standard deviation defined as sqrt of the sample variance.
-			// So we need at least 2 pixels.
-			
-			if ( pixels.size() > 1 ) {
-				// initialize CUM:
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					result_stats[CUM][j] = 0.0;
-				}
-				
-				// take pixels again
-				for ( vector<Pixel>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
-					// first get buffer with all bands
-					tr.getBandValuesForPixel(pixel->col, pixel->row, bandValues_buffer);
-		
-					// now get those values in double format:
-					char* ptr = (char*) bandValues_buffer;
-					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						GDALDataType bandType = global_info->bands[j]->GetRasterDataType();
-						int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-						bandValues[j] = starspan_extract_double_value(bandType, ptr);
-						
-						// move to next piece of data in buffer:
-						ptr += typeSize;
-					}
-				
-					// cumulate square variance:
-					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						double h = bandValues[j] - result_stats[AVG][j];
-						result_stats[CUM][j] += h * h; 
-					}
-				}
-				
-				// finally take std dev:
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					double sd = sqrt(result_stats[CUM][j] / (pixels.size() - 1));
-					result_stats[STDEV][j] = sd;
-				}
+			vector<double>* values = tr.getPixelValuesInBand(j+1, &pixels);
+
+			stats.compute(values);
+
+			for ( int i = 0; i < TOT_RESULTS; i++ ) {
+				result_stats[i][j] = stats.result[i]; 
 			}
 		}
 	}
@@ -395,7 +312,7 @@ public:
 	  * Adds a new pixel to aggregation
 	  */
 	void addPixel(TraversalEvent& ev) {
-		pixels.push_back(Pixel(ev.pixel.col, ev.pixel.row));
+		pixels.push_back(CRPixel(ev.pixel.col, ev.pixel.row));
 	}
 
 };
