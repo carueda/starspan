@@ -3,6 +3,7 @@ $Id$
 
 2004-10-08 (0.86beta)
 	new  util/Progress class.
+	Traverser: options for progress and verbose output.
 
 2004-10-07 (0.85beta)
 

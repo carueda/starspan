@@ -10,11 +10,13 @@
 #include "Raster.h"
 #include "Vector.h"
 #include "rasterizers.h"
+#include "Progress.h"
 
 #include <set>
 #include <list>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <cstdio>
 
 using namespace std;
@@ -248,6 +250,20 @@ public:
 	void* getBandValuesForPixel(int col, int row, void* buffer);
 	
 	/**
+	  * Sets the output to write progress info.
+	  */
+	void Traverser::setProgress(ostream& out) { 
+		progress_out = &out;
+	}
+	
+	/**
+	  * Sets verbose flag
+	  */
+	void Traverser::setVerbose(bool v) { 
+		verbose = v;
+	}
+	
+	/**
 	  * Executes the traversal.
 	  * This traverser should not be modified while
 	  * the traversal is performed. Otherwise undefined
@@ -308,7 +324,8 @@ private:
 	};
 	set<EPixel>* pixset;
 
-
+	ostream* progress_out;
+	bool verbose;
 };
 
 

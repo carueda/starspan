@@ -32,6 +32,8 @@ Traverser::Traverser() {
 	
 	lineRasterizer = 0;
 	pixset = 0;
+	progress_out = 0;
+	verbose = false;
 }
 
 void Traverser::addObserver(Observer* aObserver) { 
@@ -67,7 +69,7 @@ void Traverser::setDesiredFeatureByField(const char* field_name, const char* fie
 
 void Traverser::setVector(Vector* vector) {
 	if ( vect )
-		fprintf(stderr, "traverser: Warning: resetting vector\n");
+		cerr<< "traverser: Warning: resetting vector\n";
 	vect = vector;
 }
 
@@ -124,15 +126,15 @@ void Traverser::addRaster(Raster* raster) {
 		rasts[last]->getPixelSize(&_pix_x_size, &_pix_y_size);
 
 		if ( _width != width || _height != height ) {
-			fprintf(stderr, "Different number of lines/cols\n");
+			cerr<< "Different number of lines/cols\n";
 			exit(1);
 		}
 		if ( _x0 != x0 || _y0 != y0 || _x1 != x1 || _y1 != y1) {
-			fprintf(stderr, "Different geographic location\n");
+			cerr<< "Different geographic location\n";
 			exit(1);
 		}
 		if ( _pix_x_size != pix_x_size || _pix_y_size != pix_y_size ) {
-			fprintf(stderr, "Different pixel size\n");
+			cerr<< "Different pixel size\n";
 			exit(1);
 		}
 	}
@@ -165,7 +167,7 @@ void* Traverser::getBandValuesForPixel(int col, int row, void* buffer) {
 		);
 		
 		if ( status != CE_None ) {
-			fprintf(stdout, "Error reading band value, status= %d\n", status);
+			cerr<< "Error reading band value, status= " <<status<< "\n";
 			exit(1);
 		}
 		
@@ -208,7 +210,7 @@ vector<double>* Traverser::getPixelValuesInBand(unsigned band_index, vector<CRPi
 		);
 		
 		if ( status != CE_None ) {
-			fprintf(stdout, "Error reading band value, status= %d\n", status);
+			cerr<< "Error reading band value, status=" <<status<< "\n";
 			exit(1);
 		}
 		list->push_back(value);
@@ -301,7 +303,7 @@ void Traverser::processMultiPoint(OGRMultiPoint* pp) {
 //
 void Traverser::processLineString(OGRLineString* linstr) {
 	int num_points = linstr->getNumPoints();
-	//fprintf(stdout, "      num_points = %d\n", num_points);
+	//cout<< "      num_points = " <<num_points<< endl;
 	if ( num_points > 0 ) {
 		OGRPoint point0;
 		linstr->getPoint(0, &point0);
@@ -372,16 +374,20 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	toColRow(intersection_env.MaxX, intersection_env.MaxY, &maxCol, &maxRow);
 	// Note: minCol is not necessarily <= maxCol (idem for *Row)
 
-	fprintf(stdout, " minCol=%d, minRow=%d\n", minCol, minRow); 
-	fprintf(stdout, " maxCol=%d, maxRow=%d\n", maxCol, maxRow); 
+	if ( verbose ) {
+		fprintf(stdout, " minCol=%d, minRow=%d\n", minCol, minRow); 
+		fprintf(stdout, " maxCol=%d, maxRow=%d\n", maxCol, maxRow);
+	}
 	
 	// get envelope corners in grid coordinates:
 	double minX, minY, maxX, maxY;
 	toGridXY(minCol, minRow, &minX, &minY);
 	toGridXY(maxCol, maxRow, &maxX, &maxY);
 
-	fprintf(stdout, " minX=%g, minY=%g\n", minX, minY); 
-	fprintf(stdout, " maxX=%g, maxY=%g\n", maxX, maxY); 
+	if ( verbose ) {
+		fprintf(stdout, " minX=%g, minY=%g\n", minX, minY); 
+		fprintf(stdout, " maxX=%g, maxY=%g\n", maxX, maxY);
+	}
 	
 	// envelope dimensions:
 	int rows_env = abs(maxRow - minRow) +1;
@@ -390,8 +396,10 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	// number of pixels found in polygon:
 	int num_pixels_in_poly = 0;
 	
-	fprintf(stdout, " %d cols x %d rows\n", cols_env, rows_env);
-	fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
+	if ( verbose ) {
+		fprintf(stdout, " %d cols x %d rows\n", cols_env, rows_env);
+		fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
+	}
 
 	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
 	const double pix_area = fabs(pix_x_size*pix_y_size);
@@ -420,12 +428,16 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			}
 			delete pix_poly;
 		}
-		fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
+		if ( verbose ) {
+			fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
+		}
 	}
-	fprintf(stdout, "\n"); 
-	fprintf(stdout, " %d pixels in poly out of %d pixels in envelope\n", 
-		num_pixels_in_poly, rows_env * cols_env
-	);
+	if ( verbose ) {
+		fprintf(stdout, "\n"); 
+		fprintf(stdout, " %d pixels in poly out of %d pixels in envelope\n", 
+			num_pixels_in_poly, rows_env * cols_env
+		);
+	}
 }
 
 
@@ -448,11 +460,13 @@ void Traverser::process_feature(OGRFeature* feature) {
 		return;
 	}
 
-	fprintf(stdout, 
-		"\n\nFID: %ld  INTERSECTION %s\n",
-		feature->GetFID(),
-		intersection_geometry->getGeometryName()
-	);			
+	if ( verbose ) {
+		fprintf(stdout, 
+			"\n\nFID: %ld  INTERSECTION %s\n",
+			feature->GetFID(),
+			intersection_geometry->getGeometryName()
+		);		
+	}
 	
 	//
 	// notify observers about this feature
@@ -502,9 +516,9 @@ void Traverser::process_feature(OGRFeature* feature) {
 			break;
 			
 		default:
-			fprintf(stdout, "%s: intersection type not considered\n",
-				OGRGeometryTypeToName(intersection_type)
-			);
+			cerr<< OGRGeometryTypeToName(intersection_type)
+			    << ": intersection type not considered\n"
+			;
 	}
 
 	if ( pixset ) {
@@ -521,38 +535,37 @@ void Traverser::process_feature(OGRFeature* feature) {
 void Traverser::traverse() {
 	// don't allow a second call, for now
 	if ( bandValues_buffer ) {
-		fprintf(stderr, "traverser.traverse: second call!\n");
+		cerr<< "traverser.traverse: second call!\n";
 		return;
 	}
 
 	// do some checks:
 	if ( observers.size() == 0 ) {
-		fprintf(stderr, "traverser: No observers registered!\n");
+		cerr<< "traverser: No observers registered!\n";
 		return;
 	}
 
 	if ( !vect ) {
-		fprintf(stderr, "traverser: Vector datasource not specified!\n");
+		cerr<< "traverser: Vector datasource not specified!\n";
 		return;
 	}
 	if ( rasts.size() == 0 ) {
-		fprintf(stderr, "traverser: No raster datasets were specified!\n");
+		cerr<< "traverser: No raster datasets were specified!\n";
 		return;
 	}
 	//
 	// Only first layer (0) is processed (which assumes only one layer exists)
 	//
 	if ( vect->getLayerCount() > 1 ) {
-		fprintf(stderr, 
-			"Vector datasource with more than one layer: %s\n"
-			"Only one layer expected.\n",
-			vect->getName()
-		);
+		cerr<< "Vector datasource with more than one layer: "
+		    << vect->getName()
+			<< "\nOnly one layer expected.\n"
+		;
 		return;
 	}
 	OGRLayer* layer = vect->getLayer(0);
 	if ( !layer ) {
-		fprintf(stderr, "Couldn't get layer from %s\n", vect->getName());
+		cerr<< "Couldn't get layer from " << vect->getName()<< endl;
 		return;
 	}
 	layer->ResetReading();
@@ -575,7 +588,7 @@ void Traverser::traverse() {
 	if ( desired_FID >= 0 ) {
 		feature = layer->GetFeature(desired_FID);
 		if ( !feature ) {
-			fprintf(stderr, "FID %ld not found in %s\n", desired_FID, vect->getName());
+			cerr<< "FID " <<desired_FID<< " not found in " <<vect->getName()<< endl;
 			exit(1);
 		}
 		process_feature(feature);
@@ -612,9 +625,24 @@ void Traverser::traverse() {
 	// else: process each feature in vector datasource:
 	//
 	else {
+		Progress* progress = 0;
+		if ( progress_out ) {
+			long psize = layer->GetFeatureCount();
+			if ( psize > 0 )
+				progress = new Progress(psize, 3, *progress_out);
+			else
+				progress = new Progress(psize, 0, *progress_out);
+		}
 		while( (feature = layer->GetNextFeature()) != NULL ) {
 			process_feature(feature);
 			delete feature;
+			if ( progress )
+				progress->update();
+		}
+		if ( progress ) {
+			progress->end();
+			delete progress;
+			progress = 0;
 		}
 	}
 	

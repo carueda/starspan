@@ -101,6 +101,9 @@ int main(int argc, char ** argv) {
 	double pix_prop = -1.0;
 	long FID = -1;
 	const char* dump_geometries_filename = NULL;
+	
+	bool verbose = false;
+	bool progress = false;
 
 	//
 	// collect arguments  -- TODO: use getopt later on
@@ -280,6 +283,14 @@ int main(int argc, char ** argv) {
 			mini_srs = argv[i];
 		}
 
+		else if ( 0==strcmp("-progress", argv[i]) ) {
+			progress = true;
+		}
+		
+		else if ( 0==strcmp("-verbose", argv[i]) ) {
+			verbose = true;
+		}
+		
 		// HELP
 		else if ( 0==strcmp("-help", argv[i]) ) {
 			usage(NULL);
@@ -364,6 +375,10 @@ int main(int argc, char ** argv) {
 
 	if ( FID >= 0 )
 		tr.setDesiredFID(FID);
+	
+	tr.setVerbose(verbose);
+	if ( progress )
+		tr.setProgress(cout);
 
 	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
 		if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
