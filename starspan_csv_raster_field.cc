@@ -220,11 +220,27 @@ int starspan_csv_raster_field(
 
 	open_output_file();
 	
-	while( (currentFeature = layer->GetNextFeature()) != NULL ) {
+	//
+	// Was a specific FID given?
+	//
+	if ( globalOptions.FID >= 0 ) {
+		currentFeature = layer->GetFeature(globalOptions.FID);
+		if ( !currentFeature ) {
+			cerr<< "FID " <<globalOptions.FID<< " not found in " <<vect.getName()<< endl;
+			exit(1);
+		}
 		process_feature();
 		delete currentFeature;
 	}
-	
+	//
+	// else: process each feature in vector datasource:
+	//
+	else {
+		while( (currentFeature = layer->GetNextFeature()) != NULL ) {
+			process_feature();
+			delete currentFeature;
+		}
+	}	
 	return 0;
 }
 

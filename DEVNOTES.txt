@@ -4,7 +4,10 @@ $Id$
 
 2004-11-13
 	New options: -raster_field, -raster_directory
-	starspan_csv_raster_field.cc 
+	starspan_csv_raster_field.cc
+	Working only for points.
+	
+	MyPolygonizer eliminated; now geos::Polygonizer makes proper destruction.
 	
 	
 2004-11-12  ****
