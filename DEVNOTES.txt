@@ -1,6 +1,14 @@
 starspan devnotes
 $Id$
 
+2004-09-25
+	stats: fixed extraction bug: (col,row) were 1-based via TraversalEvent's, 
+	but then used as 0-based.
+	As a general revision, all (col,row) locations are now 0-based in traverser
+	module, and clients have been adjusted to report them as 1-based.
+	
+	building with GDAL 1.2.3 .. ok
+	
 2004-09-24
 	traverser: 
 		new Observer#end() to notify observer when process
@@ -12,17 +20,6 @@ $Id$
 	command-line scheme:
 		-stats [avg | stdev | min | max ]... file.csv
 		
-	NOTE: i'm having weird slight differences .... (?)
-	Test:
-		cd /scratch/scratch_ceres/starspan-tests/emma
-		starspan2_new -raster refs_mnf_img  -vector pampas_v.shp  \
-		              -stats stats.csv min  -csv kk.csv  -fields , -fid 27 -noXY -noColRow
-					  
-		Note: only one point.
-		Now compare  kk.csv and stats.csv:  slight differences at the forst bands
-		
-	
-	
 2004-09-16
 	starspan2.cc: collect args before creating main objects.
 	(arg processing might be based on getopt or similar in a future version.)

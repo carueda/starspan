@@ -2,14 +2,12 @@
 # Makefile to build the starspan tool
 # $Id$
 #
-# Locally modified in cstars
-#
 
 # common prefix
-PREFIX := /proj/delta/delta_2004/code/starspan/usr_local
+PREFIX := /usr/local
 
 # specify the GDAL source directory
-GDAL_SRC_DIR := /proj/delta/delta_2004/code/starspan/external/GDAL/gdal
+GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal-1.2.3
 
 # specify where GDAL is installed (--prefix)
 GDAL_PREFIX := $(PREFIX)

@@ -142,18 +142,18 @@ public:
 		//
 
 		// Create FID field
-		//***fprintf(file, "FID");
+		fprintf(file, "FID");
 		
 		// Create numPixels field
-		//***fprintf(file, ",numPixels");
+		fprintf(file, ",numPixels");
 		
 		// Create fields for bands
 		for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
 			for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
-				//***fprintf(file, ",%s_Band%d", *stat, i+1);
+				fprintf(file, ",%s_Band%d", *stat, i+1);
 			}
 		}		
-		//***fprintf(file, "\n");
+		fprintf(file, "\n");
 		
 		// allocate buffer for band values--large enough
 		bandValues_buffer = new double[global_info->bands.size()];
@@ -279,10 +279,10 @@ public:
 	void finalizeCurrentFeatureIfAny(void) {
 		if ( currentFeatureID >= 0 ) {
 			// Add FID value:
-			fprintf(file, "%ld\n", currentFeatureID);
+			fprintf(file, "%ld", currentFeatureID);
 			
 			// Add numPixels value:
-			//***fprintf(file, ",%d", pixels.size());
+			fprintf(file, ",%d", pixels.size());
 			
 			computeResults();
 	 
@@ -301,8 +301,7 @@ public:
 				}
 				else if ( 0 == strcmp(*stat, "min") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						//***fprintf(file, ",%g", result_stats[MIN][j]);
-						fprintf(file, "%g\n", result_stats[MIN][j]);
+						fprintf(file, ",%g", result_stats[MIN][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "max") ) {
@@ -315,7 +314,7 @@ public:
 					exit(1);
 				}
 			}
-			//***fprintf(file, "\n");
+			fprintf(file, "\n");
 			currentFeatureID = -1;
 			for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
 				delete *pixel;

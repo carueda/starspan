@@ -233,8 +233,8 @@ public:
 	  * Adds a record to the output file.
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		int col = ev.pixel.col;
-		int row = ev.pixel.row;
+		int col = 1 + ev.pixel.col;
+		int row = 1 + ev.pixel.row;
 		void* band_values = ev.bandValues;
 		
 		//
