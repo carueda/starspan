@@ -265,6 +265,13 @@ public:
 	}
 	
 	/**
+	  * Sets verbose flag
+	  */
+	void Traverser::setLog(ostream& log) { 
+		logstream = &log;
+	}
+	
+	/**
 	  * Executes the traversal.
 	  * This traverser should not be modified while
 	  * the traversal is performed. Otherwise undefined
@@ -331,6 +338,7 @@ private:
 	ostream* progress_out;
 	double progress_perc;
 	bool verbose;
+	ostream* logstream;
 };
 
 

@@ -7,6 +7,10 @@ $Id$
 	
 	added Traverser::processMultiPolygon
 	added Traverser::processGeometryCollection
+	
+	Traverser::setVerbose
+	Traverser::setProgress
+	Traverser::setLog
 
 2004-10-07 (0.85beta)
 

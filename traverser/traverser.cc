@@ -23,7 +23,7 @@ Traverser::Traverser() {
 	desired_fieldValue = "";
 	
 	// buffer: note that we won't allocate minimumBandBufferSize
-	// bytes, but assume the biggest data type, double.  Se below.
+	// bytes, but assume the biggest data type, double.  See below.
 	bandValues_buffer = 0;
 	minimumBandBufferSize = 0;
 	
@@ -34,6 +34,7 @@ Traverser::Traverser() {
 	pixset = 0;
 	progress_out = 0;
 	verbose = false;
+	logstream = 0;
 }
 
 void Traverser::addObserver(Observer* aObserver) { 
@@ -372,9 +373,10 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	toColRow(intersection_env.MaxX, intersection_env.MaxY, &maxCol, &maxRow);
 	// Note: minCol is not necessarily <= maxCol (idem for *Row)
 
-	if ( verbose ) {
-		fprintf(stdout, " minCol=%d, minRow=%d\n", minCol, minRow); 
-		fprintf(stdout, " maxCol=%d, maxRow=%d\n", maxCol, maxRow);
+	if ( logstream ) {
+		(*logstream)
+		   << " minCol=" <<minCol<< ", minRow=" <<minRow<< endl 
+		   << " maxCol=" <<maxCol<< ", maxRow=" <<maxRow<< endl;
 	}
 	
 	// get envelope corners in grid coordinates:
@@ -382,9 +384,10 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	toGridXY(minCol, minRow, &minX, &minY);
 	toGridXY(maxCol, maxRow, &maxX, &maxY);
 
-	if ( verbose ) {
-		fprintf(stdout, " minX=%g, minY=%g\n", minX, minY); 
-		fprintf(stdout, " maxX=%g, maxY=%g\n", maxX, maxY);
+	if ( logstream ) {
+		(*logstream)
+		   << " minX=" <<minX<< ", minY=" <<minY<< endl 
+		   << " maxX=" <<maxX<< ", maxY=" <<maxY<< endl;
 	}
 	
 	// envelope dimensions:
@@ -531,7 +534,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	if ( verbose ) {
 		fprintf(stdout, 
-			"\n\nFID: %ld  INTERSECTION %s\n",
+			"\n\nFID: %ld  type of intersection: %s\n",
 			feature->GetFID(),
 			intersection_geometry->getGeometryName()
 		);		

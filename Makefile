@@ -50,6 +50,8 @@ OBJS = $(subst .cc,.o,$(SRCS))
 CXXFLAGS = -g -Wall \
 		   $(INCLUDE)
 
+PROF = -pg -fprofile-arcs
+
 LIBPATH = -L$(AGG_PREFIX)/lib \
 	 -L$(GDAL_PREFIX)/lib \
 	 -L$(GEOS_PREFIX)/lib \
@@ -57,18 +59,24 @@ LIBPATH = -L$(AGG_PREFIX)/lib \
 
 LDFLAGS = -lgdal -lshp -lgeos
 
-.PHONY= all install clean
+.PHONY= all install clean prof
 
 all: starspan2
 
+# yet to be used
 objs : $(OBJS)
 	   
-starspan2: starspan2.o $(SRCS)
+starspan2: starspan2.cc $(SRCS)
 	g++ $(CXXFLAGS) $(OBJ_OPT) \
-	    $(LIBPATH) -o starspan2 starspan2.o $(SRCS) $(LDFLAGS)
+	    $(LIBPATH) -o starspan2 starspan2.cc $(SRCS) $(LDFLAGS)
 
 install:
 	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/ 
+
+prof: starspan2.cc $(SRCS)
+	g++ $(PROF) \
+	    $(CXXFLAGS) $(OBJ_OPT) \
+	    $(LIBPATH) -o starspan2_prof starspan2.cc $(SRCS) $(LDFLAGS)
 
 starspan1: starspan1.o $(SRCS)
 	g++ $(LIBPATH) -o starspan1 starspan1.o $(SRCS) $(LDFLAGS)
@@ -78,4 +86,4 @@ starspan1: starspan1.o $(SRCS)
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
 clean:
-	rm -f *.o *~ starspan1 starspan2
+	rm -f *.o *~ *.da starspan1 starspan2 starspan2_prof
