@@ -1,3 +1,5 @@
+# $Id$
+
 DOT=dot
 
 ############################################# 
@@ -34,25 +36,25 @@ detailed_flags := -attributes -operations -types
 
 	
 all: $(eps_files) $(png_files) \
-	dbf-sd.eps dbf-sd.png \
+	csv-sd.eps csv-sd.png \
 	envisl-sd.eps envisl-sd.png
 
 
 ############################################# 
 # sequence diagrams
 
-dbf-sd.png: dbf-sd.eps
-	convert -resize 120% $< dbf-sd.png
+csv-sd.png: csv-sd.eps
+	convert -resize 120% $< csv-sd.png
 
-dbf-sd.eps: dbf-sd.pic
-	pic2plot -Tps $< > dbf-sd.eps
+csv-sd.eps: csv-sd.pic
+	LD_LIBRARY_PATH=~/lib pic2plot -Tps $< > csv-sd.eps
 	
 
 envisl-sd.png: envisl-sd.eps
 	convert -resize 120% $< envisl-sd.png
 
 envisl-sd.eps: envisl-sd.pic
-	pic2plot -Tps $< > envisl-sd.eps
+	LD_LIBRARY_PATH=~/lib pic2plot -Tps $< > envisl-sd.eps
 	
 
 ############################################# 
