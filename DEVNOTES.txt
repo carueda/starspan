@@ -14,7 +14,8 @@ Reverting to version at 2004-11-09  -- cvs -q update -D "2004-11-09"
 	P traverser/traverser.h
 I'm keeping the previous scheme for multiple raster in traverser,
 but merging other changes I made:
-	starspan_csv:  ...
+	
+	Ready.
 
 
 2004-11-12 (0.9beta)

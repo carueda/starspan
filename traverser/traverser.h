@@ -32,61 +32,11 @@ struct GlobalInfo {
 	/** info about all bands in given rasters */
 	vector<GDALRasterBand*> bands;
 	                           
-	/** Union of envelopes of rasters. */
-	OGRGeometry* rastersUnion;
-
-	/** All raster polys. */
-	OGRMultiPolygon rasterPolys;
+	/** A rectangle covering the raster extension. */
+	OGRPolygon rasterPoly;
 };
 
 
-/**
-  * Global grid defined by unioning all input raster envelopes.
-  * All coordinates given during traversal are relative to
-  * this grid
-  */
-struct GridInfo {
-	/** geographic location of upper left corner */
-	double x0, y0;
-	
-	/** pixel size as given in setPixelSize */
-	double pix_x_size, pix_y_size;
-	
-	/** absolute values of pixel size */
-	double abs_pix_x_size, abs_pix_y_size;
-	
-	/** area of a pixel */
-	double pix_area;
-	
-	/** sets the pixel size */
-	void setPixelSize(double xs, double ys) {
-		abs_pix_x_size = fabs(pix_x_size = xs);
-		abs_pix_y_size = fabs(pix_y_size = ys);
-		pix_area = abs_pix_x_size * abs_pix_y_size;
-	}
-	
-	/** Sets the upper left corner (x0,y0) accroding to the given envelope */
-	void setOrigin(OGREnvelope &env) {
-		x0 = min(env.MinX, env.MaxX);
-		y0 = min(env.MinY, env.MaxY);
-	}
-	
-	/** (x,y) to [col,row] conversion */
-	void toColRow(double x, double y, int *col, int *row) {
-		*col = (int) floor( (x - x0) / abs_pix_x_size );
-		*row = (int) floor( (y - y0) / abs_pix_y_size );
-	}
-	
-	/** (col,row) to (x,y) conversion:  
-	  * (x,y) is the upper left corner of pixel [col,row] */
-	void toGridXY(int col, int row, double *x, double *y) {
-		*x = x0 + col * abs_pix_x_size;
-		*y = y0 + row * abs_pix_y_size;
-	}
-	
-};
-
-	
 /**
   * Event sent to traversal observers every time an intersecting
   * pixel is found.
@@ -323,7 +273,7 @@ public:
 	  *      Assumed to have at least getBandBufferSize() bytes allocated.
 	  * @return buffer
 	  */
-	void* getBandValuesForPixel(double x, double y, void* buffer);
+	void* getBandValuesForPixel(int col, int row, void* buffer);
 	
 	/**
 	  * Sets the output to write progress info.
@@ -395,13 +345,17 @@ private:
 	string desired_fieldValue;
 	
 	GlobalInfo globalInfo;
-	GridInfo grid;
-	
+	int width, height;
+	double x0, y0, x1, y1;
+	double pix_x_size, pix_y_size;
+	OGREnvelope raster_env;
 	size_t minimumBandBufferSize;
 	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
 	void notifyObservers(void);
-	void getBandValuesForPixel(double x, double y);
+	void getBandValuesForPixel(int col, int row);
+	void toColRow(double x, double y, int *col, int *row);
+	void toGridXY(int col, int row, double *x, double *y);
 	void processPoint(OGRPoint*);
 	void processMultiPoint(OGRMultiPoint*);
 	void processLineString(OGRLineString* linstr);

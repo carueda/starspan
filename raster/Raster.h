@@ -76,14 +76,6 @@ public:
 	  */
 	void toColRow(double x, double y, int *col, int *row);
 
-	/** Utility.
-	  * (x,y) to (col,row) conversion.
-	  * Returned location (col,row) could be outside the extension of given dataset.
-	  * @return true iff OK.
-	  */
-	static bool toColRow(GDALDataset* ds, double x, double y, int *col, int *row);
-
-	
 	// closes this raster.
 	~Raster();
 	
