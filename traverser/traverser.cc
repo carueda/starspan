@@ -23,6 +23,8 @@ Traverser::Traverser() {
 	bandValues_buffer = 0;
 	// assume observers will be all simple:
 	notSimpleObserver = false;
+	
+	lineRasterizer = 0;
 }
 
 void Traverser::addObserver(Observer* aObserver) { 
