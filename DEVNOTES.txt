@@ -1,6 +1,11 @@
 starspan devnotes
 $Id$
 
+2004-09-06
+	A second, more definitive definitive of the traverser module.
+	It now uses a LineRasterizer to process linestrings.
+	starspan_jtstest now implemented on a traverser.
+	
 2004-09-05
 	rasterizers/ New module for rasterizations.
 	Now with a LineRasterizer, whose implementation is based on a

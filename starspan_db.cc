@@ -46,7 +46,7 @@ public:
 	int no_records;	
 	
 	DBObserver(Raster* r, Vector* v, DBFHandle f);
-	void intersection(OGRFeature* feature, OGREnvelope intersection_env);
+	void intersectionFound(OGRFeature* feature);
 	void addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize);
 };
 
@@ -155,7 +155,7 @@ DBObserver::DBObserver(Raster* r, Vector* v, DBFHandle f) {
 /**
   * Used here to update currentFeature
   */
-void DBObserver::intersection(OGRFeature* feature, OGREnvelope intersection_env) {
+void DBObserver::intersectionFound(OGRFeature* feature) {
 	currentFeature = feature;
 }
 

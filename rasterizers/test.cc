@@ -4,13 +4,9 @@
 #include "rasterizers.h"
 
 
-class LineRasterizerTest : public LineRasterizer {
+class MyLineRasterizerObserver : public LineRasterizerObserver {
 public:	
-	LineRasterizerTest(double pixel_size_x_, double pixel_size_y_) 
-	: LineRasterizer(pixel_size_x_, pixel_size_y_) {}
-	
-	
-	virtual void pixelFound(double x, double y) {
+	void pixelFound(double x, double y) {
 		fprintf(stdout, "\t%g %g \n", x, y);
 	}
 };
@@ -28,7 +24,9 @@ int main(int argc, char** argv) {
 	double x2 = atof(argv[arg++]);
 	double y2 = atof(argv[arg++]);
 
-	LineRasterizerTest lr(pix_size_x, pix_size_y);
+	LineRasterizer lr(pix_size_x, pix_size_y);
+	MyLineRasterizerObserver observer;
+	lr.setObserver(&observer);
 	
 	fprintf(stdout, "From  %g %g  ->  %g %g:\n", x1, y1, x2, y2);
 	lr.line(x1, y1, x2, y2);

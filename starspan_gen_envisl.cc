@@ -94,7 +94,7 @@ public:
 	/**
 	  * Used here to update current_feature
 	  */
-	void intersection(OGRFeature* feature, OGREnvelope intersection_env) {
+	void intersectionFound(OGRFeature* feature) {
 		current_feature = feature;
 	}
 

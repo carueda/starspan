@@ -14,6 +14,11 @@
 // Implementation is based on agg_renderer_primitives.h
 
 
+// (null-object pattern)
+static LineRasterizerObserver null_observer;
+
+
+
 // user location to agg location with 8-bit accuracy
 inline int to_int(double dv, double size_v) { 
 	int v = (int) floor( 256.0 * (dv / size_v) );
@@ -27,6 +32,11 @@ inline double to_double(int iv, double size_v) {
 }
 
 
+LineRasterizer::LineRasterizer(double pixel_size_x_, double pixel_size_y_) 
+: pixel_size_x(pixel_size_x_), pixel_size_y(pixel_size_y_) {
+	observer = &null_observer;
+}
+
 void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2)  {
 	int x1 = to_int(dx1, pixel_size_x);
 	int y1 = to_int(dy1, pixel_size_y);
@@ -39,7 +49,7 @@ void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2)  {
 	if(len == 0) {
 		double x = to_double(li.line_lr(x1),  pixel_size_x);
 		double y = to_double(li.line_lr(y1),  pixel_size_y);
-		pixelFound(x, y);
+		observer->pixelFound(x, y);
 		return;
 	}
 
@@ -49,7 +59,7 @@ void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2)  {
 		do {
 			double x = to_double(li.x2(), pixel_size_x);
 			double y = to_double(li.y1(), pixel_size_y);
-			pixelFound(x, y);
+			observer->pixelFound(x, y);
 			li.vstep();
 		}
 		while(--len);
@@ -58,7 +68,7 @@ void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2)  {
 		do {
 			double x = to_double(li.x1(), pixel_size_x);
 			double y = to_double(li.y2(), pixel_size_y);
-			pixelFound(x, y);
+			observer->pixelFound(x, y);
 			li.hstep();
 		}
 		while(--len);
