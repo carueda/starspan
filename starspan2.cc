@@ -118,7 +118,7 @@ int main(int argc, char ** argv) {
 			}
 			if ( raster_filenames.size() == 0 )
 				usage("-raster: which raster files?");
-			if ( argv[i][0] == '-' ) 
+			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
 		
@@ -160,7 +160,7 @@ int main(int argc, char ** argv) {
 			}
 			if ( stats_which.size() == 0 )
 				usage("-stats: which statistics?");
-			if ( argv[i][0] == '-' ) 
+			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
 
