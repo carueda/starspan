@@ -6,173 +6,185 @@
 //
 
 #include "starspan.h"           
-#include "jts.h"       
-#include <geos/io.h>
+#include "traverser.h"       
+#include <iostream>
+#include <cstdlib>
 
+#include "unistd.h"   // unlink           
+#include <string>
 #include <stdlib.h>
-#include <assert.h>
+#include <stdio.h>
 
-int starspan_minirasters(
+
+using namespace std;
+
+/**
+  * 
+  */
+class MiniRasterObserver : public Observer {
+public:
+	OGRLayer* layer;
+	Raster& rast;
+	GlobalInfo* global_info;
+	const char* prefix;
+	const char* pszOutputSRS;
+	GDALDatasetH hOutDS;
+	long pixel_count;
+
+	// is there a previous feature to be finalized?
+	bool previous;
+	
+	vector<CRPixel> pixels;
+	
+	// last processed FID
+	long last_FID;
+
+	/**
+	  * 
+	  */
+	MiniRasterObserver(OGRLayer* layer, Raster* rast, const char* prefix, const char* pszOutputSRS)
+	: layer(layer), rast(*rast), prefix(prefix), pszOutputSRS(pszOutputSRS)
+	{
+		global_info = 0;
+		pixel_count = 0;
+		hOutDS = 0;
+		last_FID = -1;
+	}
+	
+	/**
+	  * simply calls end()
+	  */
+	~MiniRasterObserver() {
+		end();
+	}
+	
+	/**
+	  * finalizes current feature if any; closes the file
+	  */
+	void end() {
+		finalizePreviousFeatureIfAny();
+	}
+	
+	/**
+	  * returns true:  we subset the raster directly for
+	  *  each intersecting feature.
+	  */
+	bool isSimple() { 
+		return true; 
+	}
+
+	/**
+	  * 
+	  */
+	void init(GlobalInfo& info) {
+		global_info = &info;
+	}
+
+
+	/**
+	  * dispatches finalization of previous feature
+	  */
+	void finalizePreviousFeatureIfAny(void) {
+		if ( !previous )
+			return;
+		
+		int mini_x0, mini_y0, mini_x1, mini_y1;
+		bool first = true;
+		for ( vector<CRPixel>::const_iterator colrow = pixels.begin(); colrow != pixels.end(); colrow++ ) {
+			int col = colrow->col;
+			int row = colrow->row;
+			if ( first ) {
+				first = false;
+				mini_x0 = mini_x1 = col;
+				mini_y0 = mini_y1 = row;
+			}
+			else {
+				if ( mini_x0 > col )
+					mini_x0 = col;
+				if ( mini_y0 > row )
+					mini_y0 = row;
+				if ( mini_x1 < col )
+					mini_x1 = col;
+				if ( mini_y1 < row )
+					mini_y1 = row;
+			}
+		}		
+		int mini_width = mini_x1 - mini_x0 + 1;  
+		int mini_height = mini_y1 - mini_y0 + 1;
+		
+		// create mini raster
+		char mini_filename[1024];
+		sprintf(mini_filename, "%s%04ld.img", prefix, last_FID);
+		
+		GDALDatasetH hOutDS = starspan_subset_raster(
+			rast.getDataset(),
+			mini_x0, mini_y0, mini_width, mini_height,
+			mini_filename,
+			pszOutputSRS
+		);
+		
+		if ( globalOptions.only_in_feature ) {
+			fprintf(stdout, "nullifying pixels not contained in feature..\n");
+			fprintf(stdout, "   PENDING\n");
+			
+			// FIXME: nullify pixels outside feature
+			// ...
+		}
+		fprintf(stdout, "all points retained\n");
+		//fprintf(stdout, " %d points retained\n", num_points);
+
+		GDALClose(hOutDS);
+		fprintf(stdout, "\n");
+
+		pixels.clear();
+		previous = false;
+	}
+
+	/**
+	  * Inits creation of mini-raster corresponding to new feature
+	  */
+	void intersectionFound(OGRFeature* feature) {
+		finalizePreviousFeatureIfAny();
+		
+		// keep track of last FID processed:
+		last_FID = feature->GetFID();
+
+		// rest of record will be done by finalizePreviousFeatureIfAny
+		previous = true;
+	}
+
+	/**
+	  * 
+	  */
+	void addPixel(TraversalEvent& ev) {
+		pixels.push_back(CRPixel(ev.pixel.col, ev.pixel.row));
+	}
+};
+
+
+
+Observer* starspan_getMiniRasterObserver(
 	Traverser& tr,
 	const char* prefix,
-	const char* pszOutputSRS  // see gdal_translate option -a_srs 
-	                         // If NULL, projection is taken from input dataset
-) {
-	if ( tr.getNumRasters() > 1 ) {
-		fprintf(stderr, "Only one input raster is expected in this version\n");
-		return 1;
+	const char* pszOutputSRS 
+) {	
+	if ( !tr.getVector() ) {
+		cerr<< "vector datasource expected\n";
+		return 0;
 	}
-	Raster& rast = *tr.getRaster(0);
-	Vector& vect = *tr.getVector();
-
-	OGRLayer* layer = vect.getLayer(0);
+	OGRLayer* layer = tr.getVector()->getLayer(0);
 	if ( !layer ) {
-		fprintf(stderr, "Couldn't get layer 0 from %s\n", vect.getName());
-		return 1;
+		cerr<< "warning: No layer 0 found\n";
+		return 0;
 	}
-	
-	// get raster size and coordinates
-	int width, height, bands;
-	rast.getSize(&width, &height, &bands);
-	double x0, y0, x1, y1;
-	rast.getCoordinates(&x0, &y0, &x1, &y1);
 
-	double pix_size_x = (x1 - x0) / width;
-	double pix_size_y = (y1 - y0) / height;
-
-	// take absolute values since intersection_env has increasing
-	// coordinates:
-	if ( pix_size_x < 0 )
-		pix_size_x = -pix_size_x;
-	if ( pix_size_y < 0 )
-		pix_size_y = -pix_size_y;
-
-	
-	// create a geometry for raster envelope:
-	OGRLinearRing* raster_ring = new OGRLinearRing();
-	raster_ring->addPoint(x0, y0);
-	raster_ring->addPoint(x1, y0);
-	raster_ring->addPoint(x1, y1);
-	raster_ring->addPoint(x0, y1);
-	raster_ring->closeRings();
-	OGREnvelope raster_env;
-	raster_ring->getEnvelope(&raster_env);
-
-	
-	double min_x = MIN(x0, x1);
-	double min_y = MIN(y0, y1);
-	
-	
-    OGRPoint* point = new OGRPoint();
-
-    OGRFeature* feature;
-    int feature_num = 0;
-	while( (feature = layer->GetNextFeature()) != NULL ) {
-		feature_num++;
-		OGRGeometry* geom = feature->GetGeometryRef();
-		OGREnvelope feature_env;
-		geom->getEnvelope(&feature_env);
-		OGREnvelope intersection_env;
-
-		// intersect with raster
-		OGRGeometry* intersection = geom->Intersection(raster_ring);
-		if ( intersection ) {
-			intersection->getEnvelope(&intersection_env);
-			
-			assert(intersection_env.MinX >= min_x);
-			assert(intersection_env.MinY >= min_y);
-			
-			// create mini raster
-			char mini_filename[1024];
-			sprintf(mini_filename, "%s%03d.img", prefix, feature_num);
-			
-			fprintf(stdout, "\n%s:\n", mini_filename);
-			starspan_print_envelope(stdout, "intersection_env:", intersection_env);
-			
-			// region
-			int mini_x0 = (int) ((intersection_env.MinX - min_x) / pix_size_x);
-			int mini_y0 = (int) ((intersection_env.MinY - min_y) / pix_size_y);
-			int mini_width =  (int) ((intersection_env.MaxX+pix_size_x - intersection_env.MinX) / pix_size_x); 
-			int mini_height = (int) ((intersection_env.MaxY+pix_size_y - intersection_env.MinY) / pix_size_y);
-
-			cout<< " mini_x0=" <<mini_x0<< ", mini_y0=" <<mini_y0<< endl 
-				<< " mini_width=" <<mini_width<< ", mini_height=" <<mini_height<< endl
-			;
-
-			GDALDatasetH hOutDS = starspan_subset_raster(
-				rast.getDataset(),
-				mini_x0, mini_y0, mini_width, mini_height,
-				mini_filename,
-				pszOutputSRS
-			);
-			
-			
-			if ( globalOptions.only_in_feature ) {
-				fprintf(stdout, "nullifying pixels not contained in feature..\n");
-				
-				// check locations in intersection_env.
-				// These locations have to be on the grid defined by the
-				// raster coordinates and resolution. Basically we need
-				// to determine the starting location (grid_x0,grid_y0)
-				// and let the point (x,y) take values on the grid in the
-				// intersection_env.
-				double grid_x0 = intersection_env.MinX;
-				double grid_y0 = intersection_env.MinY;
-				
-				// FIXME  adjust (grid_x0,grid_y0) as just described !!!
-				// ...
-				
-				int num_points = 0;
-				int nYOff = 0;
-				for (double y = grid_y0; nYOff < mini_height; y += pix_size_y, nYOff++) {
-					int nXOff = 0;
-					for (double x = grid_x0; nXOff < mini_width; x += pix_size_x, nXOff++) {
-						point->setX(x);
-						point->setY(y);
-						if ( geom->Contains(point) ) {
-							num_points++;
-						}
-						else {
-							// nullify bands in hOutDS for (x,y):
-							int nBandCount = GDALGetRasterCount(hOutDS);
-							for(int i = 0; i < nBandCount; i++ ) {
-								GDALRasterBand* band = ((GDALDataset *) hOutDS)->GetRasterBand(i+1);
-								double dfNoData = 0.0;
-								
-								band->RasterIO(
-									GF_Write,
-									nXOff, nYOff,
-									1, 1,          // nXSize, nYSize
-									&dfNoData,     // pData
-									1, 1,          // nBufXSize, nBufYSize
-									GDT_Float64,   // eBufType
-									0, 0           // nPixelSpace, nLineSpace
-								);
-								
-							}
-						}
-					}
-				}
-				fprintf(stdout, " %d points retained\n", num_points);
-				
-				
-			}
-			
-			GDALClose(hOutDS);
-			fprintf(stdout, "\n");
-
-			delete intersection;
-		}
-
-		delete feature;
+	if ( tr.getNumRasters() == 0 ) {
+		cerr<< "raster expected\n";
+		return 0;
 	}
-	delete point;
-	delete raster_ring;
-	
-	fprintf(stdout, "finished.\n");
+	Raster* rast = tr.getRaster(0);
 
-	return 0;
+	return new MiniRasterObserver(layer, rast, prefix, pszOutputSRS);
 }
-		
 
 

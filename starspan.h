@@ -15,7 +15,7 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.91beta"
+#define STARSPAN_VERSION "0.92beta"
 
 
 /** Options that might be used by different services.
@@ -300,6 +300,24 @@ int starspan_minirasters(
 	const char* prefix,
 	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
+);
+
+// NEW SCHEME TO GENERATE MINI-RASTERS:
+/**
+  * Creates mini-rasters.
+  *
+  * @param tr Data traverser
+  * @param prefix
+  * @param pszOutputSRS 
+  *		see gdal_translate option -a_srs 
+  *		If NULL, projection is taken from input dataset
+  *
+  * @return observer to be added to traverser. 
+  */
+Observer* starspan_getMiniRasterObserver(
+	Traverser& tr,
+	const char* prefix,
+	const char* pszOutputSRS
 );
 
 

@@ -454,17 +454,21 @@ int main(int argc, char ** argv) {
 				tr.addObserver(obs);
 		}
 	
+		if ( mini_prefix ) {
+			//OLD: starspan_minirasters(tr, mini_prefix, mini_srs);
+			//NEW:
+			Observer* obs = starspan_getMiniRasterObserver(tr, mini_prefix, mini_srs);
+			if ( obs )
+				tr.addObserver(obs);
+		}
 	
-		// report and minirasters don't use Observer scheme;  
+		// the following don't use Observer scheme;  
 		// just call corresponding functions:	
 		if ( do_report ) {
 			if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
 				usage("-report: Please give at least one input file to report\n");
 			}
 			starspan_report(tr);
-		}
-		if ( mini_prefix ) {
-			starspan_minirasters(tr, mini_prefix, mini_srs);
 		}
 		
 		//
