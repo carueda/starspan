@@ -59,7 +59,7 @@ LIBPATH = \
 
 LDFLAGS = -lgdal -lgeos
 
-.PHONY= all install tidy clean-test clean prof
+.PHONY= all install tidy clean-test clean prof dist
 
 all: starspan2
 
@@ -85,22 +85,8 @@ prof: src/starspan2.cc $(SRCS)
 .cc.o:
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
-VERSION=""
-cvsroot=":pserver:anonymous@cvs.casil.ucdavis.edu:/cvsroot/starspan"
-
-dist: DISTDIR
-
-DISTDIR:
-	$(shell \
-	mkdir -p DISTDIR &&\
-	cd DISTDIR &&\
-	cvs -d$(cvsroot) login && cvs -z3 -d$(cvsroot) co starspan &&\
-	(find starspan -name CVS -exec rm -rf {} \; 2>/dev/null || /bin/true) &&\
-	mv starspan starspan-$(VERSION) &&\
-	tar cf starspan-$(VERSION).tar starspan-$(VERSION) &&\
-	gzip -9 starspan-$(VERSION).tar &&\
-	rm -rf starspan-$(VERSION) && ls -l )
-	echo "Done."
+dist:
+	./mksrcdist.sh $(VERSION)
 
 tidy:
 	rm -rf *.o *~ DISTDIR/
