@@ -8,8 +8,8 @@
 #include "Progress.h"
 #include <cassert>
 
-Progress::Progress(long size, double perc_incr, ostream& out)
-: size(size), perc_incr(perc_incr), out(out) {
+Progress::Progress(long size, double perc_incr_, ostream& out)
+: size(size), perc_incr(perc_incr_), out(out) {
 	curr = 1;
 	assert( perc_incr > 0 );
 	next_perc = perc_incr;
@@ -36,7 +36,7 @@ void Progress::update() {
 		curr_perc = 100.0 * curr / size;
 		if ( curr_perc >= next_perc ) {
 			ostringstream ostr;
-			ostr << next_perc << "% ";
+			ostr << curr_perc << "% ";
 			writemsg(ostr.str());
 			next_perc += perc_incr;
 		}
