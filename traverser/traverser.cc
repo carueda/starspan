@@ -494,9 +494,11 @@ void Traverser::processGeometryCollection(OGRGeometryCollection* coll) {
 
 //
 // get intersection type and process accordingly
-// Note that pixset is created where duplicate pixel control is required.
 //
 void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
+	// Note that pixset is created where duplicate pixel control is required.
+	assert(!pixset);
+	
 	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
 	switch ( intersection_type ) {
 		case wkbPoint:
@@ -506,19 +508,22 @@ void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
 	
 		case wkbMultiPoint:
 		case wkbMultiPoint25D:
-			pixset = new set<EPixel>();
+			if ( !pixset )
+				pixset = new set<EPixel>();
 			processMultiPoint((OGRMultiPoint*) intersection_geometry);
 			break;
 	
 		case wkbLineString:
 		case wkbLineString25D:
-			pixset = new set<EPixel>();
+			if ( !pixset )
+				pixset = new set<EPixel>();
 			processLineString((OGRLineString*) intersection_geometry);
 			break;
 	
 		case wkbMultiLineString:
 		case wkbMultiLineString25D:
-			pixset = new set<EPixel>();
+			if ( !pixset )
+				pixset = new set<EPixel>();
 			processMultiLineString((OGRMultiLineString*) intersection_geometry);
 			break;
 			
@@ -541,6 +546,10 @@ void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
 			throw (string(OGRGeometryTypeToName(intersection_type))
 			    + ": intersection type not considered."
 			);
+	}
+	if ( pixset ) {
+		delete pixset;
+		pixset = 0;
 	}
 }
 
@@ -576,8 +585,6 @@ void Traverser::process_feature(OGRFeature* feature) {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->intersectionFound(feature);
 
-	assert(!pixset);
-	
 	// Note that pixset is created where duplicate pixel control is required.
 	try {
 		processGeometry(intersection_geometry);
@@ -588,10 +595,6 @@ void Traverser::process_feature(OGRFeature* feature) {
 		    << endl << err << endl;
 	}
 
-	if ( pixset ) {
-		delete pixset;
-		pixset = 0;
-	}
 	delete intersection_geometry;
 }
 
