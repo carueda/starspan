@@ -20,6 +20,16 @@ $Id$
 	The news for end users is to say something like:
 	  Fixed a bug in --csv command on multiple rasters which
 	  made only the first given raster to be properly processed.
+	  
+	Hmm, while trying unsuccessfully my 'make test' target, I
+	noticed that GDAL 1.2.6 has a bug related with CreateCopy 
+	which call new methods SetOffset/SetScale; these methods
+	are not implemented for envi raster bands so they inherited
+	from GDALRasterBand wich fail with a CPLError; That explains
+	this new behaviour. I have notified the GDAL dev newsgroup 
+	about this situation to see what Frank says about that.
+	For now, the mini raster options ARE broken due to this
+	GDAL bug!
 
 2005-03-23 (0.962beta)
 	Usage message reorganized: testing and other developer

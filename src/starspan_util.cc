@@ -34,9 +34,9 @@ void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env) {
 
 
 void starspan_myErrorHandler(CPLErr eErrClass, int err_no, const char *msg) {
-	fprintf(stderr, "myError: %s\n", msg);
+	fprintf(stderr, "***Error: %s\n", msg);
 	fflush(stderr);
-	exit(1);
+	abort();
 }
 
 
