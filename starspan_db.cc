@@ -298,12 +298,7 @@ public:
 /**
   * implementation
   */
-int starspan_db(
-	Raster* rast, 
-	Vector* vect, 
-	const char* db_filename,
-	bool only_in_feature
-) {
+int starspan_db(Raster* rast, Vector* vect, const char* db_filename) {
 	// create output file
 	DBFHandle file = DBFCreate(db_filename);
 	if ( !file ) {

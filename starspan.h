@@ -32,8 +32,7 @@ int starspan_gen_envisl(
 int starspan_db(
 	Raster* rast, 
 	Vector* vect, 
-	const char* db_filename,
-	bool only_in_feature
+	const char* db_filename
 );
 
 /** Generate mini rasters

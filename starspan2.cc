@@ -179,7 +179,7 @@ int main(int argc, char ** argv) {
 		if ( !rast || !vect ) {
 			usage("-db option requires both a raster and a vector file to proceed\n");
 		}
-		return starspan_db(rast, vect, db_name, only_in_feature);
+		return starspan_db(rast, vect, db_name);
 	}
 	else if ( mini_prefix ) { // this option takes precedence.
 		if ( !rast || !vect ) {
