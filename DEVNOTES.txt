@@ -17,6 +17,8 @@ $Id$
 		The following sources are no longer maintained:
 			starspan_db.cc
 			starspan_update_dbf.cc
+			
+		In summary, the only dependencies are now GEOS and GDAL.
 
 2004-11-13
 	New options: -raster_field, -raster_directory
