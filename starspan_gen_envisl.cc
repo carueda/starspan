@@ -188,7 +188,7 @@ public:
 	/**
 	  * Adds a spectrum to the output file.
 	  * Each spectrum take a name with the following structure:
-	  *      FID:col:row
+	  *      FID:col:row:x:y
 	  */
 	void addPixel(TraversalEvent& ev) { 
 		int col = ev.pixel.col;
@@ -207,7 +207,11 @@ public:
 		if ( !envi_image ) {    // spectral library
 			// add spectrum name to header
 			char spectrum_name[1024];
-			sprintf(spectrum_name, "%ld:%d:%d", currentFeature->GetFID(), col, row);
+			sprintf(spectrum_name, "%ld:%d:%d:%.3f:%.3f", 
+				currentFeature->GetFID(), 
+				col, row,
+				ev.pixel.x, ev.pixel.y
+			);
 			if ( numSpectra > 0 )
 				fprintf(header_file, ",");
 			fprintf(header_file, "\n  %s", spectrum_name);
