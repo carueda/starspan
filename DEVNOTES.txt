@@ -8,6 +8,7 @@ $Id$
 	  which is the same as:
 	  	./mksrcdist.sh 0.1
 	- polygon/ moved to libtests/ and NOT added to cvs (this is old stuff).
+	- java/ moved to libtests/ and ADDED to cvs.
 
 2005-02-19 (0.951beta)
 	- new scheme to make source distribution (see mksrcdist.sh)
