@@ -404,10 +404,17 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 		fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
 	}
 
-	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
-	const double pix_area = fabs(pix_x_size*pix_y_size);
+	geos::WKTWriter wktWriter;
 	
-	//geos::WKTWriter wktWriter;
+	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
+	if ( !geos_poly->isValid() ) {
+		cerr<< "Invalid polygon.  skipping..."<< endl;
+		if ( debug_dump_polys ) {
+			cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
+		}
+		delete geos_poly;
+	}
+	const double pix_area = fabs(pix_x_size*pix_y_size);
 	
 	double abs_pix_y_size = fabs(pix_y_size);
 	double abs_pix_x_size = fabs(pix_x_size);
@@ -425,13 +432,11 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			catch(geos::TopologyException* ex) {
 				cerr<< "TopologyException: " << ex->toString()<< endl;
 				if ( debug_dump_polys ) {
-					geos::WKTWriter wktWriter;
 					cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
 					cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
 				}
 			}
 			catch(geos::GEOSException* ex) {
-				geos::WKTWriter wktWriter;
 				cerr<< "geos::GEOSException: " << ex->toString()<< endl;
 				if ( debug_dump_polys ) {
 					geos::WKTWriter wktWriter;
