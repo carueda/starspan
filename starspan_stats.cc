@@ -189,7 +189,7 @@ public:
 			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 				GDALDataType bandType = global_info->bands[j]->GetRasterDataType();
 				int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-				bandValues[j] += starspan_extract_double_value(bandType, ptr);
+				bandValues[j] = starspan_extract_double_value(bandType, ptr);
 				
 				// move to next piece of data in buffer:
 				ptr += typeSize;
@@ -251,7 +251,7 @@ public:
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 						GDALDataType bandType = global_info->bands[j]->GetRasterDataType();
 						int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-						bandValues[j] += starspan_extract_double_value(bandType, ptr);
+						bandValues[j] = starspan_extract_double_value(bandType, ptr);
 						
 						// move to next piece of data in buffer:
 						ptr += typeSize;
