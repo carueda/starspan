@@ -6,8 +6,9 @@
 # $Id$
 #
 
-BINDIR=/home/carueda/bin
-JTSJARS=/home/carueda/bin/jts.jars/
+BINDIR=`dirname $0`
+JTSJARS=$BINDIR/jts.jars/
+export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
 
 function usage() {
 	cat << EOF
@@ -50,7 +51,6 @@ elif [ "$1" == "--jts" ]; then
 
 else
 	# call starspan2
-	export LD_LIBRARY_PATH=~carueda/lib:/usr/local/lib:$LD_LIBRARY_PATH
 	$BINDIR/starspan2 $*
 fi
 
