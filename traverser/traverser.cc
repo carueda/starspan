@@ -416,7 +416,14 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			// create pixel polygon for (x,y) grid location:
 			geos::Polygon* pix_poly = create_pix_poly(x, y, x + pix_x_size, y + pix_y_size);
 			// intersect
-			geos::Geometry* pix_inters = geos_poly->intersection(pix_poly);
+			geos::Geometry* pix_inters = 0;
+			try {
+				pix_inters = geos_poly->intersection(pix_poly);
+			}
+			catch(geos::TopologyException* ex) {
+				cerr<< "TopologyException: " << ex->toString()<< endl;
+				return;
+			}
 			if ( pix_inters ) {
 				double area = pix_inters->getArea();
 				//cout << wktWriter.write(pix_inters) << " area=" << area << endl;
