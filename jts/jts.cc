@@ -7,6 +7,7 @@
 //
 
 #include "jts.h"           
+#include "unistd.h"   // unlink           
 
 
 JTS_TestGenerator::JTS_TestGenerator(const char* filename_) {
@@ -19,6 +20,7 @@ JTS_TestGenerator::JTS_TestGenerator(const char* filename_) {
 	fprintf(file, "<run>\n");
 	fprintf(file, "  <desc>testset created by starspan</desc>\n");
 	fprintf(file, "  <precisionModel type=\"FLOATING\" />\n");
+	no_cases = 0;
 }
 
 JTS_TestGenerator::~JTS_TestGenerator() {
@@ -49,6 +51,7 @@ void JTS_TestGenerator::case_end() {
 		fprintf(file, "      <op name=\"contains\" arg1=\"a\" arg2=\"b\">true</op>\n");
 		fprintf(file, "    </test>\n");
 		fprintf(file, "  </case>\n");
+		no_cases++;
 	}
 }
 
@@ -57,6 +60,9 @@ void JTS_TestGenerator::end() {
 		fprintf(file, "</run>\n");
 		fclose(file);
 		file = NULL;
+		if ( no_cases == 0 ) {
+			unlink(filename);
+		}
 	}
 }
 
