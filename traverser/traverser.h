@@ -203,7 +203,31 @@ public:
 
 	
 	/**
+	  * Gets the (minimum) size in bytes for a buffer to store 
+	  * all band values. The result of this call varies as more
+	  * rasters are added to this traverser.
+	  *
+	  * @return size in bytes.
+	  */
+	size_t getBandBufferSize(void) {
+		return minimumBandBufferSize;
+	}
+	
+	/**
+	  * Reads in band values in (col,row) from all given rasters
+	  * Values are stored in bandValues_buffer.
+	  *
+	  * @param buffer where values are copied.  
+	  *      Assumed to have at least getBandBufferSize() bytes allocated.
+	  * @return buffer
+	  */
+	void* getBandValues(int col, int row, void* buffer);
+	
+	/**
 	  * Executes the traversal.
+	  * This traverser should not be modified while
+	  * the traversal is performed. Otherwise undefined
+	  * behaviour may occur.
 	  */
 	void traverse(void);
 	
@@ -221,6 +245,7 @@ private:
 	double x0, y0, x1, y1;
 	double pix_x_size, pix_y_size;
 	OGREnvelope raster_env;
+	size_t minimumBandBufferSize;
 	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
 	void notifyObservers(void);

@@ -20,7 +20,12 @@ Traverser::Traverser() {
 	vect = 0;
 	pixelProportion = -1.0;   // disabled
 	desired_FID = -1;
+	
+	// buffer: note that we won't allocate minimumBandBufferSize
+	// bytes, but assume the biggest data type, double.  Se below.
 	bandValues_buffer = 0;
+	minimumBandBufferSize = 0;
+	
 	// assume observers will be all simple:
 	notSimpleObserver = false;
 	
@@ -71,6 +76,11 @@ void Traverser::addRaster(Raster* raster) {
 	for ( int i = 0; i < dataset->GetRasterCount(); i++ ) {
 		GDALRasterBand* band = dataset->GetRasterBand(i+1);
 		globalInfo.bands.push_back(band);
+		
+		// update minimumBandBufferSize:
+		GDALDataType bandType = band->GetRasterDataType();
+		int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
+		minimumBandBufferSize += bandTypeSize;
 	}
 	
 	if ( rasts.size() == 1 ) {
@@ -122,7 +132,7 @@ void Traverser::addRaster(Raster* raster) {
 }
 
 //
-//
+// destroys this traverser
 //
 Traverser::~Traverser() {
 	if ( bandValues_buffer )
@@ -131,14 +141,8 @@ Traverser::~Traverser() {
 		delete lineRasterizer;
 }
 
-//
-// read in band values in (col,row) from all given rasters
-// Values are stored in bandValues_buffer.
-//
-void Traverser::getBandValues(int col, int row) {
-	assert(bandValues_buffer);
-	
-	char* ptr = (char*) bandValues_buffer;
+void* Traverser::getBandValues(int col, int row, void* buffer) {
+	char* ptr = (char*) buffer;
 	for ( unsigned i = 0; i < globalInfo.bands.size(); i++ ) {
 		GDALRasterBand* band = globalInfo.bands[i];
 		GDALDataType bandType = band->GetRasterDataType();
@@ -161,7 +165,16 @@ void Traverser::getBandValues(int col, int row) {
 		int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
 		ptr += bandTypeSize;
 	}
+	
+	return buffer;
 }
+
+
+void Traverser::getBandValues(int col, int row) {
+	assert(bandValues_buffer);
+	getBandValues(col, row, bandValues_buffer);
+}
+
 
 //
 // (x,y) to (col,row) conversion

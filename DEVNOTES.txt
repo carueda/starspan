@@ -9,8 +9,8 @@ $Id$
 		now list of observers: addObserver instead of setObserver
 		
 	StatsObserver: new observer to compute basic statistics.
-	Currently the skeleton is working;  pending to add mechanism to
-	specify and process different statistics ...
+	command-line scheme:
+		-stats [avg | stdev | min | max ]... file.csv
 	
 	
 2004-09-16

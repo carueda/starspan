@@ -41,7 +41,8 @@ static void usage(const char* msg) {
 		"      -csv <name>          Generates a CSV file\n"
 		"      -envi <name>         Generates an ENVI image\n"
 		"      -envisl <name>       Generates an ENVI spectral library\n"
-		"      -stats <filename.csv>    Computes statistics (still incomplete)\n"
+		"      -stats [avg|stdev|min|max]... file.csv\n"
+		"                           Computes statistics\n"
 		"      -mr <prefix>         Generates mini rasters\n"
 		"      -jtstest <filename>  Generates a JTS test file\n"
 		"\n"
@@ -85,6 +86,7 @@ int main(int argc, char ** argv) {
 	const char*  update_dbf_name = NULL;
 	const char*  csv_name = NULL;
 	const char*  stats_name = NULL;
+	vector<const char*> stats_which;
 	const char*  update_csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
@@ -151,8 +153,15 @@ int main(int argc, char ** argv) {
 		}
 		else if ( 0==strcmp("-stats", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-stats: which name?");
+				usage("-stats: which output name?");
 			stats_name = argv[i];
+			while ( ++i < argc && argv[i][0] != '-' ) {
+				stats_which.push_back(argv[i]);
+			}
+			if ( stats_which.size() == 0 )
+				usage("-stats: which statistics?");
+			if ( argv[i][0] == '-' ) 
+				--i;
 		}
 
 		else if ( 0==strcmp("-mr", argv[i]) ) {
@@ -308,7 +317,7 @@ int main(int argc, char ** argv) {
 	
 	// stats calculation:	
 	if ( stats_name ) {
-		Observer* obs = starspan_getStatsObserver(tr, stats_name);
+		Observer* obs = starspan_getStatsObserver(tr, stats_name, stats_which);
 		if ( obs )
 			tr.addObserver(obs);
 	}

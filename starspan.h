@@ -27,12 +27,14 @@
   *
   * @param tr Data traverser
   * @param filename output file name
+  * @param stats List of desired statistics (avg, stdev, min, max)
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_getStatsObserver(
 	Traverser& tr,
-	const char* filename
+	const char* filename,
+	vector<const char*> stats_which
 );
 
 
