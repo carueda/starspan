@@ -1,4 +1,6 @@
 //
+// STARSpan project
+// Carlos A. Rueda
 // starspan2 - second version
 //         uses Vector.h, Raster.h
 // $Id$
@@ -6,6 +8,7 @@
 
 #include "Raster.h"           
 #include "Vector.h"       
+#include "jts.h"       
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,32 +19,6 @@
 
 
 static char rcsid[] = "$Id$";
-
-// prints a help message
-static void usage(const char* msg) {
-	if ( msg ) { 
-		fprintf(stderr, "starspan: %s\n", msg); 
-		fprintf(stderr, "Type `starspan -help' for help\n");
-		exit(1);
-	}
-	fprintf(stdout, 
-		"\n"
-		"starspan %s (%s %s)\n"
-		"(under development)\n"
-		"\n"
-		"USAGE:\n"
-		"  starspan -help\n"
-		"      prints this message and exits\n"
-		"  starspan args...\n"
-		"   required args:\n"
-		"    -vector <filename>   An OGR recognized vector file\n"
-		"    -raster <filename>   A GDAL recognized raster file\n"
-		"\n"
-		"\n"
-		, VERSION, __DATE__, __TIME__
-	);
-	exit(0);
-}
 
 // aux routine for reporting 
 static void report(Raster& rast, Vector& vect) {
@@ -73,8 +50,9 @@ static void print_envelope(FILE* file, const char* msg, OGREnvelope& env) {
 	fprintf(file, "%s %7.1f %7.1f %7.1f %7.1f\n", msg, env.MinX, env.MinY, env.MaxX, env.MaxY);
 }
 
+
 // central process
-static void process(Raster& rast, Vector& vect) {
+static void process(Raster& rast, Vector& vect, FILE* jtstest_file) {
 	// get raster size and coordinates
 	int width, height;
 	rast.getSize(&width, &height);
@@ -84,10 +62,12 @@ static void process(Raster& rast, Vector& vect) {
 	double pix_size_x = (x1 - x0) / width;
 	double pix_size_y = (y1 - y0) / height;
 	
-	fprintf(stdout, "(width,height) = (%d,%d)\n", width, height);
-	fprintf(stdout, "(x0,y0) = (%7.1f,%7.1f)\n", x0, y0);
-	fprintf(stdout, "(x1,y1) = (%7.1f,%7.1f)\n", x1, y1);
-	fprintf(stdout, "pix_size = (%7.1f,%7.1f)\n", pix_size_x, pix_size_y);
+	if ( false ) {
+		fprintf(stderr, "(width,height) = (%d,%d)\n", width, height);
+		fprintf(stderr, "(x0,y0) = (%7.1f,%7.1f)\n", x0, y0);
+		fprintf(stderr, "(x1,y1) = (%7.1f,%7.1f)\n", x1, y1);
+		fprintf(stderr, "pix_size = (%7.1f,%7.1f)\n", pix_size_x, pix_size_y);
+	}
 
 	// create a geometry for raster envelope:
 	OGRLinearRing* raster_ring = new OGRLinearRing();
@@ -98,7 +78,12 @@ static void process(Raster& rast, Vector& vect) {
 	raster_ring->closeRings();
 	OGREnvelope raster_env;
 	raster_ring->getEnvelope(&raster_env);
-	print_envelope(stdout, "raster_env:", raster_env);
+	
+	if ( false ) {
+		fprintf(stderr, "raster_ring:\n");
+		raster_ring->dumpReadable(stderr);
+		//print_envelope(stderr, "raster_env:", raster_env);
+	}
 	
 	OGRLayer* layer = vect.getLayer(0);
 	if ( !layer )
@@ -111,6 +96,8 @@ static void process(Raster& rast, Vector& vect) {
 	if ( pix_size_y < 0 )
 		pix_size_y = -pix_size_y;
 	
+	
+	jts_test_init(jtstest_file);
 	
     OGRPoint* point = new OGRPoint();
 
@@ -130,8 +117,13 @@ static void process(Raster& rast, Vector& vect) {
 		*/
 		
 		if ( intersect_envelopes(raster_env, feature_env, intersection_env) ) {
-			print_envelope(stdout, "feature_env:", feature_env);
-			print_envelope(stdout, "intersection_env:", intersection_env);
+			if ( jtstest_file ) {
+				jts_test_case_init(jtstest_file);
+				
+				jts_test_case_arg_init(jtstest_file, "a");
+				geom->dumpReadable(jtstest_file, "    ");
+				jts_test_case_arg_end(jtstest_file, "a");
+			}
 			
 			// check locations in intersection_env.
 			// These locations have to be on the grid defined by the
@@ -147,16 +139,38 @@ static void process(Raster& rast, Vector& vect) {
 			// I'm now testing the Contains() method first ...
 			
 			try {
+				jts_test_case_arg_init(jtstest_file, "b");
+
+				if ( jtstest_file ) {
+					fprintf(jtstest_file, "    MULTIPOINT(");
+				}
+				int num_points = 0;
 				for (double y = grid_y0; y <= intersection_env.MaxY+pix_size_y; y += pix_size_y) {
 					for (double x = grid_x0; x <= intersection_env.MaxX+pix_size_x; x += pix_size_x) {
 						point->setX(x);
 						point->setY(y);
 						if ( geom->Contains(point) ) {
-							// Very simple for now:
-							fprintf(stdout, "(%7.1f %7.1f)\n", x, y);
+							// stdout: very simple for now:
+							//fprintf(stdout, "%7.1f  %7.1f\n", x, y);
+
+							// jtstest_file: 
+							if ( jtstest_file ) {
+								if ( num_points > 0 )
+									fprintf(jtstest_file, ", ");
+								fprintf(jtstest_file, "%7.1f  %7.1f", x, y);
+							}
+							num_points++;
 						}
 					}
 				}
+				if ( jtstest_file ) {
+					if ( num_points > 0 )
+						fprintf(jtstest_file, ")\n");
+					else
+						fprintf(jtstest_file, "EMPTY)\n");
+				}
+				jts_test_case_arg_end(jtstest_file, "b");
+				jts_test_case_end(jtstest_file);
 			}
 			catch(geos::ParseException* ex) {
 				fprintf(stderr, "geos::ParseException: %s\n", ex->toString().c_str());
@@ -167,6 +181,8 @@ static void process(Raster& rast, Vector& vect) {
 	}
 	delete point;
 	delete raster_ring;
+	
+	jts_test_end(jtstest_file);
 }
 
 
@@ -175,6 +191,37 @@ static void myErrorHandler(CPLErr eErrClass, int err_no, const char *msg) {
 	fprintf(stderr, "myError: %s\n", msg);
 	fflush(stderr);
 	abort();
+}
+
+
+// prints a help message
+static void usage(const char* msg) {
+	if ( msg ) { 
+		fprintf(stderr, "starspan: %s\n", msg); 
+		fprintf(stderr, "Type `starspan -help' for help\n");
+		exit(1);
+	}
+	fprintf(stdout, 
+		"\n"
+		"starspan %s (%s %s)\n"
+		"(under development)\n"
+		"\n"
+		"USAGE:\n"
+		"  starspan -help\n"
+		"      prints this message and exits\n"
+		"\n"
+		"  starspan args...\n"
+		"\n"
+		"   required args:\n"
+		"    -vector <filename>   An OGR recognized vector file\n"
+		"    -raster <filename>   A GDAL recognized raster file\n"
+		"\n"
+		"    -jtstest <filename>  generate a JTS test file\n"
+		"\n"
+		"\n"
+		, VERSION, __DATE__, __TIME__
+	);
+	exit(0);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -187,6 +234,7 @@ int main(int argc, char ** argv) {
 	const char* raster_filename = NULL;
 	const char* vector_filename = NULL;
 	bool do_report = false;
+	const char* jtstest_filename = NULL;
 	
 	for ( int i = 1; i < argc; i++ ) {
 		if ( 0==strcmp("-vector", argv[i]) ) {
@@ -202,6 +250,11 @@ int main(int argc, char ** argv) {
 		}
 		else if ( 0==strcmp("-help", argv[i]) ) {
 			usage(NULL);
+		}
+		else if ( 0==strcmp("-jtstest", argv[i]) ) {
+			if ( ++i == argc )
+				usage("missing JTS test filename");
+			jtstest_filename = argv[i];
 		}
 		else if ( 0==strcmp("-report", argv[i]) ) {
 			do_report = true;
@@ -231,7 +284,17 @@ int main(int argc, char ** argv) {
 		report(rast, vect);
 	}
 	else {
-		process(rast, vect);
+		FILE* jtstest_file = NULL;
+		if ( jtstest_filename ) {
+			jtstest_file = fopen(jtstest_filename, "w");
+			if ( !jtstest_file ) {
+				fprintf(stderr, "Could not create %s\n", jtstest_filename);
+				return 1;
+			}
+		}
+		process(rast, vect, jtstest_file);
+		if ( jtstest_file )
+			fclose(jtstest_file);
 	}
 	
 	return 0;
