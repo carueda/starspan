@@ -2,6 +2,10 @@ starspan devnotes
 $Id$
 
 
+2005-02-11 (0.93beta)
+	- starting 0.93beta.
+
+
 2005-02-10 (0.92beta)
 	- Makefile changes and new target `dist' to create a source distribution
 	  from current CVS repository. E.g:

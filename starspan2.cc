@@ -66,7 +66,7 @@ static void usage(const char* msg) {
 		"      --srs <srs>\n"
 		"      --version\n"
 		"\n"
-		"Aditional information at http://starspan.casil.ucdavis.edu/?Usage\n"
+		"Aditional information at http://starspan.casil.ucdavis.edu\n"
 		"\n"
 		, STARSPAN_VERSION, __DATE__, __TIME__
 	);
