@@ -11,13 +11,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// for processPolygon_pixel:
+// for processPolygon:
 #include <geos.h>
 
 
 Traverser::Traverser() {
 	vect = 0;
-	pixelProportion = -1.0;   // disabled
+	pixelProportion = 0.5;
 	desired_FID = -1;
 	desired_fieldName = "";
 	desired_fieldValue = "";
@@ -334,89 +334,10 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 }
 
 
-//
-// process a polygon intersection
-// If a pixel proportion has been specified via setPixelProportion(), then
-// the area of intersections are used to determine if a pixel is to be
-// included. Otherwise, the pixel is included only if the upper left corner
-// of the pixel is within the polygon. 
-//
-void Traverser::processPolygon(OGRPolygon* poly) {
-	if ( pixelProportion < 0.0 )
-		processPolygon_point(poly);
-	else
-		processPolygon_pixel(poly);
-}
-
 
 //
-// processPolygon_point:
-// process a polygon intersection: checking point inclusion
-//
-void Traverser::processPolygon_point(OGRPolygon* poly) {
-	OGREnvelope intersection_env;
-	poly->getEnvelope(&intersection_env);
-	
-	// extend envelope 1 pixel in all directions so we can deal with
-	// boundary cases more safely:
-	intersection_env.MinX -= pix_x_size;
-	intersection_env.MaxX += pix_x_size;
-	intersection_env.MinY -= pix_y_size;
-	intersection_env.MaxY += pix_y_size;
-	
-	// extern void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env);
-	// starspan_print_envelope(stdout, "poly envolppe: ", intersection_env);
-	
-	// get envelope corners in pixel coordinates:
-	int minCol, minRow, maxCol, maxRow;
-	toColRow(intersection_env.MinX, intersection_env.MinY, &minCol, &minRow);
-	toColRow(intersection_env.MaxX, intersection_env.MaxY, &maxCol, &maxRow);
-	// Note: minCol is not necessarily <= maxCol (idem for *Row)
-
-	fprintf(stdout, " minCol=%d, minRow=%d\n", minCol, minRow); 
-	fprintf(stdout, " maxCol=%d, maxRow=%d\n", maxCol, maxRow); 
-	
-	// get envelope corners in grid coordinates:
-	double minX, minY, maxX, maxY;
-	toGridXY(minCol, minRow, &minX, &minY);
-	toGridXY(maxCol, maxRow, &maxX, &maxY);
-
-	fprintf(stdout, " minX=%g, minY=%g\n", minX, minY); 
-	fprintf(stdout, " maxX=%g, maxY=%g\n", maxX, maxY); 
-	
-	// envelope dimensions:
-	int rows_env = abs(maxRow - minRow) +1;
-	int cols_env = abs(maxCol - minCol) +1;
-	int num_points_in_poly = 0;
-	
-	fprintf(stdout, " %d cols x %d rows\n", cols_env, rows_env);
-	fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
-	
-	double abs_pix_y_size = fabs(pix_y_size);
-	double abs_pix_x_size = fabs(pix_x_size);
-	double y = minY;
-	for ( int i = 0; i < rows_env; i++, y += abs_pix_y_size) {
-		double x = minX;
-		for (int j = 0; j < cols_env; j++, x += abs_pix_x_size) {
-			OGRPoint point(x, y);
-			if ( poly->Contains(&point) ) {
-				num_points_in_poly++;
-				pixelFound(x, y);
-			}
-		}
-		fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
-	}
-	fprintf(stdout, "\n"); 
-	fprintf(stdout, " %d points in poly out of %d points in envelope\n", 
-		num_points_in_poly, rows_env * cols_env
-	);
-}
-
-//
-// processPolygon_pixel:
-// process a polygon intersection: checking area of pixel intersection
-//
-// To avoid some OGR overhead, use GEOS directly.
+// for processPolygon:
+// To avoid some OGR overhead, I use GEOS directly.
 //
 static geos::GeometryFactory* global_factory = new geos::GeometryFactory();
 
@@ -434,7 +355,14 @@ inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, do
 	return poly;
 }
 
-void Traverser::processPolygon_pixel(OGRPolygon* poly) {
+
+
+//
+// process a polygon intersection.
+// The area of intersections are used to determine if a pixel is to be
+// included.  
+//
+void Traverser::processPolygon(OGRPolygon* poly) {
 	OGREnvelope intersection_env;
 	poly->getEnvelope(&intersection_env);
 	

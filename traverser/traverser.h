@@ -283,8 +283,6 @@ private:
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
 	void processPolygon(OGRPolygon* poly);
-	void processPolygon_point(OGRPolygon* poly);
-	void processPolygon_pixel(OGRPolygon* poly);
 
 	void process_feature(OGRFeature* feature);
 	
