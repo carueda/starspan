@@ -10,19 +10,16 @@
 # installed under the same prefix (see below)
 COMMON_PREFIX := /usr/local
 
-# GDAL_SRC_DIR: specify the GDAL source directory
-# This is required to get access to some headers that,
-# strangely enough, are not copied to GDAL installation directory.
-GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal-1.2.3
+# GEOS_PREFIX: specify where GEOS is installed
+GEOS_PREFIX := $(COMMON_PREFIX)
 
 # GDAL_PREFIX: specify where GDAL is installed
 GDAL_PREFIX := $(COMMON_PREFIX)
 
-# GEOS_PREFIX: specify where GEOS is installed
-GEOS_PREFIX := $(COMMON_PREFIX)
-
-# SHAPELIB_PREFIX: specify where SHAPELIB is installed
-SHAPELIB_PREFIX := $(COMMON_PREFIX)
+# GDAL_SRC_DIR: specify the GDAL source directory
+# This is required to get access to some headers that are currently
+# not copied to the GDAL installation directory.
+GDAL_SRC_DIR := /home/software/GDAL/gdal-1.2.5
 
 
 # STARSPAN_PREFIX: Where starspan will be installed.

@@ -15,7 +15,7 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.9beta"
+#define STARSPAN_VERSION "0.91beta"
 
 
 /** Options that might be used by different services.
@@ -231,28 +231,6 @@ int starspan_csv(
 );
 
 
-/**
-  * Generates a DBF table with the following structure:
-  *     FID, col,row {vect-attrs}, {bands-from-raster}
-  * where:
-  *     FID:          feature ID as given by OGRFeature#GetFID()
-  *     col,row:      pixel location relative to (0,0) in raster
-  *     {vect-attrs}: attributes from vector
-  *     {rast-bands}: bands from raster at corresponding location
-  *
-  * @param tr Data traverser
-  * @param select_fields desired fields
-  * @param db_filename output file name
-  *
-  * @return observer to be added to traverser. 
-  */
-Observer* starspan_db(
-	Traverser& tr,
-	vector<const char*>* select_fields,
-	const char* db_filename
-);
-
-
 
 /** Generates ENVI output
   * @param tr Data traverser
@@ -267,17 +245,6 @@ Observer* starspan_gen_envisl(
 	vector<const char*>* select_fields,
 	const char* envisl_name,
 	bool envi_image
-);
-
-
-/**
-  * Updates a DBF
-  * DOC ME!
-  */
-int starspan_update_dbf(
-	const char* in_dbf_filename,
-	vector<const char*> raster_filenames,
-	const char* out_dbf_filename
 );
 
 

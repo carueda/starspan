@@ -12,9 +12,6 @@ include Makefile.props
 
 INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil		 
 
-# starspan_db.cc
-INCLUDE += -I${SHAPELIB_PREFIX}/include/libshp
-
 INCLUDE += -I$(GDAL_PREFIX)/include
 INCLUDE += -I$(GDAL_SRC_DIR)/frmts 
 		 
@@ -22,9 +19,7 @@ INCLUDE += -I/usr/local/include
 
 
 SRCS =	starspan_stats.cc \
-		starspan_db.cc \
 		starspan_update_csv.cc \
-		starspan_update_dbf.cc \
 		starspan_csv.cc \
 		starspan_csv_raster_field.cc \
 		starspan_gen_envisl.cc \
@@ -52,10 +47,9 @@ PROF = -pg -fprofile-arcs
 
 LIBPATH = \
 	 -L$(GDAL_PREFIX)/lib \
-	 -L$(GEOS_PREFIX)/lib \
-	 -L$(SHAPELIB_PREFIX)/lib \
+	 -L$(GEOS_PREFIX)/lib
 
-LDFLAGS = -lgdal -lshp -lgeos
+LDFLAGS = -lgdal -lgeos
 
 .PHONY= all install clean prof
 

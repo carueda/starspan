@@ -4,6 +4,7 @@
 // starspan_db - generate a DBF db
 // $Id$
 //
+//	NOTE: As of 2005/01/23 this file is no longer used. 
 
 #include "starspan.h"           
 #include "traverser.h"       

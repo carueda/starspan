@@ -2,6 +2,22 @@ starspan devnotes
 $Id$
 
 
+2005-01-23 (0.91beta)
+
+	Simplified dependencies scheme:
+	
+		- No more external dependency on AGG. Now the following AGG headers
+		(from the agg22.tar.gz distribution) are kept under rasterizers/
+			agg_basics.h
+			agg_dda_line.h
+		(even these headers will eventually be eliminated after a pending
+		revision of the line rasterizer.)
+
+		- DBF format support dropped: no more shapelib dependency.
+		The following sources are no longer maintained:
+			starspan_db.cc
+			starspan_update_dbf.cc
+
 2004-11-13
 	New options: -raster_field, -raster_directory
 	starspan_csv_raster_field.cc

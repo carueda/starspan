@@ -37,7 +37,6 @@ static void usage(const char* msg) {
 		"      -vector <filename>\n"
 		"      -speclib <filename>\n"
 		"      -update-csv <filename>\n"
-		"      -update-dbf <filename>\n"
 		"\n"
 		"   commands:\n"
 		"      -raster_field <name>\n"
@@ -48,7 +47,6 @@ static void usage(const char* msg) {
 		"      -stats outfile.csv [avg|mode|stdev|min|max]...\n"
 		"      -calbase <link> <filename> [<stats>...]\n"
 		"      -report \n"
-		"      -dbf <name>   \n"
 		"      -dump_geometries <filename>\n"
 		"      -mr <prefix> \n"
 		"      -jtstest <filename>\n"
@@ -100,8 +98,6 @@ int main(int argc, char ** argv) {
 	const char*  envi_name = NULL;
 	bool envi_image = true;
 	vector<const char*>* select_fields = NULL;
-	const char*  dbf_name = NULL;
-	const char*  update_dbf_name = NULL;
 	const char*  csv_name = NULL;
 	const char*  stats_name = NULL;
 	vector<const char*> select_stats;
@@ -162,14 +158,6 @@ int main(int argc, char ** argv) {
 			update_csv_name = argv[i];
 		}
 		
-		else if ( 0==strcmp("-update-dbf", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-update-dbf: which DBF file?");
-			if ( update_dbf_name )
-				usage("-update-dbf specified twice");
-			update_dbf_name = argv[i];
-		}
-		
 		//
 		// COMMANDS
 		//
@@ -187,12 +175,6 @@ int main(int argc, char ** argv) {
 				select_stats.push_back("avg");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
-		}
-		
-		else if ( 0==strcmp("-dbf", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-dbf: which name?");
-			dbf_name = argv[i];
 		}
 		
 		else if ( 0==strcmp("-csv", argv[i]) ) {
@@ -404,18 +386,6 @@ int main(int argc, char ** argv) {
 		}
 		res = starspan_update_csv(update_csv_name, raster_filenames, csv_name);
 	}
-	else if ( update_dbf_name ) {
-		if ( !dbf_name ) {
-			usage("-update-dbf works with -dbf. Please specify an existing DBF");
-		}
-		if ( vector_filename ) {
-			usage("-update-dbf does not expect a vector input");
-		}
-		if ( raster_filenames.size() == 0 ) {
-			usage("-update-dbf requires at least a raster input");
-		}
-		res = starspan_update_dbf(update_dbf_name, raster_filenames, dbf_name);
-	}
 	else {
 		//
 		// traverser-based commands
@@ -444,7 +414,7 @@ int main(int argc, char ** argv) {
 		}
 	
 	
-		if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
+		if ( csv_name || envi_name || mini_prefix || jtstest_filename) { 
 			if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
 				usage("Specified output option requires both a raster and a vector to proceed\n");
 			}
@@ -457,12 +427,6 @@ int main(int argc, char ** argv) {
 		
 		if ( stats_name ) {
 			Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
-			if ( obs )
-				tr.addObserver(obs);
-		}
-		
-		if ( dbf_name ) { 
-			Observer* obs = starspan_db(tr, select_fields, dbf_name);
 			if ( obs )
 				tr.addObserver(obs);
 		}
