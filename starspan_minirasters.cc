@@ -20,8 +20,6 @@ int starspan_minirasters(
 	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
 ) {
-	//fprintf(stderr, "((mini raster is being implemented right now))\n");
-	
 	OGRLayer* layer = vect.getLayer(0);
 	if ( !layer ) {
 		fprintf(stderr, "Couldn't get layer 0 from %s\n", vect.getName());
