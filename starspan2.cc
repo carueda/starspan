@@ -58,6 +58,7 @@ static void usage(const char* msg) {
 		"      --noXY\n"
 		"      --fid <FID>\n"
 		"      --skip_invalid_polys \n"
+		"      --nodata <value> \n"
 		"      --progress [value] \n"
 		"      --RID_as_given \n"
 		"      --verbose \n"
@@ -92,6 +93,7 @@ int main(int argc, char ** argv) {
 	globalOptions.only_in_feature = false;
 	globalOptions.RID_as_given = false;
 	globalOptions.report_summary = true;
+	globalOptions.nodata = 0.0;
 	
 	
 	bool report_elapsed_time = true;
@@ -246,6 +248,12 @@ int main(int argc, char ** argv) {
 			globalOptions.pix_prop = atof(argv[i]);
 			if ( globalOptions.pix_prop < 0.0 || globalOptions.pix_prop > 1.0 )
 				usage("invalid pixel proportion");
+		}
+		
+		else if ( 0==strcmp("--nodata", argv[i]) ) {
+			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
+				usage("--nodata: value?");
+			globalOptions.nodata = atof(argv[i]);
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {

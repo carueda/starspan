@@ -48,6 +48,9 @@ struct GlobalOptions {
 	bool RID_as_given;
 	
 	bool report_summary;
+	
+	/** value used as nodata */
+	double nodata;
 };
 
 extern GlobalOptions globalOptions;
