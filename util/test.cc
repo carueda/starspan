@@ -16,7 +16,7 @@ int main() {
 	
 	cout<< "chunks of size=" << size<< ": ";
 	p = new	Progress(size);
-	for ( int i = 0; i < size*7; i++ )
+	for ( int i = 0; i < size*7 - 123; i++ )
 		p->update();
 	p->end();
 	delete p;

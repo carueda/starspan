@@ -19,8 +19,18 @@ using namespace std;
   */
 class Progress {
 public:
-	/** creates a progress object */
-	Progress(long size, long perc_incr=0, ostream& out=cout);
+	/** creates a progress object for percentage.
+	  * @param size number of items corresponding to 100%
+	  * @param perc_incr increment in percentage, must be > 0
+	  * @param out output stream
+	  */
+	Progress(long size, double perc_incr, ostream& out=cout);
+	
+	/** creates a progress object.
+	  * @param chunksize increment amount
+	  * @param out output stream
+	  */
+	Progress(long chunksize, ostream& out=cout);
 	
 	/** Updates this progress object */
 	void update();
@@ -30,7 +40,7 @@ public:
 	
 private:
 	long size;
-	long perc_incr;
+	double perc_incr;
 	ostream& out;
 	double next_perc;
 	double curr_perc;

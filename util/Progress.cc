@@ -6,16 +6,21 @@
 //
 
 #include "Progress.h"
+#include <cassert>
 
-Progress::Progress(long size, long perc_incr, ostream& out)
+Progress::Progress(long size, double perc_incr, ostream& out)
 : size(size), perc_incr(perc_incr), out(out) {
 	curr = 1;
-	if ( perc_incr > 0 ) {
-		next_perc = perc_incr;
-		writemsg(string("0% "));
-	}
-	else
-		writemsg(string("0 "));
+	assert( perc_incr > 0 );
+	next_perc = perc_incr;
+	writemsg(string("0% "));
+}
+
+Progress::Progress(long size, ostream& out)
+: size(size), out(out) {
+	curr = 1;
+	perc_incr = 0;
+	writemsg(string("0 "));
 }
 
 void Progress::writemsg(string msg) {
