@@ -44,15 +44,16 @@ public:
 	void case_arg_end(const char* argname);
 
 	/**
-	  * opens a case.
+	  * ends a case.
 	  */
 	void case_end(void);
 	
 	/**
 	 * completes and closes the file containing the test suit.
 	 * If no cases were added, the file is removed.
+	 * Returns the number of completed cases.
 	 */
-	void end();
+	int end();
 	
 private:
 	const char* filename;

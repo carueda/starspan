@@ -55,7 +55,7 @@ void JTS_TestGenerator::case_end() {
 	}
 }
 
-void JTS_TestGenerator::end() {
+int JTS_TestGenerator::end() {
 	if ( file ) {
 		fprintf(file, "</run>\n");
 		fclose(file);
@@ -64,5 +64,6 @@ void JTS_TestGenerator::end() {
 			unlink(filename);
 		}
 	}
+	return no_cases;
 }
 
