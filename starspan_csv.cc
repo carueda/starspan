@@ -172,7 +172,10 @@ public:
 					exit(1);
 				}
 				const char* str = currentFeature->GetFieldAsString(i);
-				fprintf(file, ",%s", str);
+				if ( strchr(str, ',') )
+					fprintf(file, ",\"%s\"", str);   // quote string
+				else
+					fprintf(file, ",%s", str);
 			}
 		}
 		else {
@@ -180,7 +183,10 @@ public:
 			int feature_field_count = currentFeature->GetFieldCount();
 			for ( int i = 0; i < feature_field_count; i++ ) {
 				const char* str = currentFeature->GetFieldAsString(i);
-				fprintf(file, ",%s", str);
+				if ( strchr(str, ',') )
+					fprintf(file, ",\"%s\"", str);   // quote string
+				else
+					fprintf(file, ",%s", str);
 			}
 		}
 		 

@@ -2,7 +2,10 @@ starspan devnotes
 $Id$
 
 2004-11-10 (0.9beta)
-	Starting changes to allow the input rasters to at different locations.
+	Quote fields in CSV if necessary.
+	
+	Changes to allow the input rasters to be at different locations.
+	Do tests!
 	
 	
 
