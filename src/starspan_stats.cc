@@ -31,8 +31,6 @@ public:
 	// is there a previous feature to be finalized?
 	bool previous;
 	
-	vector<CRPixel> pixels;
-
 	// if all bands are of integral type, then tr.getPixelIntegerValuesInBand
 	// is used; else tr.getPixelDoubleValuesInBand is used.
 	bool get_integer;
@@ -199,7 +197,7 @@ public:
 			vector<int> values;
 			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 				values.clear();
-				tr.getPixelIntegerValuesInBand(j+1, &pixels, values);
+				tr.getPixelIntegerValuesInBand(j+1, values);
 				stats.compute(values);
 				for ( int i = 0; i < TOT_RESULTS; i++ ) {
 					result_stats[i][j] = stats.result[i]; 
@@ -210,7 +208,7 @@ public:
 			vector<double> values;
 			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 				values.clear();
-				tr.getPixelDoubleValuesInBand(j+1, &pixels, values);
+				tr.getPixelDoubleValuesInBand(j+1, values);
 				stats.compute(values);
 				for ( int i = 0; i < TOT_RESULTS; i++ ) {
 					result_stats[i][j] = stats.result[i]; 
@@ -230,7 +228,7 @@ public:
  
 		if ( file ) {
 			// Add numPixels value:
-			fprintf(file, ",%d", pixels.size());
+			fprintf(file, ",%d", tr.getPixelSetSize());
 			
 			// report desired results:
 			// (desired list is traversed to keep order according to column headers)
@@ -267,7 +265,6 @@ public:
 			}
 			fprintf(file, "\n");
 		}
-		pixels.clear();
 		previous = false;
 	}
 
@@ -316,10 +313,10 @@ public:
 	
 	
 	/**
-	  * Adds a new pixel to aggregation
+	  * Nothing needs to be done here. Traverser keeps track of
+	  * pixels in current feature.
 	  */
 	void addPixel(TraversalEvent& ev) {
-		pixels.push_back(CRPixel(ev.pixel.col, ev.pixel.row));
 	}
 
 };

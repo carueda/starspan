@@ -20,6 +20,9 @@ $Id$
 	  getPixelDoubleValuesInBand(unsigned band_index, vector<double>& list);
 	which work on set of visited pixels in current feature.
 	
+	StatsObserver: eliminated list of pixels in current feature. This
+	functionality is already provided by the traverser.
+	
 2005-03-04 (0.961beta)
 	starspan_update_csv.cc: simple printf-to-cout changes
 	Minor text updates in starspan script.
