@@ -53,13 +53,10 @@ static char* extract_value(GDALDataType bandType, char* sign) {
   */
 class CSVObserver : public Observer {
 public:
-	Raster* rast; 
+	GlobalInfo* global_info;
 	Vector* vect;
-	GDALDataType bandType;
-	int typeSize;
 	FILE* file;
 	bool includePixelLocation;
-	int numBands;
 	OGRFeature* currentFeature;
 	const char* select_fields;
 	
@@ -70,12 +67,19 @@ public:
 	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_)
 	: file(f), select_fields(select_fields_) 
 	{
-		rast = tr.getRaster(0);
-		vect = tr.getVector();
-		
 		// PENDING maybe read this from a parameter
 		includePixelLocation = true;
-		
+
+		vect = tr.getVector();
+		global_info = 0;
+	}
+	
+	/**
+	  *
+	  */
+	void init(GlobalInfo& info) {
+		global_info = &info;
+
 		OGRLayer* poLayer = vect->getLayer(0);
 		if ( !poLayer ) {
 			fprintf(stderr, "Couldn't fetch layer 0\n");
@@ -116,22 +120,13 @@ public:
 		}
 		
 		// Create fields for bands
-		rast->getSize(NULL, NULL, &numBands);
-		for ( int i = 0; i < numBands; i++ ) {
+		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			fprintf(file, ",Band%d", i+1);
 		}
 		
 		fprintf(file, "\n");
 		
 		currentFeature = NULL;
-	}
-	
-	/**
-	  *
-	  */
-	void init(GlobalInfo& info) { 
-		bandType = info.bands[0]->GetRasterDataType();
-		typeSize = GDALGetDataTypeSize(bandType) >> 3;
 	}
 	
 
@@ -186,13 +181,15 @@ public:
 			}
 		}
 		 
-		
-		
 		// add band values to record:
 		char* sign = (char*) band_values;
-		for ( int i = 0; i < numBands; i++, sign += typeSize ) {
-			// extract value:
+		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
+			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
+			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
 			fprintf(file, ",%s", extract_value(bandType, sign));
+			
+			// move to next piece of data in buffer:
+			sign += typeSize;
 		}
 		fprintf(file, "\n");
 	}
@@ -205,7 +202,7 @@ public:
   */
 int starspan_csv(
 	Traverser& tr,
-	const char* select_fields,     // comma-separated field names
+	const char* select_fields,
 	const char* filename
 ) {
 	// create output file

@@ -73,13 +73,10 @@ static double extract_double_value(GDALDataType bandType, char* sign) {
   */
 class DBObserver : public Observer {
 public:
-	Raster* rast; 
+	GlobalInfo* global_info;
 	Vector* vect;
-	GDALDataType bandType;
-	int typeSize;
 	DBFHandle file;
 	bool includePixelLocation;
-	int numBands;
 	OGRFeature* currentFeature;
 	int next_record_index;
 	const char* select_fields;	
@@ -88,12 +85,23 @@ public:
 	/**
 	  * Creates fields: FID, col, row, fields-from-feature, bands-from-raster
 	  */
-	DBObserver(Raster* r, Vector* v, DBFHandle f, const char* select_fields_)
-	: rast(r), vect(v), file(f), select_fields(select_fields_) 
+	DBObserver(Traverser& tr, DBFHandle f, const char* select_fields_)
+	: file(f), select_fields(select_fields_) 
 	{
 		// PENDING maybe read this from a parameter
 		includePixelLocation = true;
 		
+		vect = tr.getVector();
+		global_info = 0;
+	}
+	
+	
+	/**
+	  *
+	  */
+	void init(GlobalInfo& info) { 
+		global_info = &info;
+
 		OGRLayer* poLayer = vect->getLayer(0);
 		if ( !poLayer ) {
 			fprintf(stderr, "Couldn't fetch layer 0\n");
@@ -171,10 +179,9 @@ public:
 				next_field_index++;
 			}
 		}
-		
+
 		// Create fields for bands
-		rast->getSize(NULL, NULL, &numBands);
-		for ( int i = 0; i < numBands; i++ ) {
+		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			field_type = FTDouble;
 			field_width = 18;
 			field_precision = 3;
@@ -188,15 +195,6 @@ public:
 		currentFeature = NULL;
 		
 		fprintf(stdout, "   %d fields created\n", next_field_index);
-	}
-	
-	
-	/**
-	  *
-	  */
-	void init(GlobalInfo& info) { 
-		bandType = info.bands[0]->GetRasterDataType();
-		typeSize = GDALGetDataTypeSize(bandType) >> 3;
 	}
 	
 	
@@ -311,8 +309,9 @@ public:
 		
 		// add band values to record:
 		char* sign = (char*) band_values;
-		for ( int i = 0; i < numBands; i++, sign += typeSize ) {
-			// extract value:
+		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
+			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
+			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
 			double val = extract_double_value(bandType, sign);
 			
 			int ok = DBFWriteDoubleAttribute(
@@ -333,6 +332,9 @@ public:
 				);
 				exit(1);
 			}
+
+			// move to next piece of data in buffer:
+			sign += typeSize;
 		}
 		next_record_index++;
 	}
@@ -355,10 +357,7 @@ int starspan_db(
 		return 1;
 	}
 
-	Raster* rast = tr.getRaster(0);
-	Vector* vect = tr.getVector();
-
-	DBObserver obs(rast, vect, file, select_fields);	
+	DBObserver obs(tr, file, select_fields);	
 	tr.setObserver(&obs);
 	tr.traverse();
 	
