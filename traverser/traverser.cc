@@ -8,8 +8,8 @@
 
 #include "traverser.h"           
 
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 // for processPolygon:
 #include <geos.h>
@@ -35,6 +35,7 @@ Traverser::Traverser() {
 	progress_out = 0;
 	verbose = false;
 	logstream = 0;
+	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
 }
 
 void Traverser::addObserver(Observer* aObserver) { 
@@ -422,7 +423,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			}
 			catch(geos::TopologyException* ex) {
 				cerr<< "TopologyException: " << ex->toString()<< endl;
-				if ( true ) {
+				if ( debug_dump_polys ) {
 					geos::WKTWriter wktWriter;
 					cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
 					cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
@@ -431,7 +432,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			catch(geos::GEOSException* ex) {
 				geos::WKTWriter wktWriter;
 				cerr<< "geos::GEOSException: " << ex->toString()<< endl;
-				if ( true ) {
+				if ( debug_dump_polys ) {
 					geos::WKTWriter wktWriter;
 					cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
 					cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;

@@ -339,6 +339,7 @@ private:
 	double progress_perc;
 	bool verbose;
 	ostream* logstream;
+	bool debug_dump_polys;
 };
 
 
