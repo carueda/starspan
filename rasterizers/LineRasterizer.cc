@@ -40,7 +40,7 @@ LineRasterizer::LineRasterizer(double pixel_size_x_, double pixel_size_y_)
 //
 // Based on agg::renderer_primitives#line
 //
-void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2, bool last=false)  {
+void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2, bool last)  {
 	int x1 = to_int(dx1, pixel_size_x);
 	int y1 = to_int(dy1, pixel_size_y);
 	int x2 = to_int(dx2, pixel_size_x);
