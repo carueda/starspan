@@ -79,18 +79,24 @@ Traverser::~Traverser() {
 // read in band values in (col,row):
 //
 void Traverser::getBandValues(int col, int row) {
-	char* bandValues = (char*) bandValues_buffer;
-	for(int i = 0; i < bands; i++ ) {
+	char* ptr = (char*) bandValues_buffer;
+	for(int i = 0; i < bands; i++, ptr += bandTypeSize ) {
 		GDALRasterBand* band = dataset->GetRasterBand(i+1);
-		band->RasterIO(
+		int status = band->RasterIO(
 			GF_Read,
 			col, row,
-			1, 1,                         // nXSize, nYSize
-			bandValues + i*bandTypeSize, // pData
-			1, 1,                         // nBufXSize, nBufYSize
-			bandType,                   // eBufType
-			0, 0                          // nPixelSpace, nLineSpace
+			1, 1,             // nXSize, nYSize
+			ptr,              // pData
+			1, 1,             // nBufXSize, nBufYSize
+			bandType,         // eBufType
+			0, 0              // nPixelSpace, nLineSpace
 		);
+		
+		if ( status != CE_None ) {
+			fprintf(stdout, "Error reading band value, status= %d\n", status);
+			exit(1);
+		}
+		//fprintf(stdout, "    %d -- %f\n", i, *( (float*) ptr ));
 	}
 }
 
