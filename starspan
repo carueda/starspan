@@ -30,6 +30,8 @@ STARSPAN2=$BINDIR/starspan2
 #
 JARS=$BINDIR/starspan.jars/
 
+# Sorry for this noise here, although it should not hurt you anyway.
+# Just ignore it (a next release will be cleaner, hopefully)
 if [ "`uname -n`" == "px" ]; then
 	# my machine :-)
 	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH

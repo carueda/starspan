@@ -8,6 +8,9 @@ $Id$
 	- added INCLUDE += -I$(GDAL_SRC_DIR) in Makefile (jgrn307)
 	- More documentation in Makefile
 	- copyright.txt added
+	- README.txt now with a general description of the tool
+	- new doc/srccontents.txt (with old readme contents)
+	- TODO: clean up starspan script from particular settings!
 
 
 2005-02-10 (0.92beta)
