@@ -156,11 +156,59 @@ public:
 		long FID = feature->GetFID();
 		string mini_filename = create_filename(prefix, FID);
 		
+		// for parity; by default no parity adjustments:
+		int xsize_incr = 0; 
+		int ysize_incr = 0;
+		
+		//
+		// make necessary parity adjustments (on xsize_incr and/or ysize_incr) 
+		// if so indicated: 
+		//
+		if ( globalOptions.mini_raster_parity.length() > 0 ) {
+			const char* mini_raster_parity = 0;
+			if ( globalOptions.mini_raster_parity[0] == '@' ) {
+				const char* attr = globalOptions.mini_raster_parity.c_str() + 1;
+				int index = feature->GetFieldIndex(attr);
+				if ( index < 0 ) {
+					cerr<< "\n\tField `" <<attr<< "' not found";
+					cerr<< "\n\tParity not performed\n";
+				}
+				else {
+					mini_raster_parity = feature->GetFieldAsString(index);
+				}
+			}
+			else {
+				// just take the given parameter
+				mini_raster_parity = globalOptions.mini_raster_parity.c_str();
+			}
+
+			int parity = 0;
+			if ( 0 == strcmp(mini_raster_parity, "odd") )
+				parity = 1;
+			else if ( 0 == strcmp(mini_raster_parity, "even") )
+				parity = 2;
+			else {
+				cerr<< "\n\tunrecognized value `" <<mini_raster_parity<< "' for parity";
+				cerr<< "\n\tParity not performed\n";
+			}
+			
+			if ( (parity == 1 && mini_width % 2 == 0)
+			||   (parity == 2 && mini_width % 2 == 1) ) {
+				xsize_incr = 1;
+			}
+			if ( (parity == 1 && mini_height % 2 == 0)
+			||   (parity == 2 && mini_height % 2 == 1) ) {
+				ysize_incr = 1;
+			}
+		}
+		
 		GDALDatasetH hOutDS = starspan_subset_raster(
 			rast.getDataset(),
 			mini_col0, mini_row0, mini_width, mini_height,
 			mini_filename.c_str(),
-			pszOutputSRS
+			pszOutputSRS,
+			xsize_incr, ysize_incr,
+			NULL // nodata -- PENDING
 		);
 		
 		if ( globalOptions.only_in_feature ) {

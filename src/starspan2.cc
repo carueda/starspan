@@ -29,28 +29,26 @@ static void usage(const char* msg) {
 		"USAGE:\n"
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
-		"   inputs:\n"
 		"      --raster <filenames>...\n"
 		"      --vector <filename>\n"
 		"      --speclib <filename>\n"
 		"      --update-csv <filename>\n"
 		"\n"
-		"   commands:\n"
 		"      --raster_field <name>\n"
 		"      --raster_directory <directory>\n"
 		"      --csv <name>\n"
 		"      --envi <name>\n"
 		"      --envisl <name> \n"
-		"      --stats outfile.csv [avg|mode|stdev|min|max]...\n"
+		"      --stats outfile.csv {avg|mode|stdev|min|max}...\n"
 		"      --calbase <link> <filename> [<stats>...]\n"
 		"      --report \n"
 		"      --dump_geometries <filename>\n"
 		"      --mr <prefix> \n"
 		"      --mini_raster_strip <filename> \n"
+		"      --mini_raster_parity {even | odd | @<field>} \n"
 		"      --jtstest <filename>\n"
 		"\n"
-		"   options:\n"
-		"      --fields field1 field2 ... fieldn\n"
+		"      --fields <field1> <field2> ... <fieldn>\n"
 		"      --pixprop <minimum-pixel-proportion>\n"
 		"      --noColRow \n"
 		"      --noXY\n"
@@ -58,7 +56,7 @@ static void usage(const char* msg) {
 		"      --skip_invalid_polys \n"
 		"      --nodata <value> \n"
 		"      --buffer <distance> [<quadrantSegments>] \n"
-		"      --progress [value] \n"
+		"      --progress [<value>] \n"
 		"      --RID_as_given \n"
 		"      --verbose \n"
 		"      --ppoly \n"
@@ -66,7 +64,7 @@ static void usage(const char* msg) {
 		"      --srs <srs>\n"
 		"      --version\n"
 		"\n"
-		"Aditional information at http://starspan.casil.ucdavis.edu\n"
+		"Additional information at http://starspan.casil.ucdavis.edu\n"
 		"\n"
 		, STARSPAN_VERSION, __DATE__, __TIME__
 	);
@@ -95,6 +93,7 @@ int main(int argc, char ** argv) {
 	globalOptions.nodata = 0.0;
 	globalOptions.bufferParams.given = false;
 	globalOptions.bufferParams.quadrantSegments = "1";
+	globalOptions.mini_raster_parity = "";
 	
 	
 	bool report_elapsed_time = true;
@@ -271,6 +270,12 @@ int main(int argc, char ** argv) {
 			if ( i+1 < argc && strncmp(argv[i+1], "--", 2) != 0 )
 				globalOptions.bufferParams.quadrantSegments = argv[++i];
 			globalOptions.bufferParams.given = true;				
+		}
+		
+		else if ( 0==strcmp("--mini_raster_parity", argv[i]) ) {
+			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
+				usage("--mini_raster_parity: even, odd, or @<field>?");
+			globalOptions.mini_raster_parity = argv[i];
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {

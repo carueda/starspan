@@ -11,9 +11,12 @@ $Id$
 	buf_distance in the corresponding geometry feature; the quadrantSegments
 	is fixed to 21.  This fulfills request #200066
 	
+	--mini_raster_parity {even | odd | @<field>}  
+	Implemented
+	
 2005-02-19 (0.952beta)
 	- Making a source distribution. Example:
-		make dist VERSION=0.1
+		make dist VERSION=0.1                     
 	  which is the same as:
 	  	./mksrcdist.sh 0.1
 	- polygon/ moved to libtests/ and NOT added to cvs (this is old stuff).

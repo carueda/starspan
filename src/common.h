@@ -68,6 +68,9 @@ struct GlobalOptions {
 	
 	// buffer parameters
 	BufferParams bufferParams;
+	
+	// miniraster parity
+	string mini_raster_parity;
 };
 
 extern GlobalOptions globalOptions;

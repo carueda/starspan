@@ -51,8 +51,12 @@ GDALDatasetH starspan_subset_raster(
 	int          ysize,
 	
 	const char*  pszDest,         // output dataset name
-	const char*  pszOutputSRS     // see -a_srs option for gdal_translate
+	const char*  pszOutputSRS,    // see -a_srs option for gdal_translate
 	                              // If NULL, projection is taken from input dataset
+
+	int          xsize_incr,      // used to create the raster 
+	int          ysize_incr,      // used to create the raster
+	double		 *nodata          // used if not null
 ) {
 	// input vars:
     int*              panBandList = NULL;
@@ -101,7 +105,7 @@ GDALDatasetH starspan_subset_raster(
 /* -------------------------------------------------------------------- */
 /*      Make a virtual clone.                                           */
 /* -------------------------------------------------------------------- */
-    poVDS = new VRTDataset( nOXSize, nOYSize );
+    poVDS = new VRTDataset( nOXSize + xsize_incr, nOYSize + ysize_incr );
 
 	// set projection:
 	if ( pszOutputSRS ) {
@@ -154,8 +158,6 @@ GDALDatasetH starspan_subset_raster(
         VRTSourcedRasterBand   *poVRTBand;
         GDALRasterBand  *poSrcBand;
         GDALDataType    eBandType;
-        double          dfNoData;
-        int             bSuccess;
 
         poSrcBand = ((GDALDataset *) hDataset)->GetRasterBand(panBandList[i]);
 		
@@ -189,9 +191,15 @@ GDALDatasetH starspan_subset_raster(
             poSrcBand->GetColorInterpretation());
         if( strlen(poSrcBand->GetDescription()) > 0 )
             poVRTBand->SetDescription( poSrcBand->GetDescription() );
-        dfNoData = poSrcBand->GetNoDataValue( &bSuccess );
-        if ( bSuccess )
-            poVRTBand->SetNoDataValue( dfNoData );
+		
+		if ( nodata ) 
+            poVRTBand->SetNoDataValue(*nodata);
+		else {
+			int bSuccess;
+			double dfNoData = poSrcBand->GetNoDataValue( &bSuccess );
+			if ( bSuccess )
+				poVRTBand->SetNoDataValue( dfNoData );
+		}
     }
 
 /* -------------------------------------------------------------------- */

@@ -310,8 +310,13 @@ GDALDatasetH starspan_subset_raster(
 	int          ysize,
 	
 	const char*  pszDest,         // output dataset name
-	const char*  pszOutputSRS     // see -a_srs option for gdal_translate.
+	const char*  pszOutputSRS,    // see -a_srs option for gdal_translate.
 	                              // If NULL, projection is taken from input dataset
+								  
+	int          xsize_incr,      // used to create the raster 
+	int          ysize_incr,      // used to create the raster
+
+	double		 *nodata          // used if not null
 );
 
 
