@@ -82,7 +82,7 @@ public:
 	  * dispatches finalization of previous feature
 	  */
 	void finalizePreviousFeatureIfAny(void) {
-		if ( !pixels.length() )
+		if ( !pixels.size() )
 			return;
 		
 		int mini_x0, mini_y0, mini_x1, mini_y1;
