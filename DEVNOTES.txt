@@ -15,6 +15,11 @@ $Id$
 	Method Traverser.getPixelSet() removed. Other minor changes
 	to documentation in traverser.h.
 	
+	Added methods in Traverser:
+	  getPixelIntegerValuesInBand(unsigned band_index, vector<int>& list);
+	  getPixelDoubleValuesInBand(unsigned band_index, vector<double>& list);
+	which work on set of visited pixels in current feature.
+	
 2005-03-04 (0.961beta)
 	starspan_update_csv.cc: simple printf-to-cout changes
 	Minor text updates in starspan script.
