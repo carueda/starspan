@@ -7,6 +7,7 @@ $Id$
 	New option -pixprop.
 	Basic scheme implemented but should be adjusted for better 
 	efficiency.
+	New option -fid.
 	
 	JTS_TestGenerator: now a case can be cancelled, useful when empty
 	arguments are found.
