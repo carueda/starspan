@@ -507,22 +507,22 @@ void Traverser::traverse() {
 	// don't allow a second call, for now
 	if ( bandValues_buffer ) {
 		fprintf(stderr, "traverser.traverse: second call!\n");
-		exit(1);
+		return;
 	}
 
 	// do some checks:
 	if ( observers.size() == 0 ) {
 		fprintf(stderr, "traverser: No observers registered!\n");
-		exit(1);
+		return;
 	}
 
 	if ( !vect ) {
 		fprintf(stderr, "traverser: Vector datasource not specified!\n");
-		exit(1);
+		return;
 	}
 	if ( rasts.size() == 0 ) {
 		fprintf(stderr, "traverser: No raster datasets were specified!\n");
-		exit(1);
+		return;
 	}
 	//
 	// Only first layer (0) is processed (which assumes only one layer exists)
@@ -530,15 +530,15 @@ void Traverser::traverse() {
 	if ( vect->getLayerCount() > 1 ) {
 		fprintf(stderr, 
 			"Vector datasource with more than one layer: %s\n"
-			"Only one layer expected.  Exiting",
+			"Only one layer expected.\n",
 			vect->getName()
 		);
-		exit(1);
+		return;
 	}
 	OGRLayer* layer = vect->getLayer(0);
 	if ( !layer ) {
 		fprintf(stderr, "Couldn't get layer from %s\n", vect->getName());
-		exit(1);
+		return;
 	}
 
 	
@@ -576,7 +576,7 @@ void Traverser::traverse() {
 	}
 	
 	//
-	// notify observer about finalization of process
+	// notify observers about finalization of process
 	//
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->end();
