@@ -10,8 +10,6 @@
 
 #include <stdlib.h>
 
-#define VERSION "0.4"
-
 
 static char rcsid[] = "$Id$";
 
@@ -59,7 +57,7 @@ static void usage(const char* msg) {
 		"\n"
 		"More details at http://starspan.casil.ucdavis.edu/?Usage\n"
 		"\n"
-		, VERSION, __DATE__, __TIME__
+		, STARSPAN_VERSION, __DATE__, __TIME__
 	);
 	exit(0);
 }

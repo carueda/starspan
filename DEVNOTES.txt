@@ -7,6 +7,13 @@ $Id$
 	
 	Some refactoring to start processing multiple input rasters.
 	
+	starspan_gen_envisl: 
+		Data file is basename.img for Envi image, and basename.sld for
+		spectral library.
+		In header for .img: samples = 1; lines = #pixels; bands = #bands
+		In header for .sld: samples = #bands; lines = #pixels; bands = 1
+		Note: data file is written out in exactly the same way (bip interleave).
+	
 2004-09-11
 	Problems with large file support; this is happening on ceres but
 	works fine on scorpio and px (my laptop). 
