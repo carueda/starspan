@@ -146,6 +146,7 @@ void Traverser::addRaster(Raster* raster) {
 
 void Traverser::removeRasters() {
 	rasts.clear();
+	assert(rasts.size() == 0);
 	memset(&summary, 0, sizeof(summary));
 }
 
@@ -693,7 +694,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	OGRGeometry* intersection_geometry = 0;
 	
 	try {
-		intersection_geometry = feature_geometry->Intersection(&globalInfo.rasterPoly);
+		intersection_geometry = globalInfo.rasterPoly.Intersection(feature_geometry);
 	}
 	catch(geos::GEOSException* ex) {
 		cerr<< ">>>>> FID: " << feature->GetFID()
