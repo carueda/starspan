@@ -7,19 +7,30 @@
 # specify the GDAL source directory
 GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal
 
-INCLUDE := -Ivector -Iraster -Itraverser -Ijts \
-         -I/usr/local/include
-		 
-# starspan_db.cc
-INCLUDE += -I/usr/local/include/libshp
+# specify where GDAL is installed (--prefix)
+GDAL_PREFIX := /usr/local
 
-# starspan_utilcc: vrt/vrtdataset.h not in /usr/local/include/  ;-(
+# specify where GEOS is installed (--prefix)
+GEOS_PREFIX := /usr/local
+
+# specify where SHAPELIB is installed
+SHAPELIB_PREFIX := /usr/local
+
+# specify where AGG is installed
+AGG_PREFIX := /usr/local
+
+
+INCLUDE := -I/usr/local/include
+
+# starspan_db.cc
+INCLUDE += -I${SHAPELIB_PREFIX}/include/libshp
+
+INCLUDE += -I$(GDAL_PREFIX)/include
 INCLUDE += -I$(GDAL_SRC_DIR)/frmts 
 		 
 # See rasterizers/LineRasterizer.cc
-INCLUDE += -I/usr/local/include/agg2 
-INCLUDE += -Irasterizers 
-		 
+INCLUDE += -I${AGG_PREFIX}/include/agg2 
+INCLUDE += -Ivector -Iraster -Itraverser -Irasterizers -Ijts		 
 
 
 SRCS = starspan_db.cc \

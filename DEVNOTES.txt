@@ -5,7 +5,8 @@ $Id$
 	Complete build process revised and reported in
 	http://starspan.casil.ucdavis.edu/?Build
 	Makefile: GDAL_SRC_DIR to specify where GDAL sources are
-	installed. A more general scheme (maybe via configure) is
+	installed. Other locations also specified via definitions.
+	NOTE: A more general scheme (maybe via configure) is
 	still required for a smooth build.
 	
 2004-09-06
