@@ -885,16 +885,14 @@ void Traverser::traverse() {
 	else {
 		Progress* progress = 0;
 		if ( progress_out ) {
-			*progress_out << "Number of features: ";
 			long psize = layer->GetFeatureCount();
 			if ( psize >= 0 ) {
-				*progress_out << psize << "\n\t";
 				progress = new Progress(psize, progress_perc, *progress_out);
 			}
 			else {
-				*progress_out << "(not known in advance)\n\t";
 				progress = new Progress((long)progress_perc, *progress_out);
 			}
+			*progress_out << "\t";
 			progress->start();
 		}
 		while( (feature = layer->GetNextFeature()) != NULL ) {

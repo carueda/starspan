@@ -58,6 +58,7 @@ public:
 	OGRLayer* poLayer;
 	OGRFeature* currentFeature;
 	vector<const char*>* select_fields;
+	const char* raster_filename;
 	bool write_header;
 	FILE* file;
 	
@@ -186,7 +187,7 @@ public:
 		}
 
 		// add RID field
-		fprintf(file, ",<<RID-PENDING>>");
+		fprintf(file, ",%s", raster_filename);
 		
 		
 		// add (col,row) fields
@@ -251,8 +252,16 @@ int starspan_csv(
 	if ( globalOptions.FID >= 0 )
 		tr.setDesiredFID(globalOptions.FID);
 	tr.setVerbose(globalOptions.verbose);
-	if ( globalOptions.progress )
+	if ( globalOptions.progress ) {
 		tr.setProgress(globalOptions.progress_perc, cout);
+		cout << "Number of features: ";
+		long psize = vect.getLayer(0)->GetFeatureCount();
+		if ( psize >= 0 )
+			cout << psize;
+		else
+			cout << "(not known in advance)";
+		cout<< endl;
+	}
 	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
 	Raster* rasters[raster_filenames.size()];
@@ -262,6 +271,7 @@ int starspan_csv(
 	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
+		obs.raster_filename = raster_filenames[i];
 		obs.write_header = i == 0;
 		tr.removeRasters();
 		tr.addRaster(rasters[i]);
