@@ -224,12 +224,12 @@ int Traverser::getPixelIntegerValuesInBand(
 	}
 	
 	GDALRasterBand* band = globalInfo.bands[band_index-1];
+	const int width = band->GetXSize();
+	const int height = band->GetYSize();
 	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
 		int col = colrow->col;
 		int row = colrow->row;
 		int value = 0;
-		int width = band->GetXSize();
-		int height = band->GetYSize();
 		if ( col < 0 || col >= width || row < 0 || row >= height ) {
 			// nothing:  keep the 0 value
 		}
@@ -265,11 +265,11 @@ int Traverser::getPixelDoubleValuesInBand(
 	}
 	
 	GDALRasterBand* band = globalInfo.bands[band_index-1];
+	const int width = band->GetXSize();
+	const int height = band->GetYSize();
 	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
 		int col = colrow->col;
 		int row = colrow->row;
-		int width = band->GetXSize();
-		int height = band->GetYSize();
 		double value = 0.0;
 		if ( col < 0 || col >= width || row < 0 || row >= height ) {
 			// nothing:  keep the 0.0 value
@@ -812,6 +812,11 @@ void Traverser::traverse() {
 	);
 	lineRasterizer->setObserver(this);
 
+	if ( getenv("STARSPAN_DUMP_RASTER_UNION") ) {
+		fprintf(stdout, "RASTER_UNION = ");
+		globalInfo.rastersGeometry->dumpReadable(stdout);
+		fflush(stdout);
+	}
 		
 	//
 	// notify observers about initialization of process
