@@ -7,7 +7,7 @@ VECTOR_INCLUDE=-I/usr/local/include  -I/usr/local/include/libshp
 POLY_INCLUDE=-I../polygon/
 
 CXXFLAGS = \
-		   -g \
+		   -g -Wall \
 		   $(VECTOR_INCLUDE) \
 		   $(POLY_INCLUDE)
 

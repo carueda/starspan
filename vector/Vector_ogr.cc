@@ -15,6 +15,7 @@
 
 int Vector::init() {
     OGRRegisterAll();
+	return 0;
 }
 
 static void ReportOnLayer( OGRLayer * poLayer) {

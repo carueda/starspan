@@ -6,7 +6,7 @@
 RASTER_INCLUDE=-I/usr/local/include
 
 CXXFLAGS = \
-		   -g \
+		   -g -Wall \
 		   $(RASTER_INCLUDE)
 
 all: Raster_gdal.o

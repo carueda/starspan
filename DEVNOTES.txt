@@ -6,7 +6,6 @@ $Id$
 	New interface modules:
 		vector/Vector.h   with shapelib and OGR implementations
 		raster/Raster.h   with GDAL implementation
-	Using tool2.cc for the prototype
 
 2004-08-01
 	Geotools: I was not able to find a good Java library to work on

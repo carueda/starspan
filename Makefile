@@ -21,7 +21,7 @@ CXXFLAGS = \
            $(CGAL_CXXFLAGS) \
            $(LONG_NAME_PROBLEM_CXXFLAGS) \
            $(DEBUG_OPT) \
-		   -g \
+		   -g -Wall \
 		   $(VECTOR_INCLUDE) \
 		   $(RASTER_INCLUDE) \
 		   $(POLY_INCLUDE)
