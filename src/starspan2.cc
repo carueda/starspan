@@ -43,7 +43,7 @@ static void usage(const char* msg) {
 		"      --calbase <link> <filename> [<stats>...]\n"
 		"      --report \n"
 		"      --dump_geometries <filename>\n"
-		"      --mr <prefix> \n"
+		"      --mini_rasters <prefix> \n"
 		"      --mini_raster_strip <filename> \n"
 		"      --mini_raster_parity {even | odd | @<field>} \n"
 		"      --jtstest <filename>\n"
@@ -218,9 +218,9 @@ int main(int argc, char ** argv) {
 			mini_raster_strip_filename = argv[i];
 		}
 		
-		else if ( 0==strcmp("--mr", argv[i]) ) {
+		else if ( 0==strcmp("--mini_rasters", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("--mr: which prefix?");
+				usage("--mini_rasters: which prefix?");
 			mini_prefix = argv[i];
 		}
 		
