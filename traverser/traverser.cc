@@ -51,7 +51,7 @@ void Traverser::releaseObservers(void) {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		delete *obs;
 	
-	observers.empty();
+	observers.clear();
 	notSimpleObserver = false;
 }
 
@@ -146,6 +146,7 @@ void Traverser::addRaster(Raster* raster) {
 
 void Traverser::removeRasters() {
 	rasts.clear();
+	globalInfo.bands.clear();
 	assert(rasts.size() == 0);
 	memset(&summary, 0, sizeof(summary));
 }
