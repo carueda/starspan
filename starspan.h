@@ -108,7 +108,7 @@ int starspan_minirasters(
 // misc and supporting utilities:
 
 /** aux routine for reporting */ 
-void starspan_report(list<Raster*>* rasts, Vector* vect);
+void starspan_report(Traverser& tr);
 
 /** intersect two envelopes */
 bool starspan_intersect_envelopes(OGREnvelope& oEnv1, OGREnvelope& oEnv2, OGREnvelope& envr);

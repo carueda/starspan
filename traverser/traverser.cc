@@ -15,9 +15,18 @@
 #include <geos.h>
 
 
-static double pixelProportion = -1.0;   // disabled
-static long desired_FID = -1;
+// (null-object pattern)
+static Observer null_observer;
 
+
+
+Traverser::Traverser() {
+	rasts = new vector<Raster*>();
+	vect = 0;
+	observer = &null_observer;
+	pixelProportion = -1.0;   // disabled
+	desired_FID = -1;
+}
 
 void Traverser::setPixelProportion(double pixprop) {
 	pixelProportion = pixprop; 
@@ -28,19 +37,24 @@ void Traverser::setDesiredFID(long FID) {
 }
 
 
-// (null-object pattern)
-static Observer null_observer;
+
+void Traverser::setVector(Vector* vector) {
+	if ( vect )
+		fprintf(stderr, "traverser: Warning: resetting vector\n");
+	vect = vector;
+}
+
 
 //
+// FIXME
 // Raster type info is taken from first band (assumed valid for all bands).
 //
-Traverser::Traverser(list<Raster*>* rasters, Vector* vector) {
-	rasts = rasters;
-	vect = vector;
-	observer = &null_observer;
-
-	// for transition
-	rast = rasters->front();
+void Traverser::addRaster(Raster* raster) {
+	rasts->push_back(raster);
+	if ( rasts->size() == 1 ) {
+		rast = raster;   // temporary
+	}
+	
 	
 	dataset = rast->getDataset();
 	// some info from the first band (assumed to be valid for all bands)
@@ -428,6 +442,21 @@ void Traverser::process_feature(OGRFeature* feature) {
 // main method for traversal
 //
 void Traverser::traverse() {
+	if ( !vect ) {
+		fprintf(stderr, "traverser: Vector datasource not specified!\n");
+		exit(1);
+	}
+	if ( rasts->size() == 0 ) {
+		fprintf(stderr, "traverser: No raster datasets were specified!\n");
+		exit(1);
+	}
+	if ( rasts->size() > 1 ) {
+		// a warning while we implement the whole functionality
+		fprintf(stderr, "\ntraverser: Warning: ONLY first raster '%s' will be processed\n",
+			rast->getDataset()->GetDescription()
+		);
+	}
+	
 	//
 	// Only first layer (0) is processed (which assumes only one layer exists)
 	//

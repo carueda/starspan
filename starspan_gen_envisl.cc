@@ -262,7 +262,7 @@ int starspan_gen_envisl(
 	const char* envisl_name,
 	bool envi_image
 ) {
-	Raster* rast = tr.getRaster();
+	Raster* rast = tr.getRaster(0);
 	//Vector* vect = tr.getVector();
 
 	// output files

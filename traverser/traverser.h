@@ -12,6 +12,7 @@
 #include "rasterizers.h"
 
 #include <list.h>   // should be <list>
+#include <vector.h>   // should be <vector>
 #include <stdio.h>
 
 
@@ -96,13 +97,69 @@ public:
   * A Traverser intersects every geometry feature in a vector datasource
   * with a raster dataset. An observer should be registered for the
   * actual work to be done.
+  *
+  * synopsis of usage:
+  *
+  * <pre>
+  *		// create traverser:
+  *		Traverser tr;
+  *
+  *		// give inputs:
+  *		tr.setVector(v);
+  *		tr.addRaster(r1);
+  *		tr.addRaster(r2);
+  *		...
+  *		
+  *		// optionally
+  *		tr.setPixelProportion(pp);
+  *		tr.setDesiredFID(fid);
+  *
+  *		// set the observer:  
+  *		tr.setObserver(observer);
+  *
+  *		// run processing:
+  *		tr.traverse();
+  * </pre>
   */
 class Traverser : LineRasterizerObserver {
 public:
 
-	//
-	// these class members might be converted to instance members..
-	//
+	/**
+	  * Creates a traverser.
+	  */
+	Traverser(void);
+	
+	~Traverser();
+	
+	/**
+	  * Sets the vector datasource.
+	  * (eventually this would become addVector)
+	  * @param v vector datadource
+	  */
+	  void setVector(Vector* vector);
+
+	/**
+	  * Gets the vector associated to this traverser.
+	  */
+	Vector* getVector(void) { return vect; }
+	
+	/**
+	  * Adds a raster.
+	  * -- NOTE: only first one added is processed until complete impl is done.
+	  * @param r the raster dataset
+	  */
+	void addRaster(Raster* raster);
+	
+	/**
+	  * Gets the number of rasters.
+	  */
+	int getNumRasters(void) { return rasts->size(); }
+
+	/**
+	  * Gets a raster from the list of rasters.
+	  */
+	Raster* getRaster(int i) { return (*rasts)[i]; }
+	
 	
 	/**
 	  * Sets the proportion of intersected area required for a pixel to be included.
@@ -112,7 +169,7 @@ public:
 	  *
 	  * @param pixprop A value assumed to be in [0.0, 1.0].
 	  */
-	static void setPixelProportion(double pixprop);
+	void setPixelProportion(double pixprop);
 
 	/**
 	  * Only the given FID will be processed.
@@ -120,19 +177,8 @@ public:
 	  *
 	  * @param FID  a FID.
 	  */
-	static void setDesiredFID(long FID);
+	void setDesiredFID(long FID);
 
-	/**
-	  * Creates a traverser.
-	  * Then you will call setObserver().
-	  *
-	  * @param r rasters -- NOTE: only first one used while complete impl is done
-	  * @param v vector
-	  */
-	Traverser(list<Raster*>* r, Vector* v);
-	
-	~Traverser();
-	
 	/**
 	  * Sets the observer for this traverser.
 	  */
@@ -143,9 +189,6 @@ public:
 	  */
 	Observer* getObserver(void) { return observer; }
 
-	Raster* getRaster(void) { return rast; }
-	Vector* getVector(void) { return vect; }
-	
 	
 	/**
 	  * Executes the traversal.
@@ -153,10 +196,12 @@ public:
 	void traverse(void);
 	
 private:
-	list<Raster*>* rasts;
+	vector<Raster*>* rasts;
 	Raster* rast;  // transitional member
 	Vector* vect;
 	Observer* observer;
+	double pixelProportion;
+	long desired_FID;
 	
 	GDALDataset* dataset;
 	GDALRasterBand* band1;

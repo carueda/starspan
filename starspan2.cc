@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 
-static char rcsid[] = "$Id$";
+//static char rcsid[] = "$Id$";
 
 
 // prints a help message
@@ -44,14 +44,15 @@ static void usage(const char* msg) {
 		"\n"
 		"   options:\n"
 		"      -fields field1,field2,...,fieldn\n"
-		"      -pixprop <value>\n"
+		"      -pixprop <pixel-proportion-value>\n"
 		"      -fid <FID>\n"
 		"      -ppoly\n"
 		"      -in\n"
 		"      -srs <srs>\n"
 		"\n"
 		"Example:\n"
-		"   starspan -vector V.shp -raster R.img -dbf D.dbf -fields species,foo,baz\n"
+		"   starspan -vector V.shp  -raster R.img  -dbf D.dbf  -fields species,foo,baz\n"
+		"\n"
 		" creates D.dbf with pixels extracted from R.img that intersect\n"
 		" features in V.shp; only the given fields from V.shp are written to D.dbf.\n"
 		"\n"
@@ -69,7 +70,6 @@ int main(int argc, char ** argv) {
 		usage(NULL);
 	}
 	
-	const char* vector_filename = NULL;
 	bool do_report = false;
 	bool only_in_feature = false;
 	bool use_polys = false;
@@ -85,15 +85,12 @@ int main(int argc, char ** argv) {
 	bool an_output_given = false;
 	
 
-	// for inputs:
-	//Raster* rast = NULL;
-	list<Raster*>* rasts = 0;
-	Vector* vect = NULL;
-	
 	// module initialization
 	Raster::init();
 	Vector::init();
-	
+
+	// the traverser object	
+	Traverser tr;
 
 	for ( int i = 1; i < argc; i++ ) {
 		
@@ -101,18 +98,18 @@ int main(int argc, char ** argv) {
 		if ( 0==strcmp("-vector", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-vector: which vector file?");
-			vector_filename = argv[i];
-			
+
+			const char* vector_filename = argv[i];
+			tr.setVector(new Vector(vector_filename));
 		}
 		else if ( 0==strcmp("-raster", argv[i]) ) {
-			if ( !rasts )
-				rasts = new list<Raster*>();
 			while ( ++i < argc && argv[i][0] != '-' ) {
 				const char* raster_filename = argv[i];
-				rasts->push_front(new Raster(raster_filename));
+				tr.addRaster(new Raster(raster_filename));
 			}
-			if ( rasts->size() == 0 )
-				usage("-raster: which raster file?");
+			if ( tr.getNumRasters() == 0 )
+				usage("-raster: which raster files?");
+			
 			if ( argv[i][0] == '-' ) 
 				--i;
 		}
@@ -122,7 +119,7 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc )
 				usage("-dbf: which name?");
 			if ( an_output_given )
-				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+				usage("Only one output format, please\n");
 			an_output_given = true;
 			dbf_name = argv[i];
 		}
@@ -130,7 +127,7 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc )
 				usage("-csv: which name?");
 			if ( an_output_given )
-				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+				usage("Only one output format, please\n");
 			an_output_given = true;
 			csv_name = argv[i];
 		}
@@ -138,7 +135,7 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc )
 				usage("-mr: which prefix?");
 			if ( an_output_given )
-				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+				usage("Only one output format, please\n");
 			an_output_given = true;
 			mini_prefix = argv[i];
 		}
@@ -147,7 +144,7 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc )
 				usage("-envi, -envisl: which base name?");
 			if ( an_output_given )
-				usage("Only one of -dbf, -csv, -envi*, -mr, or -jtstest, please\n");
+				usage("Only one output format, please\n");
 			an_output_given = true;
 			envi_name = argv[i];
 		}
@@ -155,7 +152,7 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc )
 				usage("-jtstest: which JTS test file name?");
 			if ( an_output_given )
-				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+				usage("Only one output format, please\n");
 			an_output_given = true;
 			jtstest_filename = argv[i];
 		}
@@ -170,7 +167,7 @@ int main(int argc, char ** argv) {
 			double pix_prop = atof(argv[i]);
 			if ( pix_prop < 0.0 || pix_prop > 1.0 )
 				usage("invalid pixel proportion");
-			Traverser::setPixelProportion(pix_prop);
+			tr.setPixelProportion(pix_prop);
 		}
 		
 		else if ( 0==strcmp("-fid", argv[i]) ) {
@@ -179,7 +176,7 @@ int main(int argc, char ** argv) {
 			long FID = atol(argv[i]);
 			if ( FID < 0 )
 				usage("invalid FID");
-			Traverser::setDesiredFID(FID);
+			tr.setDesiredFID(FID);
 		}
 		
 		else if ( 0==strcmp("-ppoly", argv[i]) ) {
@@ -211,19 +208,14 @@ int main(int argc, char ** argv) {
 		}
 	}
 	
-	if ( vector_filename )
-		vect = new Vector(vector_filename);
-
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
 	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
-		if ( !rasts || !vect ) {
+		if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
 			usage("Specified output option requires both a raster and a vector to proceed\n");
 		}
 	}
-	
-	Traverser tr(rasts, vect);
 	
 	// COMMANDS
 	if ( csv_name ) { 
@@ -236,26 +228,26 @@ int main(int argc, char ** argv) {
 		return starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
 	}
 	else if ( mini_prefix ) {
-		if ( rasts->size() > 1 ) {
+		if ( tr.getNumRasters() > 1 ) {
 			fprintf(stderr, "Sorry, -mr currently accepts only one input raster\n");
 			return 1;
 		}
-		Raster* rast = rasts->front();
+		Raster* rast = tr.getRaster(0);
+		Vector* vect = tr.getVector();
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
 	}
 	else if ( jtstest_filename ) {
 		starspan_jtstest(tr, use_polys, jtstest_filename);
 	}
 	else if ( do_report ) {
-		if ( !rasts && !vect ) {
-			usage("-report: Please give a raster and/or a vector file to report\n");
+		if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
+			usage("-report: Please give at least one input file to report\n");
 		}
-		starspan_report(rasts, vect);
+		starspan_report(tr);
 	}
 	else {
 		usage("what should I do?\n");
 	}
-	
 	
 	return 0;
 }

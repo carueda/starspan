@@ -355,7 +355,7 @@ int starspan_db(
 		return 1;
 	}
 
-	Raster* rast = tr.getRaster();
+	Raster* rast = tr.getRaster(0);
 	Vector* vect = tr.getVector();
 
 	DBObserver obs(rast, vect, file, select_fields);	

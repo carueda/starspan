@@ -6,6 +6,12 @@ $Id$
 	input objects.
 	
 	Some refactoring to start processing multiple input rasters.
+	Traverser has now methods to specify data input objects; all object
+	interfaces updated.
+	
+	Functionality for ONE raster is working as before under the new scheme,
+	but is still pending to complement traverser interface (because of 
+	multiple raster processing), and its corresponding implementation.
 	
 	starspan_gen_envisl: 
 		Data file is basename.img for Envi image, and basename.sld for

@@ -173,7 +173,7 @@ void starspan_jtstest(
 	bool use_polys,
 	const char* jtstest_filename
 ) {
-	Raster* rast = tr.getRaster();
+	Raster* rast = tr.getRaster(0);
 	//Vector* vect = tr.getVector();
 
 	double pix_x_size, pix_y_size;

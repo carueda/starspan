@@ -70,7 +70,7 @@ public:
 	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_)
 	: file(f), select_fields(select_fields_) 
 	{
-		rast = tr.getRaster();
+		rast = tr.getRaster(0);
 		vect = tr.getVector();
 		
 		// PENDING maybe read this from a parameter
