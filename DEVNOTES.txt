@@ -3,6 +3,10 @@ $Id$
 
 
 2005-01-24 (0.92beta)
+	All options with double dash.
+	New option --version.
+	
+2005-01-24 (0.92beta)
 	starspan_minirasters.cc revisited: Now using traverser scheme
 	(first tests..)
 

@@ -22,50 +22,51 @@ GlobalOptions globalOptions;
 static void usage(const char* msg) {
 	if ( msg ) { 
 		fprintf(stderr, "starspan: %s\n", msg); 
-		fprintf(stderr, "Type `starspan -help' for help\n");
+		fprintf(stderr, "Type `starspan --help' for help\n");
 		exit(1);
 	}
 	fprintf(stdout, 
 		"\n"
-		"starspan %s (%s %s)    UNDER DEVELOPMENT\n"
+		"CSTARS starspan %s (%s %s)\n"
 		"\n"
 		"USAGE:\n"
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
 		"   inputs:\n"
-		"      -raster <filenames>...\n"
-		"      -vector <filename>\n"
-		"      -speclib <filename>\n"
-		"      -update-csv <filename>\n"
+		"      --raster <filenames>...\n"
+		"      --vector <filename>\n"
+		"      --speclib <filename>\n"
+		"      --update-csv <filename>\n"
 		"\n"
 		"   commands:\n"
-		"      -raster_field <name>\n"
-		"      -raster_directory <directory>\n"
-		"      -csv <name>\n"
-		"      -envi <name>\n"
-		"      -envisl <name> \n"
-		"      -stats outfile.csv [avg|mode|stdev|min|max]...\n"
-		"      -calbase <link> <filename> [<stats>...]\n"
-		"      -report \n"
-		"      -dump_geometries <filename>\n"
-		"      -mr <prefix> \n"
-		"      -jtstest <filename>\n"
+		"      --raster_field <name>\n"
+		"      --raster_directory <directory>\n"
+		"      --csv <name>\n"
+		"      --envi <name>\n"
+		"      --envisl <name> \n"
+		"      --stats outfile.csv [avg|mode|stdev|min|max]...\n"
+		"      --calbase <link> <filename> [<stats>...]\n"
+		"      --report \n"
+		"      --dump_geometries <filename>\n"
+		"      --mr <prefix> \n"
+		"      --jtstest <filename>\n"
 		"\n"
 		"   options:\n"
-		"      -fields field1 field2 ... fieldn\n"
-		"      -pixprop <minimum-pixel-proportion>\n"
-		"      -noColRow \n"
-		"      -noXY\n"
-		"      -fid <FID>\n"
-		"      -skip_invalid_polys \n"
-		"      -progress [value] \n"
-		"      -RID_as_given \n"
-		"      -verbose \n"
-		"      -ppoly \n"
-		"      -in   \n"
-		"      -srs <srs>\n"
+		"      --fields field1 field2 ... fieldn\n"
+		"      --pixprop <minimum-pixel-proportion>\n"
+		"      --noColRow \n"
+		"      --noXY\n"
+		"      --fid <FID>\n"
+		"      --skip_invalid_polys \n"
+		"      --progress [value] \n"
+		"      --RID_as_given \n"
+		"      --verbose \n"
+		"      --ppoly \n"
+		"      --in   \n"
+		"      --srs <srs>\n"
+		"      --version\n"
 		"\n"
-		"Visit http://starspan.casil.ucdavis.edu/?Usage for more details.\n"
+		"Aditional information at http://starspan.casil.ucdavis.edu/?Usage\n"
 		"\n"
 		, STARSPAN_VERSION, __DATE__, __TIME__
 	);
@@ -75,7 +76,7 @@ static void usage(const char* msg) {
 ///////////////////////////////////////////////////////////////
 // main test program
 int main(int argc, char ** argv) {
-	if ( argc == 1 || 0==strcmp("-help", argv[1]) ) {
+	if ( argc == 1 || 0==strcmp("--help", argv[1]) ) {
 		usage(NULL);
 	}
 	
@@ -126,47 +127,47 @@ int main(int argc, char ** argv) {
 		//
 		// INPUTS:
 		//
-		if ( 0==strcmp("-vector", argv[i]) ) {
+		if ( 0==strcmp("--vector", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-vector: which vector file?");
+				usage("--vector: which vector file?");
 			if ( vector_filename )
-				usage("-vector specified twice");
+				usage("--vector specified twice");
 			vector_filename = argv[i];
 		}
-		else if ( 0==strcmp("-raster", argv[i]) ) {
+		else if ( 0==strcmp("--raster", argv[i]) ) {
 			while ( ++i < argc && argv[i][0] != '-' ) {
 				raster_filenames.push_back(argv[i]);
 			}
 			if ( raster_filenames.size() == 0 )
-				usage("-raster: which raster files?");
+				usage("--raster: which raster files?");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
-		else if ( 0==strcmp("-speclib", argv[i]) ) {
+		else if ( 0==strcmp("--speclib", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-speclib: which CSV file?");
+				usage("--speclib: which CSV file?");
 			if ( speclib_filename )
-				usage("-speclib specified twice");
+				usage("--speclib specified twice");
 			speclib_filename = argv[i];
 		}
 		
-		else if ( 0==strcmp("-update-csv", argv[i]) ) {
+		else if ( 0==strcmp("--update-csv", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-update-csv: which CSV file?");
+				usage("--update-csv: which CSV file?");
 			if ( update_csv_name )
-				usage("-update-csv specified twice");
+				usage("--update-csv specified twice");
 			update_csv_name = argv[i];
 		}
 		
 		//
 		// COMMANDS
 		//
-		else if ( 0==strcmp("-calbase", argv[i]) ) {
+		else if ( 0==strcmp("--calbase", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-calbase: which field to use as link?");
+				usage("--calbase: which field to use as link?");
 			callink_name = argv[i];
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-calbase: which output file name?");
+				usage("--calbase: which output file name?");
 			calbase_filename = argv[i];
 			while ( ++i < argc && argv[i][0] != '-' ) {
 				select_stats.push_back(argv[i]);
@@ -177,101 +178,101 @@ int main(int argc, char ** argv) {
 				--i;
 		}
 		
-		else if ( 0==strcmp("-csv", argv[i]) ) {
+		else if ( 0==strcmp("--csv", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-csv: which name?");
+				usage("--csv: which name?");
 			csv_name = argv[i];
 		}
 		
-		else if ( 0==strcmp("-raster_field", argv[i]) ) {
+		else if ( 0==strcmp("--raster_field", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-raster_field: which field name?");
+				usage("--raster_field: which field name?");
 			raster_field_name = argv[i];
 		}
 		
-		else if ( 0==strcmp("-raster_directory", argv[i]) ) {
+		else if ( 0==strcmp("--raster_directory", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-raster_directory: which raster directory?");
+				usage("--raster_directory: which raster directory?");
 			raster_directory = argv[i];
 		}
 		
-		else if ( 0==strcmp("-stats", argv[i]) ) {
+		else if ( 0==strcmp("--stats", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-stats: which output name?");
+				usage("--stats: which output name?");
 			stats_name = argv[i];
 			while ( ++i < argc && argv[i][0] != '-' ) {
 				select_stats.push_back(argv[i]);
 			}
 			if ( select_stats.size() == 0 )
-				usage("-stats: which statistics?");
+				usage("--stats: which statistics?");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
 
-		else if ( 0==strcmp("-mr", argv[i]) ) {
+		else if ( 0==strcmp("--mr", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-mr: which prefix?");
+				usage("--mr: which prefix?");
 			mini_prefix = argv[i];
 		}
 		
-		else if ( 0==strcmp("-envi", argv[i]) || 0==strcmp("-envisl", argv[i]) ) {
-			envi_image = 0==strcmp("-envi", argv[i]);
+		else if ( 0==strcmp("--envi", argv[i]) || 0==strcmp("--envisl", argv[i]) ) {
+			envi_image = 0==strcmp("--envi", argv[i]);
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-envi, -envisl: which base name?");
+				usage("--envi, --envisl: which base name?");
 			envi_name = argv[i];
 		}
 		
-		else if ( 0==strcmp("-dump_geometries", argv[i]) ) {
+		else if ( 0==strcmp("--dump_geometries", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-dump_geometries: which name?");
+				usage("--dump_geometries: which name?");
 			dump_geometries_filename = argv[i];
 		}
 		
-		else if ( 0==strcmp("-jtstest", argv[i]) ) {
+		else if ( 0==strcmp("--jtstest", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-jtstest: which JTS test file name?");
+				usage("--jtstest: which JTS test file name?");
 			jtstest_filename = argv[i];
 		}
-		else if ( 0==strcmp("-report", argv[i]) ) {
+		else if ( 0==strcmp("--report", argv[i]) ) {
 			do_report = true;
 		}
 		
 		//
 		// OPTIONS
 		//                                                        
-		else if ( 0==strcmp("-pixprop", argv[i]) ) {
+		else if ( 0==strcmp("--pixprop", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-pixprop: pixel proportion?");
+				usage("--pixprop: pixel proportion?");
 			globalOptions.pix_prop = atof(argv[i]);
 			if ( globalOptions.pix_prop < 0.0 || globalOptions.pix_prop > 1.0 )
 				usage("invalid pixel proportion");
 		}
 		
-		else if ( 0==strcmp("-fid", argv[i]) ) {
+		else if ( 0==strcmp("--fid", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-fid: desired FID?");
+				usage("--fid: desired FID?");
 			globalOptions.FID = atol(argv[i]);
 			if ( globalOptions.FID < 0 )
 				usage("invalid FID");
 		}
 		
-		else if ( 0==strcmp("-noColRow", argv[i]) ) {
+		else if ( 0==strcmp("--noColRow", argv[i]) ) {
 			globalOptions.noColRow = true;
 		}
 		
-		else if ( 0==strcmp("-noXY", argv[i]) ) {
+		else if ( 0==strcmp("--noXY", argv[i]) ) {
 			globalOptions.noXY = true;
 		}
 		
-		else if ( 0==strcmp("-ppoly", argv[i]) ) {
+		else if ( 0==strcmp("--ppoly", argv[i]) ) {
 			globalOptions.use_pixpolys = true;
 		}
 		
-		else if ( 0==strcmp("-skip_invalid_polys", argv[i]) ) {
+		else if ( 0==strcmp("--skip_invalid_polys", argv[i]) ) {
 			globalOptions.skip_invalid_polys = true;
 		}
 		
-		else if ( 0==strcmp("-fields", argv[i]) ) {
+		else if ( 0==strcmp("--fields", argv[i]) ) {
 			if ( !select_fields )
 				select_fields = new vector<const char*>();
 			while ( ++i < argc && argv[i][0] != '-' ) {
@@ -281,33 +282,38 @@ int main(int argc, char ** argv) {
 				--i;
 		}
 
-		else if ( 0==strcmp("-in", argv[i]) ) {
+		else if ( 0==strcmp("--in", argv[i]) ) {
 			globalOptions.only_in_feature = true;
 		}
 		
-		else if ( 0==strcmp("-RID_as_given", argv[i]) ) {
+		else if ( 0==strcmp("--RID_as_given", argv[i]) ) {
 			globalOptions.RID_as_given = true;
 		}
 		
-		else if ( 0==strcmp("-progress", argv[i]) ) {
+		else if ( 0==strcmp("--progress", argv[i]) ) {
 			if ( i+1 < argc && argv[i+1][0] != '-' )
 				globalOptions.progress_perc = atof(argv[++i]);
 			globalOptions.progress = true;
 		}
 		
-		else if ( 0==strcmp("-verbose", argv[i]) ) {
+		else if ( 0==strcmp("--verbose", argv[i]) ) {
 			globalOptions.verbose = true;
 		}
 		
-		else if ( 0==strcmp("-srs", argv[i]) ) {
+		else if ( 0==strcmp("--srs", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-srs: which srs?");
+				usage("--srs: which srs?");
 			mini_srs = argv[i];
 		}
 
 		// HELP
-		else if ( 0==strcmp("-help", argv[i]) ) {
+		else if ( 0==strcmp("--help", argv[i]) ) {
 			usage(NULL);
+		}
+		// version
+		else if ( 0==strcmp("--version", argv[i]) ) {
+			fprintf(stdout, "starspan %s\n", STARSPAN_VERSION);
+			exit(0);
 		}
 		else {
 			usage("invalid arguments");
@@ -329,10 +335,10 @@ int main(int argc, char ** argv) {
 	//
 	if ( csv_name ) { 
 		if ( !vector_filename ) {
-			usage("-csv expects a vector input (use -vector)");
+			usage("--csv expects a vector input (use --vector)");
 		}
 		if ( raster_field_name && raster_filenames.size() > 0 ) {
-			usage("Only one of -raster_field or -raster please");
+			usage("Only one of --raster_field or --raster please");
 		}
 		if ( raster_field_name ) {
 			res = starspan_csv_raster_field(
@@ -352,18 +358,18 @@ int main(int argc, char ** argv) {
 			);
 		}
 		else {
-			usage("-csv expects at least a raster input (use -raster)");
+			usage("--csv expects at least a raster input (use --raster)");
 		}
 	}
 	else if ( calbase_filename ) {
 		if ( !vector_filename ) {
-			usage("-calbase expects a vector input (use -vector)");
+			usage("--calbase expects a vector input (use --vector)");
 		}
 		if ( raster_filenames.size() == 0 ) {
-			usage("-calbase requires at least a raster input (use -raster)");
+			usage("--calbase requires at least a raster input (use --raster)");
 		}
 		if ( !speclib_filename ) {
-			usage("-calbase expects a speclib input (use -speclib)");
+			usage("--calbase expects a speclib input (use --speclib)");
 		}
 		res = starspan_tuct_2(
 			vector_filename,  
@@ -376,13 +382,13 @@ int main(int argc, char ** argv) {
 	}
 	else if ( update_csv_name ) {
 		if ( !csv_name ) {
-			usage("-update-csv works with -csv. Please specify an existing CSV");
+			usage("--update-csv works with --csv. Please specify an existing CSV");
 		}
 		if ( vector_filename ) {
-			usage("-update-csv does not expect a vector input");
+			usage("--update-csv does not expect a vector input");
 		}
 		if ( raster_filenames.size() == 0 ) {
-			usage("-update-csv requires at least a raster input");
+			usage("--update-csv requires at least a raster input");
 		}
 		res = starspan_update_csv(update_csv_name, raster_filenames, csv_name);
 	}
@@ -466,7 +472,7 @@ int main(int argc, char ** argv) {
 		// just call corresponding functions:	
 		if ( do_report ) {
 			if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
-				usage("-report: Please give at least one input file to report\n");
+				usage("--report: Please give at least one input file to report\n");
 			}
 			starspan_report(tr);
 		}
