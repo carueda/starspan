@@ -1,6 +1,10 @@
 starspan devnotes
 $Id$
 
+2004-09-16
+	starspan2.cc: collect args before creating maing objects.
+	(arg processing might be based on getopt or similar in a future version.)
+	
 2004-09-13
 	General refactoring to allow the processing of multiple input rasters.
 	Traverser has now methods to specify data input objects; all object

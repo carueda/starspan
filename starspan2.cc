@@ -81,42 +81,39 @@ int main(int argc, char ** argv) {
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
+	bool update = false;
 	
 	bool an_output_given = false;
 	
+	const char* vector_filename = 0;
+	vector<const char*> raster_filenames;
+	double pix_prop = -1.0;
+	long FID = -1;
 
-	// module initialization
-	Raster::init();
-	Vector::init();
-
-	// the traverser object	
-	Traverser tr;
-
+	//
+	// collect arguments  -- FIXME: use getopt later on
+	//
 	for ( int i = 1; i < argc; i++ ) {
 		
 		// INPUTS:
 		if ( 0==strcmp("-vector", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-vector: which vector file?");
-
-			const char* vector_filename = argv[i];
-			tr.setVector(new Vector(vector_filename));
+			vector_filename = argv[i];
 		}
 		else if ( 0==strcmp("-raster", argv[i]) ) {
 			while ( ++i < argc && argv[i][0] != '-' ) {
-				const char* raster_filename = argv[i];
-				tr.addRaster(new Raster(raster_filename));
+				raster_filenames.push_back(argv[i]);
 			}
-			if ( tr.getNumRasters() == 0 )
+			if ( raster_filenames.size() == 0 )
 				usage("-raster: which raster files?");
-			
 			if ( argv[i][0] == '-' ) 
 				--i;
 		}
 		
 		// COMMANDS
 		else if ( 0==strcmp("-dbf", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-dbf: which name?");
 			if ( an_output_given )
 				usage("Only one output format, please\n");
@@ -124,7 +121,7 @@ int main(int argc, char ** argv) {
 			dbf_name = argv[i];
 		}
 		else if ( 0==strcmp("-csv", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-csv: which name?");
 			if ( an_output_given )
 				usage("Only one output format, please\n");
@@ -132,7 +129,7 @@ int main(int argc, char ** argv) {
 			csv_name = argv[i];
 		}
 		else if ( 0==strcmp("-mr", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-mr: which prefix?");
 			if ( an_output_given )
 				usage("Only one output format, please\n");
@@ -141,7 +138,7 @@ int main(int argc, char ** argv) {
 		}
 		else if ( 0==strcmp("-envi", argv[i]) || 0==strcmp("-envisl", argv[i]) ) {
 			envi_image = 0==strcmp("-envi", argv[i]);
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-envi, -envisl: which base name?");
 			if ( an_output_given )
 				usage("Only one output format, please\n");
@@ -149,7 +146,7 @@ int main(int argc, char ** argv) {
 			envi_name = argv[i];
 		}
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-jtstest: which JTS test file name?");
 			if ( an_output_given )
 				usage("Only one output format, please\n");
@@ -162,21 +159,19 @@ int main(int argc, char ** argv) {
 		
 		// OPTIONS
 		else if ( 0==strcmp("-pixprop", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-pixprop: pixel proportion?");
-			double pix_prop = atof(argv[i]);
+			pix_prop = atof(argv[i]);
 			if ( pix_prop < 0.0 || pix_prop > 1.0 )
 				usage("invalid pixel proportion");
-			tr.setPixelProportion(pix_prop);
 		}
 		
 		else if ( 0==strcmp("-fid", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-fid: desired FID?");
-			long FID = atol(argv[i]);
+			FID = atol(argv[i]);
 			if ( FID < 0 )
 				usage("invalid FID");
-			tr.setDesiredFID(FID);
 		}
 		
 		else if ( 0==strcmp("-ppoly", argv[i]) ) {
@@ -184,17 +179,21 @@ int main(int argc, char ** argv) {
 		}
 		
 		else if ( 0==strcmp("-fields", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-fields: which fields to select?");
 			select_fields = argv[i];
 		}
 
+		else if ( 0==strcmp("-update", argv[i]) ) {
+			update = true;
+		}
+		
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
 		}
 		
 		else if ( 0==strcmp("-srs", argv[i]) ) {
-			if ( ++i == argc )
+			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-srs: which srs?");
 			mini_srs = argv[i];
 		}
@@ -209,8 +208,28 @@ int main(int argc, char ** argv) {
 	}
 	
 	CPLPushErrorHandler(starspan_myErrorHandler);
+
+	// module initialization
+	Raster::init();
+	Vector::init();
+
+	// the traverser object	
+	Traverser tr;
+
+	if ( vector_filename )
+		tr.setVector(new Vector(vector_filename));
 	
-	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		tr.addRaster(new Raster(raster_filenames[i]));
+	}
+
+
+	if ( pix_prop >= 0.0 )
+		tr.setPixelProportion(pix_prop);
+
+	if ( FID >= 0 )
+		tr.setDesiredFID(FID);
+
 	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
 		if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
 			usage("Specified output option requires both a raster and a vector to proceed\n");
