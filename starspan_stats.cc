@@ -291,22 +291,22 @@ public:
 			for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
 				if ( 0 == strcmp(*stat, "avg") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%g", result_stats[AVG][j]);
+						fprintf(file, ",%f", result_stats[AVG][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "stdev") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%g", result_stats[STDEV][j]);
+						fprintf(file, ",%f", result_stats[STDEV][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "min") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%g", result_stats[MIN][j]);
+						fprintf(file, ",%f", result_stats[MIN][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "max") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%g", result_stats[MAX][j]);
+						fprintf(file, ",%f", result_stats[MAX][j]);
 					}
 				}
 				else {
