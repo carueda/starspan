@@ -43,9 +43,10 @@ static void ReportOnLayer(FILE* file, OGRLayer* poLayer) {
 	fprintf(file, "Layer SRS WKT:\n%s\n", pszWKT);
 	CPLFree(pszWKT);
 
+	fprintf(file, "Field definitions:\n");
 	for( int iAttr = 0; iAttr < poDefn->GetFieldCount(); iAttr++ ) {
 		OGRFieldDefn* poField = poDefn->GetFieldDefn( iAttr );
-		fprintf(file, "%s: %s (%d.%d)\n",
+		fprintf(file, "\t%s: %s (%d.%d)\n",
 			poField->GetNameRef(),
 			poField->GetFieldTypeName( poField->GetType() ),
 			poField->GetWidth(),
