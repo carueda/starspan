@@ -118,6 +118,11 @@ public:
 	virtual void intersectionFound(OGRFeature* feature) {}
 	
 	/**
+	  * Processing of intersecting feature has finished.  
+	  */
+	virtual void intersectionEnd(OGRFeature* feature) {}
+	
+	/**
 	  * A new pixel location has been computed.
 	  * @param ev Associated event. Pixel location is always provided
 	  * but raster bands are given only if isSimple() returns false.

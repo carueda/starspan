@@ -308,7 +308,6 @@ void Traverser::pixelFound(double x, double y) {
 	if ( pixset.find(colrow) != pixset.end() ) {
 		return;
 	}
-	pixset.insert(colrow);
 	
 	toGridXY(col, row, &x, &y);
 
@@ -325,6 +324,9 @@ void Traverser::pixelFound(double x, double y) {
 	// notify observers:
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->addPixel(event);
+	
+	// keep track of processed pixels
+	pixset.insert(colrow);
 }
 
 //
@@ -712,6 +714,13 @@ void Traverser::process_feature(OGRFeature* feature) {
 		    << ", " << OGRGeometryTypeToName(feature_geometry->getGeometryType())
 		    << endl << err << endl;
 	}
+
+	//
+	// notify observers processing of this feature has finished
+	// 
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->intersectionEnd(feature);
+
 
 	delete intersection_geometry;
 }
