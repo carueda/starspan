@@ -285,35 +285,29 @@ public:
 		// get dimensions for output images:
 		int strip_width = 0;		
 		int strip_height = 0;		
-		int max_height = 0;		
 		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
 			// width will be the maximum miniraster width:
 			if ( strip_width < mrbi->width )
 				strip_width = mrbi->width;
 			// height will be the sum of the miniraster heights:
 			strip_height += mrbi->height;
-
-			// max_height is the maximum miniraster height, used
-			// to allocate a single buffer for all transfers
-			if ( max_height < mrbi->height )
-				max_height = mrbi->height;
 		}
 		int strip_bands;
 		rast.getSize(NULL, NULL, &strip_bands);
 
 		if ( globalOptions.verbose ) {
-			fprintf(stdout, "strip: width x height x bands: %d x %d x %d\n", 
-				strip_width, strip_height, strip_bands);
+			cout<< "strip: width x height x bands: " 
+			    <<strip_width<< " x " <<strip_height<< " x " <<strip_bands<< endl;
 		}
 
-		// allocate transfer buffer:		
-		const long doubles = (long)strip_width * strip_height * strip_bands;
+		// allocate transfer buffer with enough space for the longest row	
+		const long doubles = (long)strip_width * strip_bands;
 		if ( globalOptions.verbose ) {
-			fprintf(stdout, "Allocating %ld doubles for buffer\n", doubles);
+			cout<< "Allocating " <<doubles<< " doubles for buffer\n";
 		}
 		double* buffer = new double[doubles];
 		if ( !buffer ) {
-			fprintf(stderr, " Cannot allocate %ld doubles for buffer\n", doubles);
+			cerr<< " Cannot allocate " <<doubles<< " doubles for buffer\n";
 			return;
 		}
 		
@@ -338,6 +332,10 @@ public:
 			cerr<< "Couldn't create " <<strip_filename<< endl;
 			return;
 		}
+		// fill with globalOptions.nodata
+		for ( int k = 0; k < strip_bands; k++ ) {
+			strip_ds->GetRasterBand(k+1)->Fill(globalOptions.nodata);
+		}
 		
 		// create FID 1-band image:
 		string fid_filename = basefilename + "_mrid.img";
@@ -353,6 +351,9 @@ public:
 			cerr<< "Couldn't create " <<fid_filename<< endl;
 			return;
 		}
+		// fill with -1 as "background" value. 
+		// -1 is chosen as normally FIDs starts from zero.
+		fid_ds->GetRasterBand(1)->Fill(-1);
 		
 		// create loc 2-band image:
 		string loc_filename = basefilename + "_mrloc.glt";
@@ -370,13 +371,17 @@ public:
 			cerr<< "Couldn't create " <<loc_filename<< endl;
 			return;
 		}
+		// fill with 0 as "background" value.
+		// 0 is arbitrarely chosen.
+		loc_ds->GetRasterBand(1)->Fill(0);
+		loc_ds->GetRasterBand(2)->Fill(0);
 		
 		////////////////////////////////////////////////////////////////
 		// transfer data, fid, and loc from minirasters to output strips
 		int next_row = 0;
 		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
 			if ( globalOptions.verbose )
-				fprintf(stdout, "  adding miniraster FID=%ld to strip...\n", mrbi->FID);
+				cout<< "  adding miniraster FID=" <<mrbi->FID<< " to strip...\n";
 
 			// get miniraster filename:
 			string mini_filename = create_filename(prefix, mrbi->FID);
@@ -384,89 +389,128 @@ public:
 			// open miniraster
 			GDALDataset* mini_ds = (GDALDataset*) GDALOpen(mini_filename.c_str(), GA_ReadOnly);
 			if ( !mini_ds ) {
-				fprintf(stderr, " Unexpected: couldn't read %s\n", mini_filename.c_str());
+				cerr<< " Unexpected: couldn't read " <<mini_filename<< endl;
 				hDriver->Delete(mini_filename.c_str());
 				unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
 				continue;
 			}
-			
-			// read data from raster into buffer
-			mini_ds->RasterIO(GF_Read,
-					0,   	       //nXOff,
-					0,  	       //nYOff,
+
+			///////////////////////////////////////////////////////////////
+			// transfer data (row by row):			
+			for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
+				
+				// read data from raster into buffer
+				mini_ds->RasterIO(GF_Read,
+					0,   	                     //nXOff,
+					0 + i,  	                 //nYOff,
 					mini_ds->GetRasterXSize(),   //nXSize,
-					mini_ds->GetRasterYSize(),  //nYSize,
-					buffer,        //pData,
+					1,                           //nYSize,
+					buffer,                      //pData,
 					mini_ds->GetRasterXSize(),   //nBufXSize,
-					mini_ds->GetRasterYSize(),  //nBufYSize,
-					strip_band_type,     //eBufType,
-					strip_bands,   //nBandCount,
-					NULL,          //panBandMap,
-					0,             //nPixelSpace,
-					0,             //nLineSpace,
-					0              //nBandSpace
-			);  	
-			
-			// write buffer in strip image
-			strip_ds->RasterIO(GF_Write,
-					0,   	       //nXOff,
-					next_row,      //nYOff,    <<--  NOTE
+					1,                           //nBufYSize,
+					strip_band_type,             //eBufType,
+					strip_bands,                 //nBandCount,
+					NULL,                        //panBandMap,
+					0,                           //nPixelSpace,
+					0,                           //nLineSpace,
+					0                            //nBandSpace
+				);  	
+				
+				// write buffer in strip image
+				strip_ds->RasterIO(GF_Write,
+					0,   	                     //nXOff,
+					next_row + i,                //nYOff,
 					mini_ds->GetRasterXSize(),   //nXSize,
-					mini_ds->GetRasterYSize(),  //nYSize,
-					buffer,        //pData,
+					1,                           //nYSize,
+					buffer,                      //pData,
 					mini_ds->GetRasterXSize(),   //nBufXSize,
-					mini_ds->GetRasterYSize(),  //nBufYSize,
-					strip_band_type,     //eBufType,
-					strip_bands,   //nBandCount,
-					NULL,          //panBandMap,
-					0,             //nPixelSpace,
-					0,             //nLineSpace,
-					0              //nBandSpace
-			);  	
-		
-			if ( false ) { // why this doesn't work?  -- see workaround below
-				// write FID chunck
-				long fid_datum = mrbi->FID;
+					1,                           //nBufYSize,
+					strip_band_type,             //eBufType,
+					strip_bands,                 //nBandCount,
+					NULL,                        //panBandMap,
+					0,                           //nPixelSpace,
+					0,                           //nLineSpace,
+					0                            //nBandSpace
+				);  	
+			}
+			
+			///////////////////////////////////////////////////////////////
+			// write FID chunck by replication
+			long fid_datum = mrbi->FID;
+			if ( false ) {  // should work but seems to be a RasterIO bug
 				fid_ds->RasterIO(GF_Write,
-						0,   	       //nXOff,
-						next_row,      //nYOff,    <<--  NOTE
-						mini_ds->GetRasterXSize(),   //nXSize,
-						mini_ds->GetRasterYSize(),  //nYSize,
-						&fid_datum,        //pData,
-						1,                 //nBufXSize,
-						1,                 //nBufYSize,
-						fid_band_type,     //eBufType,
-						1,             //nBandCount,
-						NULL,          //panBandMap,
-						0,             //nPixelSpace,
-						0,             //nLineSpace,
-						0              //nBandSpace
+					0,   	                   //nXOff,
+					next_row,                  //nYOff,
+					mini_ds->GetRasterXSize(), //nXSize,
+					mini_ds->GetRasterYSize(), //nYSize,
+					&fid_datum,                //pData,
+					1,                         //nBufXSize,
+					1,                         //nBufYSize,
+					fid_band_type,             //eBufType,
+					1,                         //nBandCount,
+					NULL,                      //panBandMap,
+					0,                         //nPixelSpace,
+					0,                         //nLineSpace,
+					0                          //nBandSpace
 				);
 			}
 			else { // workaround
 				// replicate FID in buffer
 				int* fids = (int*) buffer;
-				int total = mini_ds->GetRasterXSize() * mini_ds->GetRasterYSize();
-				for ( int i = 0; i < total; i++ ) {
-					fids[i] = (int) mrbi->FID;
+				for ( int j = 0; j < mini_ds->GetRasterXSize(); j++ ) {
+					fids[j] = (int) mrbi->FID;
 				}
-				fid_ds->RasterIO(GF_Write,
-						0,   	       //nXOff,
-						next_row,      //nYOff,    <<--  NOTE
-						mini_ds->GetRasterXSize(),   //nXSize,
-						mini_ds->GetRasterYSize(),  //nYSize,
-						fids,        //pData,
-						mini_ds->GetRasterXSize(),   //nBufXSize,
-						mini_ds->GetRasterYSize(),  //nBufYSize,
-						fid_band_type,     //eBufType,
-						1,   //nBandCount,
-						NULL,          //panBandMap,
-						0,             //nPixelSpace,
-						0,             //nLineSpace,
-						0              //nBandSpace
-				);  	
+				for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
+					fid_ds->RasterIO(GF_Write,
+						0,   	                    //nXOff,
+						next_row + i,               //nYOff,
+						mini_ds->GetRasterXSize(),  //nXSize,
+						1,                          //nYSize,
+						fids,                       //pData,
+						mini_ds->GetRasterXSize(),  //nBufXSize,
+						1,                          //nBufYSize,
+						fid_band_type,              //eBufType,
+						1,                          //nBandCount,
+						NULL,                       //panBandMap,
+						0,                          //nPixelSpace,
+						0,                          //nLineSpace,
+						0                           //nBandSpace
+					);
+				}
 			}
 			
+			///////////////////////////////////////////////////////////////
+			// write loc data
+			double adfGeoTransform[6];
+			mini_ds->GetGeoTransform(adfGeoTransform);
+			float pix_x_size = (float) adfGeoTransform[1];
+			float pix_y_size = (float) adfGeoTransform[5];
+			float x0 = (float) adfGeoTransform[0];
+			float y0 = (float) adfGeoTransform[3];
+			float xy[2] = { x0, y0 };
+			for ( int i = 0; i < mini_ds->GetRasterYSize(); i++, xy[1] += pix_y_size ) {
+				xy[0] = x0;
+				for ( int j = 0; j < mini_ds->GetRasterXSize(); j++, xy[0] += pix_x_size ) {
+					loc_ds->RasterIO(GF_Write,
+						j,   	                    //nXOff,
+						next_row + i,               //nYOff,
+						1,                          //nXSize,
+						1,                          //nYSize,
+						xy,                         //pData,
+						1,                          //nBufXSize,
+						1,                          //nBufYSize,
+						loc_band_type,              //eBufType,
+						2,                          //nBandCount,
+						NULL,                       //panBandMap,
+						0,                          //nPixelSpace,
+						0,                          //nLineSpace,
+						0                           //nBandSpace
+					);
+				}
+			}
+			
+			
+			///////////////////////////////////////////////////////////////
 			strip_ds->FlushCache();
 			fid_ds->FlushCache();
 			loc_ds->FlushCache();

@@ -5,9 +5,9 @@
 
 STARSPAN=../starspan
 
-.PHONY: test init test_miniraster
+.PHONY: test init test_miniraster test_miniraster_strip
 
-ALL_TESTS: init test_miniraster
+ALL_TESTS: init test_miniraster test_miniraster_strip
 	@echo "!!!!!!! $@ : OK !!!!!!!"
 
 init:
@@ -33,6 +33,22 @@ test_miniraster:
 		--fid 3
 	cmp expected/miniraster/myprefix_buff2_0003.img \
 	   generated/miniraster/myprefix_buff2_0003.img
+	@echo "$@ : OK"
+	@echo
+	
+test_miniraster_strip:
+	mkdir -p generated/mrstrip/
+	${STARSPAN} \
+		--vector data/vector/starspan_testply.shp \
+		--raster data/raster/starspan2raster.img \
+		--mini_raster_strip generated/mrstrip/myoutput \
+		--in
+	cmp expected/mrstrip/myoutput_mr.img \
+	   generated/mrstrip/myoutput_mr.img
+	cmp expected/mrstrip/myoutput_mrid.img \
+	   generated/mrstrip/myoutput_mrid.img
+	cmp expected/mrstrip/myoutput_mrloc.glt \
+	   generated/mrstrip/myoutput_mrloc.glt
 	@echo "$@ : OK"
 	@echo
 	
