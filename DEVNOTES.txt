@@ -6,7 +6,7 @@ $Id$
 		new Observer#end() to notify observer when process
 		has finished.
 	
-		addObserver instead of setObserver
+		now list of observers: addObserver instead of setObserver
 		
 	
 	

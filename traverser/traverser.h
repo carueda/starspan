@@ -189,7 +189,7 @@ public:
 	/**
 	  * Adds an observer to this traverser.
 	  */
-	void addObserver(Observer* aObserver) { observer = aObserver; }
+	void addObserver(Observer* aObserver);
 
 	
 	/**
@@ -200,7 +200,8 @@ public:
 private:
 	Vector* vect;
 	vector<Raster*> rasts;
-	Observer* observer;
+	vector<Observer*> observers;
+	bool notSimpleObserver;
 
 	double pixelProportion;
 	long desired_FID;
@@ -212,6 +213,7 @@ private:
 	OGREnvelope raster_env;
 	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
+	void notifyObservers(void);
 	void getBandValues(int col, int row);
 	void toColRow(double x, double y, int *col, int *row);
 	void toGridXY(int col, int row, double *x, double *y);

@@ -15,18 +15,23 @@
 #include <geos.h>
 
 
-// (null-object pattern)
-static Observer null_observer;
-
-
 
 Traverser::Traverser() {
 	vect = 0;
-	observer = &null_observer;
 	pixelProportion = -1.0;   // disabled
 	desired_FID = -1;
 	bandValues_buffer = 0;
+	// assume observers will be all simple:
+	notSimpleObserver = false;
 }
+
+void Traverser::addObserver(Observer* aObserver) { 
+	observers.push_back(aObserver);
+	//if at least one observer is not simple...
+	if ( !aObserver->isSimple() )
+		notSimpleObserver = true;
+}
+
 
 void Traverser::setPixelProportion(double pixprop) {
 	pixelProportion = pixprop; 
@@ -178,14 +183,16 @@ void Traverser::pixelFound(double x, double y) {
 	event.pixel.x = x;
 	event.pixel.y = y;
 	
-	if ( !observer->isSimple() ) {
+	// if at leat one observer is not simple...
+	if ( notSimpleObserver ) {
 		// get also band values
 		getBandValues(col, row);
 		event.bandValues = bandValues_buffer;
 	}
 	
-	// notify observer:
-	observer->addPixel(event);
+	// notify observers:
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->addPixel(event);
 }
 
 //
@@ -427,9 +434,10 @@ void Traverser::process_feature(OGRFeature* feature) {
 	);			
 	
 	//
-	// notify observer about this feature
+	// notify observers about this feature
 	// 
-	observer->intersectionFound(feature);
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->intersectionFound(feature);
 
 	//
 	// get intersection type and process accordingly
@@ -480,6 +488,11 @@ void Traverser::traverse() {
 	}
 
 	// do some checks:
+	if ( observers.size() == 0 ) {
+		fprintf(stderr, "traverser: No observers registered!\n");
+		exit(1);
+	}
+
 	if ( !vect ) {
 		fprintf(stderr, "traverser: Vector datasource not specified!\n");
 		exit(1);
@@ -510,9 +523,10 @@ void Traverser::traverse() {
 	bandValues_buffer = new double[globalInfo.bands.size()];
 		
 	//
-	// notify observer about initialization of process
+	// notify observers about initialization of process
 	//
-	observer->init(globalInfo);
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->init(globalInfo);
 
     OGRFeature* feature;
 	
@@ -541,7 +555,8 @@ void Traverser::traverse() {
 	//
 	// notify observer about finalization of process
 	//
-	observer->end();
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->end();
 }
 
 
