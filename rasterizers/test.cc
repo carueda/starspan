@@ -15,6 +15,9 @@
 //           18,9
 //
 
+using namespace std;
+
+
 class MyLineRasterizerObserver : public LineRasterizerObserver {
 public:	
 	void pixelFound(double x, double y) {
