@@ -4,7 +4,8 @@ $Id$
 
 2005-02-07 (0.92beta)
 	- Starting to work on new --mini_raster_strip option.
-	
+	  See starspan_miniraster_strip.cc (partially implemented)
+	  
 	- INSTALL.txt created (based on http://starspan.casil.ucdavis.edu/?Build)
 	
 2005-02-04 (0.92beta)
