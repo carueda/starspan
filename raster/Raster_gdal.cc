@@ -6,6 +6,8 @@
 
 #include "Raster.h"
 
+#include <assert.h>
+
 
 
 int Raster::init() {
@@ -46,15 +48,11 @@ Raster::Raster(const char* filename, int width, int height, int bands) {
     if( geoTransfOK ) {
         pszProjection = GDALGetProjectionRef(hDataset);
     }
+	
+	bandValues_buffer = new double[bands];
 }
 
 	
-static void geo_corner(double adfGeoTransform[6], int ix, int iy, double *x, double *y) {
-	*x = adfGeoTransform[0] + adfGeoTransform[1] * ix + adfGeoTransform[2] * iy;
-	*y = adfGeoTransform[3] + adfGeoTransform[4] * ix + adfGeoTransform[5] * iy;
-}
-
-
 Raster::Raster(const char* rastfilename) {
 	hDataset = (GDALDataset*) GDALOpen(rastfilename, GA_ReadOnly);
     
@@ -67,6 +65,7 @@ Raster::Raster(const char* rastfilename) {
     if( geoTransfOK ) {
         pszProjection = GDALGetProjectionRef(hDataset);
     }
+	bandValues_buffer = new double[GDALGetRasterCount(hDataset)];
 }
 
 
@@ -74,6 +73,12 @@ void Raster::getSize(int *width, int *height, int *bands) {
 	if ( width )  *width = GDALGetRasterXSize(hDataset);
 	if ( height ) *height = GDALGetRasterYSize(hDataset);
 	if ( bands )  *bands = GDALGetRasterCount(hDataset);
+}
+
+
+inline static void geo_corner(double adfGeoTransform[6], int ix, int iy, double *x, double *y) {
+	*x = adfGeoTransform[0] + adfGeoTransform[1] * ix + adfGeoTransform[2] * iy;
+	*y = adfGeoTransform[3] + adfGeoTransform[4] * ix + adfGeoTransform[5] * iy;
 }
 
 
@@ -92,6 +97,53 @@ void Raster::getPixelSize(double *pix_x_size, double *pix_y_size) {
 	if ( pix_x_size ) *pix_x_size = adfGeoTransform[1];
 	if ( pix_y_size ) *pix_y_size = adfGeoTransform[5];
 }
+
+void Raster::toColRow(double x, double y, int *col, int *row) {
+	double pix_x_size = adfGeoTransform[1];
+	double pix_y_size = adfGeoTransform[5];
+	double x0, y0;
+	geo_corner(adfGeoTransform,0, 0, &x0, &y0);
+	*col = (int) floor( (x - x0) / pix_x_size );
+	*row = (int) floor( (y - y0) / pix_y_size );
+}
+
+
+void* Raster::getBandValues(int col, int row) {
+	assert(bandValues_buffer);
+	
+	int width, height, bands;
+	getSize(&width, &height, &bands);
+	if ( col < 0 || col >= width || row < 0 || row >= height ) {
+		return NULL;
+	}
+	
+	char* ptr = (char*) bandValues_buffer;
+	for ( int i = 0; i < bands; i++ ) {
+		GDALRasterBand* band = (GDALRasterBand*) GDALGetRasterBand(hDataset, i+1);
+		GDALDataType bandType = band->GetRasterDataType();
+	
+		int status = band->RasterIO(
+			GF_Read,
+			col, row,
+			1, 1,             // nXSize, nYSize
+			ptr,              // pData
+			1, 1,             // nBufXSize, nBufYSize
+			bandType,         // eBufType
+			0, 0              // nPixelSpace, nLineSpace
+		);
+		
+		if ( status != CE_None ) {
+			fprintf(stdout, "Error reading band value, status= %d\n", status);
+			exit(1);
+		}
+		
+		int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
+		ptr += bandTypeSize;
+	}
+	
+	return bandValues_buffer;
+}
+
 
 void Raster::report(FILE* file) {
 	fprintf(file, "%s\n", hDataset->GetDescription());
@@ -180,6 +232,8 @@ void Raster::report_corner(FILE* file, const char* corner_name, int ix, int iy) 
 
 
 Raster::~Raster() {
+	if ( bandValues_buffer )
+		delete[] bandValues_buffer;
 	delete hDataset;
 }
 

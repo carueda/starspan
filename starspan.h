@@ -41,6 +41,7 @@ int starspan_db(
 	const char* db_filename
 );
 
+
 /**
   * Generates a CSV file with the following columns:
   *     FID, col,row {vect-attrs}, {bands-from-raster}
@@ -76,7 +77,31 @@ int starspan_gen_envisl(
 	bool envi_image
 );
 
-	
+
+/**
+  * Updates a DBF
+  * DOC ME!
+  */
+int starspan_update_dbf(
+	const char* in_dbf_filename,
+	vector<const char*> raster_filenames,
+	const char* out_dbf_filename
+);
+
+
+/**
+  * Updates a CSV
+  * DOC ME!
+  */
+int starspan_update_csv(
+	const char* in_csv_filename,
+	vector<const char*> raster_filenames,
+	const char* out_csv_filename
+);
+
+
+
+
 
 /**
   * Generate a JTS test.
@@ -133,6 +158,43 @@ GDALDatasetH starspan_subset_raster(
 	const char*  pszOutputSRS     // see -a_srs option for gdal_translate.
 	                              // If NULL, projection is taken from input dataset
 );
+
+
+/**
+  * Extracts a value from a buffer according to a type and returns it as a double.
+  */
+inline double starspan_extract_double_value(GDALDataType bandType, void* ptr) {
+	double value;
+	switch(bandType) {
+		case GDT_Byte:
+			value = (double) *( (char*) ptr );
+			break;
+		case GDT_UInt16:
+			value = (double) *( (unsigned short*) ptr );
+			break;
+		case GDT_Int16:
+			value = (double) *( (short*) ptr );
+			break;
+		case GDT_UInt32: 
+			value = (double) *( (unsigned int*) ptr );
+			break;
+		case GDT_Int32:
+			value = (double) *( (int*) ptr );
+			break;
+		case GDT_Float32:
+			value = (double) *( (float*) ptr );
+			break;
+		case GDT_Float64:
+			value = (double) *( (double*) ptr );
+			break;
+		default:
+			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
+			exit(1);
+	}
+	return value;
+}
+
+
 
 
 #endif

@@ -40,7 +40,20 @@ public:
 	// the dataset.
 	void getPixelSize(double *pix_x_size, double *pix_y_size);
 
+	/**
+	  * Returns a pointer to an internal buffer containing the
+	  * bands values of this raster at the specified location.
+	  * NULL is returned if (col,row) is invalid.
+	  */
+	void* getBandValues(int col, int row);
+	
+	/**
+	  * (x,y) to (col,row) conversion.
+	  * Returned location (col,row) could be outside this raster extension.
+	  */
+	void toColRow(double x, double y, int *col, int *row);
 
+	
 	// closes this raster.
 	~Raster();
 	
@@ -52,6 +65,7 @@ private:
     const char* pszProjection;
     double adfGeoTransform[6];
 	bool geoTransfOK;
+	double* bandValues_buffer;
 	
 	void report_corner(FILE* file,const char*,int,int);
 };
