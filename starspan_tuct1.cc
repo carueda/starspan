@@ -1,9 +1,44 @@
 //
 // STARSpan project
 // Carlos A. Rueda
-// starspan_tuct1 - generates a CSV file
+// starspan_tuct1 - first version of functionality described below.
 // $Id$
 //
+//	starspan_tuct1.cc: code for new ''-calbase outfile'' command. 
+//	This command expects inputs -vector V, -raster R1 R2 ..., 
+//	and (new) -speclib F.
+//	starspan create outfile in CSV format with the following scheme:
+//		FID,RID,BandNumber,FieldBandValue,ImageBandValue
+//		
+//	Jonathan wrote:
+//		This seems like a good thing for you (Carlos) to work on as a
+//	predecessor for something TUCT will need -- I sent a draft of that
+//	calibration GIS format, which we will use for now (we can decide to change
+//	it later):
+//	
+//		- Shapefile(s) (point,poly,line) that includes a single field: FID
+//		- a SEPARATE database that contains FID,band1,band2,...,bandN (where N =
+//	number of Hymap bands).
+//	
+//		For now, I would like a database which has the following info:
+//		FID,RID,BandNumber,FieldBandValue,ImageBandValue
+//	
+//		Where FID = the original FID, RID is the raster it came from (use the
+//	file name), BandNumber will be 1 to N, FieldBandValue will be that FID and
+//	Band's value from the field GIS (from the database above), and
+//	ImageBandValue will be the MEAN value from the polygon for that FID for each
+//	band in the image (e.g. You will use starspan libraries to use the shapefile
+//	to extract the polygon values, and pair them up with the corresponding field
+//	data).
+//	
+//		I will use this database to perform the regressions I need to do some
+//	initial calibrations.
+//	
+//	Inputs: shapefile, associated spectral library with FID, raster(s)
+//	Outputs: paired field-image values for each band in the image.
+//	
+//	***
+
 
 #include "starspan.h"           
 
@@ -15,7 +50,7 @@
 /**
   * implementation
   */
-int starspan_getTuct1Observer(
+int starspan_tuct_1(
 	const char* vector_filename,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,

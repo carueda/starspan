@@ -304,7 +304,7 @@ int main(int argc, char ** argv) {
 		if ( !speclib_filename ) {
 			usage("-calbase expects a speclib input");
 		}
-		return starspan_getTuct1Observer(
+		return starspan_tuct_1(
 			vector_filename,  
 			raster_filenames,
 			speclib_filename, 

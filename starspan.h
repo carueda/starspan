@@ -69,7 +69,7 @@ double** starspan_getFeatureStats(
   *
   * @return observer to be added to traverser. 
   */
-int starspan_getTuct1Observer(
+int starspan_tuct_1(
 	const char* vector_filename,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
