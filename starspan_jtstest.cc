@@ -182,7 +182,7 @@ int starspan_jtstest(
 	double pix_x_size, pix_y_size;
 	rast->getPixelSize(&pix_x_size, &pix_y_size);
 	JtsTestObserver observer(jtstest_filename, pix_x_size, pix_y_size, use_polys);
-	tr.setObserver(&observer);
+	tr.addObserver(&observer);
 	tr.traverse();
 	
 	return 0;

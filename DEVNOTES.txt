@@ -1,6 +1,15 @@
 starspan devnotes
 $Id$
 
+2004-09-24
+	traverser: 
+		new Observer#end() to notify observer when process
+		has finished.
+	
+		addObserver instead of setObserver
+		
+	
+	
 2004-09-16
 	starspan2.cc: collect args before creating main objects.
 	(arg processing might be based on getopt or similar in a future version.)

@@ -49,8 +49,7 @@ public:
 
 	
 	/**
-	  * Creates fields: 
-	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
+	  * Creates a dbf creator
 	  */
 	DBObserver(Traverser& tr, DBFHandle f, const char* select_fields_,
 		bool noColRow, bool noXY)
@@ -62,7 +61,8 @@ public:
 	
 	
 	/**
-	  *
+	  * Creates fields: 
+	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
 	  */
 	void init(GlobalInfo& info) { 
 		global_info = &info;
@@ -357,7 +357,7 @@ int starspan_db(
 	}
 
 	DBObserver obs(tr, file, select_fields, noColRow, noXY);	
-	tr.setObserver(&obs);
+	tr.addObserver(&obs);
 	tr.traverse();
 	
 	DBFClose(file);

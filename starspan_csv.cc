@@ -61,8 +61,7 @@ public:
 	const char* select_fields;
 	
 	/**
-	  * Creates first line with column headers:
-	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
+	  * Creates a csv creator
 	  */
 	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_,
 		bool noColRow, bool noXY)
@@ -73,7 +72,8 @@ public:
 	}
 	
 	/**
-	  *
+	  * Creates first line with column headers:
+	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
 	  */
 	void init(GlobalInfo& info) {
 		global_info = &info;
@@ -224,7 +224,7 @@ int starspan_csv(
 	}
 
 	CSVObserver obs(tr, file, select_fields, noColRow, noXY);	
-	tr.setObserver(&obs);
+	tr.addObserver(&obs);
 	tr.traverse();
 	
 	fclose(file);

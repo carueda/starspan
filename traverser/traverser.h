@@ -90,11 +90,17 @@ public:
 	  * but raster bands are given only if isSimple() returns false.
 	  */
 	virtual void addPixel(TraversalEvent& ev) {}
+
+	/**
+	  * Called only once at the end of a traversal processing.
+	  */
+	virtual void end(void) {}
+	
 };
 
 /**
   * A Traverser intersects every geometry feature in a vector datasource
-  * with a raster dataset. An observer should be registered for the
+  * with a raster dataset. Observer should be registered for the
   * actual work to be done.
   *
   * synopsis of usage:
@@ -113,8 +119,10 @@ public:
   *		tr.setPixelProportion(pp);
   *		tr.setDesiredFID(fid);
   *
-  *		// set the observer:  
-  *		tr.setObserver(observer);
+  *		// add observers:  
+  *		tr.addObserver(observer1);
+  *		tr.addObserver(observer2);
+  *		...
   *
   *		// run processing:
   *		tr.traverse();
@@ -179,14 +187,9 @@ public:
 	void setDesiredFID(long FID);
 
 	/**
-	  * Sets the observer for this traverser.
+	  * Adds an observer to this traverser.
 	  */
-	void setObserver(Observer* aObserver) { observer = aObserver; }
-
-	/**
-	  * Gets the observer associated to this traverser.
-	  */
-	Observer* getObserver(void) { return observer; }
+	void addObserver(Observer* aObserver) { observer = aObserver; }
 
 	
 	/**

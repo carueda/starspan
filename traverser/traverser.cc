@@ -537,6 +537,11 @@ void Traverser::traverse() {
 			delete feature;
 		}
 	}
+	
+	//
+	// notify observer about finalization of process
+	//
+	observer->end();
 }
 
 

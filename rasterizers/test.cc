@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 
 	LineRasterizer lr(pix_size_x, pix_size_y);
 	MyLineRasterizerObserver observer;
-	lr.setObserver(&observer);
+	lr.addObserver(&observer);
 	
 	fprintf(stdout, "From  %g %g  ->  %g %g:\n", x1, y1, x2, y2);
 	lr.line(x1, y1, x2, y2);

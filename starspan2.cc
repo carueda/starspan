@@ -49,6 +49,7 @@ static void usage(const char* msg) {
 		"      -pixprop <pixel-proportion-value>\n"
 		"      -noColRow\n"
 		"      -noXY\n"
+		"      -stats <filename.cdv>\n"
 		"      -fid <FID>\n"
 		"      -ppoly\n"
 		"      -in\n"
@@ -83,6 +84,7 @@ int main(int argc, char ** argv) {
 	const char*  dbf_name = NULL;
 	const char*  update_dbf_name = NULL;
 	const char*  csv_name = NULL;
+	const char*  stats_name = NULL;
 	const char*  update_csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
@@ -185,6 +187,12 @@ int main(int argc, char ** argv) {
 				usage("invalid pixel proportion");
 		}
 		
+		else if ( 0==strcmp("-stats", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-stats: which name?");
+			stats_name = argv[i];
+		}
+
 		else if ( 0==strcmp("-fid", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-fid: desired FID?");
@@ -288,6 +296,14 @@ int main(int argc, char ** argv) {
 			usage("Specified output option requires both a raster and a vector to proceed\n");
 		}
 	}
+
+	
+	Observer* stats_obs = 0;
+	// stats calculation:	
+	if ( stats_name ) {
+		stats_obs = starspan_getStatsObserver(tr, stats_name);
+		tr.addObserver(stats_obs);
+	}
 	
 	// COMMANDS
 	if ( csv_name ) { 
@@ -314,6 +330,9 @@ int main(int argc, char ** argv) {
 	else {
 		usage("what should I do?\n");
 	}
+	
+	if ( stats_obs )
+		delete stats_obs;
 	
 	return 0;
 }

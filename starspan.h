@@ -14,11 +14,24 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.6beta"
+#define STARSPAN_VERSION "0.7beta"
 
 
 /////////////////////////////////////////////////////////////////////////////
 // main operations:
+
+
+/**
+  * Gets an observer that computes statistics for each FID
+  */
+Observer* starspan_getStatsObserver(
+	Traverser& tr,
+	const char* filename
+);
+
+
+
+
 
 /**
   * Generates a DBF table with the following structure:

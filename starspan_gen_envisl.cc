@@ -334,7 +334,7 @@ int starspan_gen_envisl(
 	int bands;
 	rast->getSize(NULL, NULL, &bands);
 	EnviSlObserver obs(envi_image, bands, data_file, header_file, fields);	
-	tr.setObserver(&obs);
+	tr.addObserver(&obs);
 	
 	tr.traverse();
 	
