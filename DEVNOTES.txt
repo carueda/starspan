@@ -1,6 +1,31 @@
 starspan devnotes
 $Id$
 
+2004-08-03
+	In order to have GEOS functionality from within GDAL I did
+	the following:
+	
+		Installed GEOS:
+			- ``cvs co geos''
+			- ./autogen.sh && ./configure && make && make install
+			  I fixed some minor errors about comparisons, but
+			  I hacked the Makefile to replace INTERFACE_* for
+			  arbitrary numbers. ;-(  I couldn't find any help about
+			  this error.  Finally it compiled
+			  
+		Installed GDAL:
+			- ``cvs checkout gdal''  to have the most recent GDAL source
+			  (since GEOS is not yet officially released).
+			- ./configure --with-geos=/usr/local/bin/geos-config
+			- ``make'' but generated errors in ogrgeometry.cpp related
+			  with convex-hull calls in GEOS. I hacked this to skip the problem
+			- ``make install''
+			
+	starspan2.cc: initial version with geom->Contains(point) and a very
+	simple report of point contained in the geometries of the vector datasource.
+			
+	
+
 2004-08-02
 	Working now on the C++ code.
 	New interface modules:
