@@ -378,14 +378,6 @@ int main(int argc, char ** argv) {
 	// the traverser object	
 	Traverser tr;
 
-	if ( vector_filename )
-		tr.setVector(new Vector(vector_filename));
-	
-	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {    
-		tr.addRaster(new Raster(raster_filenames[i]));
-	}
-
-
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
 
@@ -397,6 +389,14 @@ int main(int argc, char ** argv) {
 		tr.setProgress(globalOptions.progress_perc, cout);
 
 	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
+
+	if ( vector_filename )
+		tr.setVector(new Vector(vector_filename));
+	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {    
+		tr.addRaster(new Raster(raster_filenames[i]));
+	}
+
 
 	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
 		if ( tr.getNumRasters() == 0 || !tr.getVector() ) {

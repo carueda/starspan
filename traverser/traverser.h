@@ -42,11 +42,20 @@ struct GlobalInfo {
 
 /**
   * Global grid defined by unioning all input raster envelopes.
+  * All coordinates given during traversal are relative to
+  * this grid
   */
 struct GridInfo {
+	/** geographic location of upper left corner */
 	double x0, y0;
+	
+	/** pixel size as given in setPixelSize */
 	double pix_x_size, pix_y_size;
+	
+	/** absolute values of pixel size */
 	double abs_pix_x_size, abs_pix_y_size;
+	
+	/** area of a pixel */
 	double pix_area;
 	
 	/** sets the pixel size */
@@ -56,12 +65,13 @@ struct GridInfo {
 		pix_area = abs_pix_x_size * abs_pix_y_size;
 	}
 	
+	/** Sets the upper left corner (x0,y0) accroding to the given envelope */
 	void setOrigin(OGREnvelope &env) {
 		x0 = min(env.MinX, env.MaxX);
 		y0 = min(env.MinY, env.MaxY);
 	}
 	
-	/** (x,y) to (col,row) conversion */
+	/** (x,y) to [col,row] conversion */
 	void toColRow(double x, double y, int *col, int *row) {
 		*col = (int) floor( (x - x0) / abs_pix_x_size );
 		*row = (int) floor( (y - y0) / abs_pix_y_size );
@@ -80,7 +90,7 @@ struct GridInfo {
 /**
   * Event sent to traversal observers every time an intersecting
   * pixel is found.
-  * Note that all pixel locations are 0-based, with (0,0) denoting
+  * Note that all pixel locations are 0-based, with [0,0] denoting
   * the upper left corner pixel.
   */
 struct TraversalEvent {
@@ -88,11 +98,11 @@ struct TraversalEvent {
 	  * Info about the location of pixels.
 	  */
 	struct {
-		/** 0-based (col,row) location relative to raster image.  */
+		/** 0-based [col,row] location relative to global grid.  */
 		int col;
 		int row;
 		
-		/** (x,y) location in geographic coordinates. */
+		/** corresponding geographic location in global grid. */
 		double x;
 		double y;
 	} pixel;
