@@ -16,6 +16,28 @@
 /////////////////////////////////////////////////////////////////////////////
 // main operations:
 
+/** Generates envi spectral library ... (preliminaries)
+    returns 0 iff OK. */
+int starspan_gen_envisl(
+	Raster* rast, 
+	Vector* vect, 
+	const char* envisl_name,
+	const char* pszOutputSRS  // see gdal_translate option -a_srs 
+	                         // If NULL, projection is taken from input dataset
+);
+
+	
+/** Generates db ... (preliminaries)
+    returns 0 iff OK. */
+int starspan_db(
+	Raster* rast, 
+	Vector* vect, 
+	const char* db_name,
+	bool only_in_feature,
+	const char* pszOutputSRS  // see gdal_translate option -a_srs 
+	                         // If NULL, projection is taken from input dataset
+);
+
 /** Generate mini rasters
     returns 0 iff OK. */
 int starspan_minirasters(

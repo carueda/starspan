@@ -1,8 +1,7 @@
 //
 // STARSpan project
 // Carlos A. Rueda
-// starspan2 - second version
-//         uses Vector.h, Raster.h
+// starspan2 
 // $Id$
 //
 
@@ -49,6 +48,10 @@ static void usage(const char* msg) {
 		"      -mr <prefix>\n"
 		"              Generates a mini raster for each intersecting feature.\n"
 		"              The <prefix> is used to compose raster names.\n"
+		"      -envisl <name>\n"
+		"              (preliminary) Generates an ENVI spectral library...\n"
+		"      -db <name>\n"
+		"              (preliminary) Generates a table...\n"
 		"      -in\n"
 		"              (Used with -mr)\n"
 		"              Only pixels contained in geometry features are retained.\n"
@@ -78,6 +81,8 @@ int main(int argc, char ** argv) {
 	const char* vector_filename = NULL;
 	bool do_report = false;
 	bool only_in_feature = false;
+	const char*  envisl_name = NULL;
+	const char*  db_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
@@ -104,6 +109,16 @@ int main(int argc, char ** argv) {
 		}
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
+		}
+		else if ( 0==strcmp("-envisl", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-envisl: which base name?");
+			envisl_name = argv[i];
+		}
+		else if ( 0==strcmp("-db", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-db: which name?");
+			db_name = argv[i];
 		}
 		else if ( 0==strcmp("-srs", argv[i]) ) {
 			if ( ++i == argc )
@@ -136,12 +151,31 @@ int main(int argc, char ** argv) {
 	if ( vector_filename )
 		vect = new Vector(vector_filename);
 
+	if ( db_name     && mini_prefix 
+	||   envisl_name && mini_prefix
+	||   db_name     && envisl_name ) {
+		usage("Only one of -mr, -envisl, or -db, please\n");
+	}
+	
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
-	if ( mini_prefix ) { // this option takes precedence.
+	// options for generating data take precedence.
+	if ( envisl_name ) { 
 		if ( !rast || !vect ) {
-			usage("-mr option requires both a raster and a vector file to process\n");
+			usage("-envisl option requires both a raster and a vector file to proceed\n");
+		}
+		return starspan_gen_envisl(rast, vect, envisl_name, mini_srs);
+	}
+	else if ( db_name ) { 
+		if ( !rast || !vect ) {
+			usage("-db option requires both a raster and a vector file to proceed\n");
+		}
+		return starspan_db(rast, vect, db_name, only_in_feature, mini_srs);
+	}
+	else if ( mini_prefix ) { // this option takes precedence.
+		if ( !rast || !vect ) {
+			usage("-mr option requires both a raster and a vector file to proceed\n");
 		}
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
 	}
