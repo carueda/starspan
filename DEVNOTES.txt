@@ -1,6 +1,9 @@
 starspan devnotes
 $Id$
 
+2004-09-10
+	Band# names now starting from 1.
+	
 2004-09-09
 	TraversalEvent: (col,row) are now (1,1)-based (to be more
 	compatible with standard tools, e.g. envi).

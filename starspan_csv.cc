@@ -115,7 +115,7 @@ public:
 		// Create fields for bands
 		rast->getSize(NULL, NULL, &numBands);
 		for ( int i = 0; i < numBands; i++ ) {
-			fprintf(file, ",Band%d", i);
+			fprintf(file, ",Band%d", i+1);
 		}
 		
 		fprintf(file, "\n");

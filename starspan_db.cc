@@ -178,7 +178,7 @@ public:
 			field_type = FTDouble;
 			field_width = 18;
 			field_precision = 3;
-			sprintf(field_name, "Band%d", i);
+			sprintf(field_name, "Band%d", i+1);
 			fprintf(stdout, "Creating field: %s\n", field_name);
 			DBFAddField(file, field_name, field_type, field_width, field_precision);
 			next_field_index++;
@@ -327,7 +327,7 @@ public:
 			//        so ok should be always true.
 			if ( false && !ok ) {
 				char field_name[64];
-				sprintf(field_name, "Band%d", i);
+				sprintf(field_name, "Band%d", i+1);
 				fprintf(stderr, "DBFWriteDoubleAttribute returned %d\nfield name %s, record %d\n", 
 					ok, field_name, next_record_index
 				);
