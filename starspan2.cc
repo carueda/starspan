@@ -306,6 +306,7 @@ int main(int argc, char ** argv) {
 			vector_filename,  
 			raster_filenames,
 			speclib_filename,
+			pix_prop,
 			callink_name,
 			calbase_filename
 		);

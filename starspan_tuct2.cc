@@ -20,6 +20,7 @@ int starspan_tuct_2(
 	const char* vector_filename,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
+	double pix_prop,
 	const char* link_name,
 	const char* calbase_filename
 ) {
@@ -116,7 +117,9 @@ int starspan_tuct_2(
 			long FID;
 			double** stats = starspan_getFeatureStatsByField(
 				link_name, link_val.c_str(), 
-				vect, rast, select_stats,
+				vect, rast,
+				pix_prop,
+				select_stats,
 				&FID
 			); 
 			if ( stats ) {

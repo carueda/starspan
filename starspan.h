@@ -64,6 +64,7 @@ double** starspan_getFeatureStatsByField(
 	const char* field_name, 
 	const char* field_value, 
 	Vector* vect, Raster* rast,
+	double pix_prop,
 	vector<const char*> select_stats,
 	long *FID
 ); 
@@ -88,6 +89,7 @@ double** starspan_getFeatureStatsByField(
   * @param vector_filename Vector datasource
   * @param raster_filenames rasters
   * @param speclib_filename spectral library file name
+  * @param pixprop A value assumed to be in [0.0, 1.0].
   * @param link_name Name of field to be used as link vector-speclib
   * @param calbase_filename output file name
   *
@@ -97,6 +99,7 @@ int starspan_tuct_2(
 	const char* vector_filename,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
+	double pix_prop,
 	const char* link_name,
 	const char* calbase_filename
 );
