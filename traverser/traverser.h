@@ -12,6 +12,8 @@
 #include "rasterizers.h"
 #include "Progress.h"
 
+#include <geos.h>
+
 #include <set>
 #include <list>
 #include <vector>
@@ -322,6 +324,7 @@ private:
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
 	void pixelFoundInPolygon(double x, double y);
+	void Traverser::processValidPolygon(geos::Polygon* geos_poly);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
 	void processGeometryCollection(OGRGeometryCollection* coll);
@@ -357,6 +360,8 @@ private:
 	ostream* logstream;
 	bool debug_dump_polys;
 	bool skip_invalid_polys;
+	
+	geos::WKTWriter wktWriter;
 };
 
 

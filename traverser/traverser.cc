@@ -11,8 +11,8 @@
 #include <cstdlib>
 #include <cassert>
 
-// for processPolygon:
-#include <geos.h>
+// for polygon processing:
+#include "geos/opPolygonize.h"
 
 
 Traverser::Traverser() {
@@ -370,6 +370,7 @@ void Traverser::pixelFoundInPolygon(double x, double y) {
 // To avoid some OGR overhead, I use GEOS directly.
 //
 static geos::GeometryFactory* global_factory = new geos::GeometryFactory();
+static const geos::CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordinateSequenceFactory();
 
 // create pixel polygon
 inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, double y1) {
@@ -386,26 +387,17 @@ inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, do
 }
 
 //
-// process a polygon intersection.
-// The area of intersections are used to determine if a pixel is to be
-// included.  
+// Process a valid polygon.
 //
-void Traverser::processPolygon(OGRPolygon* poly) {
-	OGREnvelope intersection_env;
-	poly->getEnvelope(&intersection_env);
+inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
+	const geos::Envelope* intersection_env = geos_poly->getEnvelopeInternal();
 	
 	// get envelope corners in pixel coordinates:
 	int minCol, minRow, maxCol, maxRow;
-	toColRow(intersection_env.MinX, intersection_env.MinY, &minCol, &minRow);
-	toColRow(intersection_env.MaxX, intersection_env.MaxY, &maxCol, &maxRow);
+	toColRow(intersection_env->getMinX(), intersection_env->getMinY(), &minCol, &minRow);
+	toColRow(intersection_env->getMaxX(), intersection_env->getMaxY(), &maxCol, &maxRow);
 	// Note: minCol is not necessarily <= maxCol (idem for *Row)
 
-	if ( logstream ) {
-		(*logstream)
-		   << " minCol=" <<minCol<< ", minRow=" <<minRow<< endl 
-		   << " maxCol=" <<maxCol<< ", maxRow=" <<maxRow<< endl;
-	}
-	
 	// get envelope corners in grid coordinates:
 	double minX, minY, maxX, maxY;
 	toGridXY(minCol, minRow, &minX, &minY);
@@ -413,6 +405,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 
 	if ( logstream ) {
 		(*logstream)
+		   << " minCol=" <<minCol<< ", minRow=" <<minRow<< endl 
+		   << " maxCol=" <<maxCol<< ", maxRow=" <<maxRow<< endl
 		   << " minX=" <<minX<< ", minY=" <<minY<< endl 
 		   << " maxX=" <<maxX<< ", maxY=" <<maxY<< endl;
 	}
@@ -429,17 +423,6 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 		fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
 	}
 
-	geos::WKTWriter wktWriter;
-	
-	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
-	if ( skip_invalid_polys && !geos_poly->isValid() ) {
-		cerr<< "--skipping invalid polygon--"<< endl;
-		if ( debug_dump_polys ) {
-			cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
-		}
-		delete geos_poly;
-		return;
-	}
 	const double pix_area = fabs(pix_x_size*pix_y_size);
 	
 	double abs_pix_y_size = fabs(pix_y_size);
@@ -494,6 +477,64 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			num_pixels_in_poly, rows_env * cols_env
 		);
 	}
+}
+
+//
+// process a polygon intersection.
+// The area of intersections are used to determine if a pixel is to be
+// included.  
+//
+void Traverser::processPolygon(OGRPolygon* poly) {
+	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
+	if ( geos_poly->isValid() ) {
+		processValidPolygon(geos_poly);
+	}
+	else {
+		if ( skip_invalid_polys ) {
+			cerr<< "--skipping invalid polygon--"<< endl;
+			if ( debug_dump_polys ) {
+				cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
+			}
+		}
+		else {
+			// try to split this poly into smaller ones:
+			if ( geos_poly->getNumInteriorRing() > 0 ) {
+				cerr<< "--Invalid polygon has interior rings: cannot fix it--" << endl;
+			} 
+			else {
+				const geos::LineString* lines = geos_poly->getExteriorRing();
+				// get noded linestring:
+				geos::Geometry* noded = 0;
+				int num_points = lines->getNumPoints();
+				const geos::CoordinateSequence* coordinates = lines->getCoordinatesRO();
+				for ( int i = 1; i < num_points; i++ ) {
+					vector<geos::Coordinate>* subcoordinates = new vector<geos::Coordinate>();
+					subcoordinates->push_back(coordinates->getAt(i-1));
+					subcoordinates->push_back(coordinates->getAt(i));
+					geos::CoordinateSequence* cs = global_cs_factory->create(subcoordinates);
+					geos::LineString* ln = global_factory->createLineString(cs);
+					
+					if ( !noded )
+						noded = ln;
+					else
+						noded = noded->Union(ln);
+				}
+				
+				// now, polygonize:
+				geos::Polygonizer polygonizer;
+				polygonizer.add(noded);
+				
+				// and process generated sub-polygons:
+				vector<geos::Polygon*>* polys = polygonizer.getPolygons();
+				cout << polys->size() << " sub-polys obtained\n";
+				for ( unsigned i = 0; i < polys->size(); i++ ) {
+					processValidPolygon((*polys)[i]);
+				}
+			}
+			
+		}
+	}
+	delete geos_poly;
 }
 
 

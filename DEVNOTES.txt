@@ -2,18 +2,16 @@ starspan devnotes
 $Id$
 
 2004-10-18
-	Trying to test geos::Polygonizer ..
-	which is not yet in the 2.0.1 official release, I'm using
-	the CVS snapshop...  well, i'm getting weird runtime errors :-(
+	Starting to use geos::Polygonizer as a means to fix bad polys.
+	(geos::Polygonizer is not yet in the 2.0.1 official release, I'm using
+	the CVS snapshop.)
+	The idea is to node the segments defining a "bad" (self-intersecting) 
+	polygon, and then polygonize the resulting multilinestring.
+	See Traverser#processPolygon().
 	
-	Now, trying with JTS directly: The idea is to node the segments
-	defining a "bad" (self-intersecting) polygon, and then polygonize
-	the resulting multilinestring. 
-	See java/src/starspan/tools/PolygonizerTest.java
+	(my first test of Polygonizer was in java using JTS directly:  
+	See java/src/starspan/tools/PolygonizerTest.java.)
 	
-	(which btw compiles and runs smoothly--one more temptation to use java 
-	for starspan ;-)
-
 
 2004-10-14 (0.88beta)
 	New option -RID_as_given: by default, RIDs are the filenames without
