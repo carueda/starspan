@@ -752,6 +752,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	if ( !intersection_geometry ) {
 		if ( verbose ) {
 			cout<< " NO INTERSECTION:\n";
+			globalInfo.rasterPoly.dumpReadable(stdout, "rasterPoly");
 		}
 		goto done;
 	}
