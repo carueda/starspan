@@ -294,9 +294,29 @@ int starspan_csv_raster_field(
 	// else: process each feature in vector datasource:
 	//
 	else {
+		Progress* progress = 0;
+		if ( globalOptions.progress ) {
+			long psize = layer->GetFeatureCount();
+			if ( psize >= 0 ) {
+				progress = new Progress(psize, globalOptions.progress_perc);
+			}
+			else {
+				progress = new Progress((long)globalOptions.progress_perc);
+			}
+			cout << "\t";
+			progress->start();
+		}
 		while( (currentFeature = layer->GetNextFeature()) != NULL ) {
 			process_feature();
 			delete currentFeature;
+			if ( progress )
+				progress->update();
+		}
+		if ( progress ) {
+			progress->complete();
+			delete progress;
+			progress = 0;
+			cout << endl;
 		}
 	}	
 	return 0;
