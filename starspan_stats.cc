@@ -37,18 +37,10 @@ public:
 	};
 	vector<Pixel> pixels;
 	
-	// indices into result_stats:
-	enum {
-		CUM,     // cumulation
-		MIN,     // minimum
-		MAX,     // maximum
-		AVG,     // average
-		STDEV,   // std deviation--requires second pass
-		TOT_RESULTS
-	};
 	double* result_stats[TOT_RESULTS];
 	bool compute[TOT_RESULTS];
 	
+	bool releaseStats;
 	
 		
 	/**
@@ -67,6 +59,9 @@ public:
 			result_stats[i] = 0;
 			compute[i] = false;
 		}
+		// by default, result_stats arrays (to be allocated in init())
+		// get released in end():
+		releaseStats = true;
 		
 		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 			if ( 0 == strcmp(*stat, "avg") )
@@ -78,7 +73,7 @@ public:
 			else if ( 0 == strcmp(*stat, "max") )
 				compute[MAX] = true;
 			else {
-				fprintf(stderr, "Unrecognized stats %s\n", *stat);
+				cerr<< "Unrecognized stats " << *stat<< endl;
 				exit(1);
 			}
 		}
@@ -98,7 +93,7 @@ public:
 		finalizePreviousFeatureIfAny();
 		if ( file ) {
 			fclose(file);
-			fprintf(stdout, "Stats: finished.\n");
+			cout<< "Stats: finished" << endl;
 			file = 0;
 		}
 		if ( bandValues_buffer ) {
@@ -109,10 +104,13 @@ public:
 			delete[] bandValues;
 			bandValues = 0;
 		}
-		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
-			if ( result_stats[i] ) {
-				delete[] result_stats[i];
-				result_stats[i] = 0;
+		
+		if ( releaseStats ) {
+			for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
+				if ( result_stats[i] ) {
+					delete[] result_stats[i];
+					result_stats[i] = 0;
+				}
 			}
 		}
 	}
@@ -136,47 +134,47 @@ public:
 
 		OGRLayer* poLayer = vect->getLayer(0);
 		if ( !poLayer ) {
-			fprintf(stderr, "Couldn't fetch layer 0\n");
+			cerr<< "Couldn't fetch layer 0" << endl;
 			exit(1);
 		}
 
 		//		
 		// write column headers:
 		//
-
-		// Create FID field
-		fprintf(file, "FID");
-
-
-		// Create fields:
-		if ( select_fields ) {
-			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
-				fprintf(file, ",%s", *fname);
+		if ( file ) {
+			// Create FID field
+			fprintf(file, "FID");
+	
+			// Create fields:
+			if ( select_fields ) {
+				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+					fprintf(file, ",%s", *fname);
+				}
 			}
-		}
-		else {
-			// all fields from layer definition
-			OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
-			int feature_field_count = poDefn->GetFieldCount();
+			else {
+				// all fields from layer definition
+				OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
+				int feature_field_count = poDefn->GetFieldCount();
+				
+				for ( int i = 0; i < feature_field_count; i++ ) {
+					OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
+					const char* pfield_name = poField->GetNameRef();
+					fprintf(file, ",%s", pfield_name);
+				}
+			}
 			
-			for ( int i = 0; i < feature_field_count; i++ ) {
-				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
-				const char* pfield_name = poField->GetNameRef();
-				fprintf(file, ",%s", pfield_name);
-			}
+			
+			// Create numPixels field
+			fprintf(file, ",numPixels");
+			
+			// Create fields for bands
+			for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
+				for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
+					fprintf(file, ",%s_Band%d", *stat, i+1);
+				}
+			}		
+			fprintf(file, "\n");
 		}
-		
-		
-		// Create numPixels field
-		fprintf(file, ",numPixels");
-		
-		// Create fields for bands
-		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
-			for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
-				fprintf(file, ",%s_Band%d", *stat, i+1);
-			}
-		}		
-		fprintf(file, "\n");
 		
 		// allocate buffer for band values--large enough
 		bandValues_buffer = new double[global_info->bands.size()];
@@ -302,40 +300,42 @@ public:
 		if ( !previous )
 			return;
 		
-		// Add numPixels value:
-		fprintf(file, ",%d", pixels.size());
-		
 		computeResults();
  
-		// report desired results:
-		// (desired list is traversed to keep order according to column headers)
-		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
-			if ( 0 == strcmp(*stat, "avg") ) {
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					fprintf(file, ",%f", result_stats[AVG][j]);
+		if ( file ) {
+			// Add numPixels value:
+			fprintf(file, ",%d", pixels.size());
+			
+			// report desired results:
+			// (desired list is traversed to keep order according to column headers)
+			for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
+				if ( 0 == strcmp(*stat, "avg") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[AVG][j]);
+					}
+				}
+				else if ( 0 == strcmp(*stat, "stdev") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[STDEV][j]);
+					}
+				}
+				else if ( 0 == strcmp(*stat, "min") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[MIN][j]);
+					}
+				}
+				else if ( 0 == strcmp(*stat, "max") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[MAX][j]);
+					}
+				}
+				else {
+					cerr<< "Unrecognized stats "<< *stat << endl;
+					exit(1);
 				}
 			}
-			else if ( 0 == strcmp(*stat, "stdev") ) {
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					fprintf(file, ",%f", result_stats[STDEV][j]);
-				}
-			}
-			else if ( 0 == strcmp(*stat, "min") ) {
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					fprintf(file, ",%f", result_stats[MIN][j]);
-				}
-			}
-			else if ( 0 == strcmp(*stat, "max") ) {
-				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					fprintf(file, ",%f", result_stats[MAX][j]);
-				}
-			}
-			else {
-				fprintf(stderr, "Unrecognized stats %s\n", *stat);
-				exit(1);
-			}
+			fprintf(file, "\n");
 		}
-		fprintf(file, "\n");
 		pixels.clear();
 		previous = false;
 	}
@@ -350,28 +350,29 @@ public:
 		// start info for new feature:
 		//
 		
-		// Add FID value:
-		fprintf(file, "%ld", feature->GetFID());
-
-
-		// add attribute fields from source feature to record:
-		if ( select_fields ) {
-			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
-				const int i = feature->GetFieldIndex(*fname);
-				if ( i < 0 ) {
-					fprintf(stderr, "\n\tField `%s' not found\n", *fname);
-					exit(1);
+		if ( file ) {
+			// Add FID value:
+			fprintf(file, "%ld", feature->GetFID());
+	
+			// add attribute fields from source feature to record:
+			if ( select_fields ) {
+				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+					const int i = feature->GetFieldIndex(*fname);
+					if ( i < 0 ) {
+						cerr<< endl << "\tField `" <<*fname<< "' not found" << endl;
+						exit(1);
+					}
+					const char* str = feature->GetFieldAsString(i);
+					fprintf(file, ",%s", str);
 				}
-				const char* str = feature->GetFieldAsString(i);
-				fprintf(file, ",%s", str);
 			}
-		}
-		else {
-			// all fields
-			int feature_field_count = feature->GetFieldCount();
-			for ( int i = 0; i < feature_field_count; i++ ) {
-				const char* str = feature->GetFieldAsString(i);
-				fprintf(file, ",%s", str);
+			else {
+				// all fields
+				int feature_field_count = feature->GetFieldCount();
+				for ( int i = 0; i < feature_field_count; i++ ) {
+					const char* str = feature->GetFieldAsString(i);
+					fprintf(file, ",%s", str);
+				}
 			}
 		}
 		
@@ -392,7 +393,7 @@ public:
 
 
 /**
-  * implementation
+  * starspan_getStatsObserver: implementation
   */
 Observer* starspan_getStatsObserver(
 	Traverser& tr,
@@ -403,12 +404,44 @@ Observer* starspan_getStatsObserver(
 	// create output file
 	FILE* file = fopen(filename, "w");
 	if ( !file ) {
-		fprintf(stderr, "Couldn't create %s\n", filename);
+		cerr<< "Couldn't create "<< filename << endl;
 		return 0;
 	}
 
 	return new StatsObserver(tr, file, select_stats, select_fields);	
 }
 		
+
+/**
+  * starspan_getFeatureStats: implementation
+  */
+double** starspan_getFeatureStats(
+	long FID, Vector* vect, Raster* rast,
+	vector<const char*> select_stats
+) {
+	Traverser tr;
+	tr.setVector(vect);
+	tr.addRaster(rast);
+	tr.setDesiredFID(FID);
+
+	FILE* file = 0;
+	vector<const char*> select_fields;
+	StatsObserver* statsObs = new StatsObserver(tr, file, select_stats, &select_fields);
+	if ( !statsObs )
+		return 0;
+	
+	// I want to keep the resulting stats arrays for the client
+	statsObs->releaseStats = false;
+	
+	tr.addObserver(statsObs);
+	tr.traverse();
+	
+	// take results:
+	double** result_stats = statsObs->result_stats;
+	
+	tr.releaseObservers();
+	
+	return result_stats;
+}
 
 

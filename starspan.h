@@ -14,11 +14,68 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.82beta"
+#define STARSPAN_VERSION "0.83beta"
+
+
+// indices into stats arrays:
+enum {
+	CUM,     // cumulation
+	MIN,     // minimum
+	MAX,     // maximum
+	AVG,     // average
+	STDEV,   // std deviation--requires second pass
+	TOT_RESULTS
+};
+
+/////////////////////////////////////////////////////////////////////////////
+// some services:
+
+/**
+  * Gets statistics for a given feature in a raster.
+  * RESULT[s][b] = statistic s on band b
+  * where:
+  *    MIN <= s <= STDDEV 
+  *    0 <= b < #bands in raster
+  * @param FID
+  * @param vect
+  * @param rast
+  * @param select_stats List of desired statistics (avg, stdev, min, max)
+  */
+double** starspan_getFeatureStats(
+	long FID, Vector* vect, Raster* rast,
+	vector<const char*> select_stats
+); 
+
 
 
 /////////////////////////////////////////////////////////////////////////////
 // main operations:
+
+
+/**
+  * Generates a CSV file with the following columns:
+  *     FID, RID, BandNumber, FieldBandValue, ImageBandValue
+  * where:
+  *     FID:          feature ID as given by OGRFeature#GetFID()
+  *     RID           raster filename
+  *     BandNumber    1 .. N
+  *     FieldBandValue  value from input speclib
+  *     ImageBandValue  MEAN value for BandNumber in RID
+  *
+  * @param vector_filename Vector datasource
+  * @param raster_filenames rasters
+  * @param speclib_filename spectral library file name
+  * @param calbase_filename output file name
+  *
+  * @return observer to be added to traverser. 
+  */
+int starspan_getTuct1Observer(
+	const char* vector_filename,
+	vector<const char*> raster_filenames,
+	const char* speclib_filename,
+	const char* calbase_filename
+);
+
 
 
 /**

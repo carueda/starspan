@@ -32,6 +32,7 @@ static void usage(const char* msg) {
 		"   inputs:\n"
 		"      -raster <filenames>...   GDAL recognized raster files.\n"
 		"      -vector <filename>       An OGR recognized vector file.\n"
+		"      -speclib <filename>      A CSV file with scheme: FID,band1,band2,...,bandN\n"
 		"      -update-csv <filename>   A CSV file with pixel locations.\n"
 		"      -update-dbf <filename>   A DBF file with pixel locations.\n"
 		"\n"
@@ -44,6 +45,7 @@ static void usage(const char* msg) {
 		"      -stats outfile.csv [avg|stdev|min|max]...\n"
 		"                           Compute statistics\n"
 		"      -dump_geometries <filename>  Save geometries for vizualization\n"
+		"      -calbase <filename>  Create base table for calibration\n"
 		"      -mr <prefix>         Generate mini rasters\n"
 		"      -jtstest <filename>  Generate a JTS test file\n"
 		"\n"
@@ -99,6 +101,8 @@ int main(int argc, char ** argv) {
 	
 	const char* vector_filename = 0;
 	vector<const char*> raster_filenames;
+	const char* speclib_filename = 0;
+	const char* calbase_filename = 0;
 	double pix_prop = -1.0;
 	long FID = -1;
 	const char* dump_geometries_filename = NULL;
@@ -125,6 +129,11 @@ int main(int argc, char ** argv) {
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
+		else if ( 0==strcmp("-speclib", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-speclib: which CSV file?");
+			speclib_filename = argv[i];
+		}
 		
 		else if ( 0==strcmp("-update-csv", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
@@ -141,6 +150,12 @@ int main(int argc, char ** argv) {
 		//
 		// COMMANDS
 		//
+		else if ( 0==strcmp("-calbase", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-calbase: which output file name?");
+			calbase_filename = argv[i];
+		}
+		
 		else if ( 0==strcmp("-dbf", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-dbf: which name?");
@@ -277,10 +292,26 @@ int main(int argc, char ** argv) {
 
 	
 	//
-	// dispatch -update* commands
-	// Note: update commands don't follow traverser pattern
+	// dispatch commands that don't follow traverser pattern:
 	//
-	if ( update_csv_name ) {
+	if ( calbase_filename ) {
+		if ( !vector_filename ) {
+			usage("-calbase expects a vector input");
+		}
+		if ( raster_filenames.size() == 0 ) {
+			usage("-calbase requires at least a raster input");
+		}
+		if ( !speclib_filename ) {
+			usage("-calbase expects a speclib input");
+		}
+		return starspan_getTuct1Observer(
+			vector_filename,  
+			raster_filenames,
+			speclib_filename, 
+			calbase_filename
+		);
+	}
+	else if ( update_csv_name ) {
 		if ( !csv_name ) {
 			usage("-update-csv works with -csv. Please specify an existing CSV");
 		}
@@ -337,7 +368,6 @@ int main(int argc, char ** argv) {
 	// COMMANDS
 	//
 	
-	// stats calculation:	
 	if ( stats_name ) {
 		Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
 		if ( obs )
