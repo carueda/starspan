@@ -21,7 +21,7 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	FILE* file;
-	OGRFeature* currentFeature;
+	long currentFeatureID;
 	double* aggregated;
 	int count;  // number of pixel in current feature
 	
@@ -33,7 +33,7 @@ public:
 	{
 		vect = tr.getVector();
 		global_info = 0;
-		currentFeature = 0;
+		currentFeatureID = -1;
 		aggregated = 0;
 		count = 0;
 	}
@@ -88,9 +88,9 @@ public:
 	  * dispatches finalization of current feature
 	  */
 	void finalizeCurrentFeatureIfAny(void) {
-		if ( currentFeature ) {
+		if ( currentFeatureID >= 0 ) {
 			// Add FID value:
-			fprintf(file, "%ld", currentFeature->GetFID());
+			fprintf(file, "%ld", currentFeatureID);
 			
 			// Add count value:
 			fprintf(file, ",%d", count);
@@ -100,7 +100,7 @@ public:
 				fprintf(file, ",%g", aggregated[i]);
 			}
 			fprintf(file, "\n");
-			currentFeature = 0;
+			currentFeatureID = -1;
 		}
 	}
 
@@ -111,7 +111,7 @@ public:
 		finalizeCurrentFeatureIfAny();
 		
 		// be ready for new feature:
-		currentFeature = feature;
+		currentFeatureID = feature->GetFID();
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			aggregated[i] = 0.0;
 		}
