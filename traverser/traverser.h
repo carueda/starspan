@@ -18,7 +18,9 @@
   * Info about the location of pixels.
   */
 struct PixelLocation {
-	/** (col,row) location relative to raster image. */
+	/** (col,row) location relative to raster image. 
+	  * Upper left corner is (1,1)
+	  */
 	int col;
 	int row;
 	
@@ -41,7 +43,7 @@ struct TraversalEvent {
 
 /**
   * Any object interested in doing some task as geometries are
-  * traversed must extend this interface.
+  * traversed must implement this interface.
   */
 class Observer {
 public:

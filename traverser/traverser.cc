@@ -119,8 +119,8 @@ void Traverser::pixelFound(double x, double y) {
 	int col, row;
 	toColRow(x, y, &col, &row);
 	TraversalEvent event;
-	event.pixelLocation.col = col;
-	event.pixelLocation.row = row;
+	event.pixelLocation.col = col + 1;  // location is (1,1) based
+	event.pixelLocation.row = row + 1;
 	event.pixelLocation.x = x;
 	event.pixelLocation.y = y;
 	
