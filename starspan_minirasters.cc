@@ -95,6 +95,10 @@ int starspan_minirasters(
 			int mini_width =  (int) ((intersection_env.MaxX+pix_size_x - intersection_env.MinX) / pix_size_x); 
 			int mini_height = (int) ((intersection_env.MaxY+pix_size_y - intersection_env.MinY) / pix_size_y);
 
+			cout<< " mini_x0=" <<mini_x0<< ", mini_y0=" <<mini_y0<< endl 
+				<< " mini_width=" <<mini_width<< ", mini_height=" <<mini_height<< endl
+			;
+
 			GDALDatasetH hOutDS = starspan_subset_raster(
 				rast.getDataset(),
 				mini_x0, mini_y0, mini_width, mini_height,
@@ -102,11 +106,6 @@ int starspan_minirasters(
 				pszOutputSRS
 			);
 			
-			if ( globalOptions.verbose ) {
-				cout<< " mini_x0=" <<mini_x0<< ", mini_y0=" <<mini_y0<< endl 
-					<< " mini_width=" <<mini_width<< ", mini_height=" <<mini_height<< endl
-				;
-			}
 			
 			if ( globalOptions.only_in_feature ) {
 				fprintf(stdout, "nullifying pixels not contained in feature..\n");
