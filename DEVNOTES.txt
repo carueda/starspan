@@ -7,8 +7,16 @@ $Id$
 	-envi:  creates envi image
 	-envisl:  creates envi spectral library
 	
+	Option -fields fieldname1,fieldname2,... to select fields from vector file.
+	In the case of envi output (-envi, -envisl), the following files will
+	be generated:
+	will generate:
+		<basename>_<fieldname1>.ser
+		<basename>_<fieldname2>.ser
+		...
+	
 2004-09-09
-	TraversalEvent: (col,row) are now (1,1)-based (to be more
+	TraversalEvent: (col,row) is now (1,1)-based (to be more
 	compatible with standard tools, e.g. envi).
 	
 	starspan_jtstest: new parameter use_polys to represent pixels as

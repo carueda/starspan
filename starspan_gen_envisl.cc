@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <list>
 #include <assert.h>
 
 // used to write the number of extracted pixels in header since this is
@@ -17,6 +18,21 @@
 // is unknown, and a second one to update it.
 #define LINES_WIDTH 8
 
+
+// for selection
+struct Field {
+	char name[1024];
+	FILE* file;
+	
+	Field(char* n) {
+		strcpy(name, n);
+	}
+	
+	~Field() {
+		if ( file )
+			fclose(file);
+	}
+};
 
 
 /**
@@ -30,8 +46,7 @@ public:
 	int numBands;
 	FILE* data_file;
 	FILE* header_file;
-	FILE* class_file;
-	const char* select_fields;
+	list<Field*>* fields;
 	
 	OGRFeature* currentFeature;
 	int numSpectra;	
@@ -40,10 +55,9 @@ public:
 	/**
 	  * Initializes the header.
 	  */
-	EnviSlObserver(bool image, int bands, FILE* df, FILE* hf, FILE* cf, const char* select_fields_)
+	EnviSlObserver(bool image, int bands, FILE* df, FILE* hf, list<Field*>* fields_)
 	: envi_image(image), numBands(bands), 
-	  data_file(df), header_file(hf), class_file(cf),
-	  select_fields(select_fields_)
+	  data_file(df), header_file(hf), fields(fields_)
 	{
 		numSpectra = 0;
 		
@@ -182,17 +196,13 @@ public:
 		
 		///////////////////////////////////////////////
 		// add class fields if so indicated
-		if ( class_file && select_fields ) {
-			int num_fields = 0;
-			char buff[strlen(select_fields) + 1];
-			strcpy(buff, select_fields);
-			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
-				if ( num_fields++ )
-					fprintf(class_file, ", ");
-				
-				const int i = currentFeature->GetFieldIndex(fname);
+		if ( fields ) {
+			list<Field*>::const_iterator it = fields->begin();
+			for ( ; it != fields->end(); it++ ) {
+				Field* field = *it;
+				const int i = currentFeature->GetFieldIndex(field->name);
 				if ( i < 0 ) {
-					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					fprintf(stderr, "\n\tField `%s' not found\n", field->name);
 					exit(1);
 				}
 				OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
@@ -200,17 +210,17 @@ public:
 				switch(ft) {
 					case OFTString: {
 						const char* str = currentFeature->GetFieldAsString(i);
-						fprintf(class_file, "%s", str);
+						fprintf(field->file, "%s", str);
 						break;
 					}
 					case OFTInteger: { 
 						int val = currentFeature->GetFieldAsInteger(i);
-						fprintf(class_file, "%d", val);
+						fprintf(field->file, "%d", val);
 						break;
 					}
 					case OFTReal: { 
 						double val = currentFeature->GetFieldAsDouble(i);
-						fprintf(class_file, "%f", val);
+						fprintf(field->file, "%f", val);
 						break;
 					}
 					default:
@@ -218,8 +228,8 @@ public:
 								"OFTString, OFTInteger, or OFTReal \n");
 						exit(2);
 				}
+				fprintf(field->file, "\n");
 			}
-			fprintf(class_file, "\n");
 		}		 
 		
 		numSpectra++;
@@ -269,23 +279,32 @@ int starspan_gen_envisl(
 		return 1;
 	}
 	
-	FILE* class_file = NULL;
+	list<Field*>* fields = NULL;
 	if ( select_fields ) {
-		char class_filename[1024];
-		sprintf(class_filename, "%s_classes.txt", envisl_name);
-		class_file = fopen(class_filename, "w");
-		if ( !class_file ) {
-			fclose(header_file);
-			fclose(data_file);
-			fprintf(stderr, "Couldn't create %s\n", class_filename);
-			return 1;
+		fields = new list<Field*>();
+		char buff[strlen(select_fields) + 1];
+		strcpy(buff, select_fields);
+		for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
+			Field* field = new Field(fname);
+			char filename[1024];
+			sprintf(filename, "%s_%s.ser", envisl_name, fname);
+			field->file = fopen(filename, "w");
+			if ( !field->file ) {
+				fclose(header_file);
+				fclose(data_file);
+				fprintf(stderr, "Couldn't create %s\n", filename);
+				return 1;
+			}
+			fields->push_back(field);
 		}
 	}
+
+
 	
 	
 	int bands;
 	rast->getSize(NULL, NULL, &bands);
-	EnviSlObserver obs(envi_image, bands, data_file, header_file, class_file, select_fields);	
+	EnviSlObserver obs(envi_image, bands, data_file, header_file, fields);	
 	Traverser tr(rast, vect);
 	tr.setObserver(&obs);
 	
@@ -295,8 +314,12 @@ int starspan_gen_envisl(
 	
 	fclose(header_file);
 	fclose(data_file);
-	if ( class_file )
-		fclose(class_file);
+	if ( fields ) {
+		list<Field*>::const_iterator it = fields->begin();
+		for ( ; it != fields->end(); it++ )
+			delete *it;
+		delete fields;
+	}
 	fprintf(stdout, "numSpectra = %d\n", obs.numSpectra);
 	fprintf(stdout, "envisl finished.\n");
 
