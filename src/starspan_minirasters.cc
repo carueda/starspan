@@ -145,8 +145,7 @@ public:
 	  * of the given feature.
 	  */
 	void intersectionEnd(OGRFeature* feature) {
-		set<EPixel> pixels = tr.getPixelSet();
-		if ( !pixels.size() )
+		if ( tr.getPixelSetSize() == 0 )
 			return;
 		
 		int mini_width = mini_col1 - mini_col0 + 1;  
@@ -254,8 +253,6 @@ public:
 		
 		GDALClose(hOutDS);
 		cout<< endl;
-
-		pixels.clear();
 	}
 };
 

@@ -357,6 +357,14 @@ public:
 	}
 	
 	/**
+	  * Returns the number of visited pixels
+	  * in the current feature.
+	  */
+	inline unsigned getPixelSetSize(void) {
+		return pixset.size();
+	}
+	
+	/**
 	  * True if pixel at [col,row] has been already visited
 	  * according to current feature.
 	  */
