@@ -50,7 +50,7 @@ CXXFLAGS = -g -Wall \
 
 PROF = -pg -fprofile-arcs
 
-LIBPATH = -L$(AGG_PREFIX)/lib \
+LIBPATH = \
 	 -L$(GDAL_PREFIX)/lib \
 	 -L$(GEOS_PREFIX)/lib \
 	 -L$(SHAPELIB_PREFIX)/lib \
