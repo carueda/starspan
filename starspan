@@ -33,6 +33,9 @@ JARS=$BINDIR/starspan.jars/
 if [ "`uname -n`" == "px" ]; then
 	# my machine :-)
 	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
+elif [ "`uname -n`" == "pavo" ]; then
+	export LD_LIBRARY_PATH=/proj/delta/delta_2004/code/starspan/PAVO/usr_local/lib:$LD_LIBRARY_PATH
+	export PATH=/proj/delta/delta_2004/code/starspan/PAVO/usr_local/bin:$PATH
 else
 	# cstars machines
 	export LD_LIBRARY_PATH=/proj/delta/delta_2004/code/starspan/usr_local/lib:$LD_LIBRARY_PATH
