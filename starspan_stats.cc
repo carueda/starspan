@@ -8,9 +8,10 @@
 #include "starspan.h"           
 #include "traverser.h"       
 
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 #include <math.h>
-#include <assert.h>
+#include <cassert>
 
 using namespace std;
 
