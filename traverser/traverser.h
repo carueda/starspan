@@ -15,30 +15,47 @@
 
 
 /**
-  * Info about the location of pixels.
+  * Info passed in observer#init(info)
   */
-struct PixelLocation {
-	/** (col,row) location relative to raster image. 
-	  * Upper left corner is (1,1)
-	  */
-	int col;
-	int row;
+struct GlobalInfo {
 	
-	/** (x,y) location in geographic coordinates. */
-	double x;
-	double y;
+	/** Band info in raster */
+	struct {
+		GDALDataType type;
+		int typeSize;
+	} band;
+	
+	/** A rectangle polygon covering the raster extension. */
+	OGRPolygon rasterPoly;
 };
-
+	
+	
 /**
-  * Event sent to traversal observers.
+  * Event sent to traversal observers every time an intersecting
+  * pixel is found.
   */
 struct TraversalEvent {
-	PixelLocation pixelLocation;
+	/**
+	  * Info about the location of pixels.
+	  */
+	struct {
+		/** (col,row) location relative to raster image. 
+		  * Upper left corner is (1,1)
+		  */
+		int col;
+		int row;
+		
+		/** (x,y) location in geographic coordinates. */
+		double x;
+		double y;
+	} pixel;
 	
-	// data from the scanned raster:
-	void* signature;
-	GDALDataType rasterType;
-	int typeSize;
+	
+	/**
+	  * data from pixel in scanned raster.
+	  * Only assigned if observer#isSimple() is false.
+	  */
+	void* bandValues;
 };
 
 /**
@@ -57,11 +74,9 @@ public:
 	virtual bool isSimple(void) { return false; }
 	
 	/**
-	  * Called only once at the beginning of a raster processing.
-	  * @param rasterPoly A simple, 4-vertex polygon covering the
-	  * raster extension.
+	  * Called only once at the beginning of a traversal processing.
 	  */
-	virtual void rasterPoly(OGRPolygon* rasterPoly) {}
+	virtual void init(GlobalInfo& info) {}
 	
 	/**
 	  * A new intersecting feature has been found 
@@ -71,7 +86,7 @@ public:
 	/**
 	  * A new pixel location has been computed.
 	  * @param ev Associated event. Pixel location is always provided
-	  * but raster info is given only if isSimple() returns false.
+	  * but raster bands are given only if isSimple() returns false.
 	  */
 	virtual void addPixel(TraversalEvent& ev) {}
 };
@@ -136,16 +151,17 @@ private:
 	
 	GDALDataset* dataset;
 	GDALRasterBand* band1;
-	GDALDataType rasterType; 
-	int rasterTypeSize;
+	GDALDataType bandType; 
+	int bandTypeSize;
 	int width, height, bands;
 	double x0, y0, x1, y1;
 	double pix_x_size, pix_y_size;
-	OGRPolygon raster_poly;
+	
+	GlobalInfo globalInfo;
 	OGREnvelope raster_env;
-	double* signature_buffer;
+	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
-	void getSignature(int col, int row);
+	void getBandValues(int col, int row);
 	void toColRow(double x, double y, int *col, int *row);
 	void toGridXY(int col, int row, double *x, double *y);
 	void processPoint(OGRPoint*);

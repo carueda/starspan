@@ -42,9 +42,9 @@ Traverser::Traverser(Raster* raster, Vector* vector) {
 	dataset = rast->getDataset();
 	// some info from the first band (assumed to be valid for all bands)
 	band1 = dataset->GetRasterBand(1);
-	rasterType = band1->GetRasterDataType(); 
-	rasterTypeSize = GDALGetDataTypeSize(rasterType) >> 3;
-	//fprintf(stdout, "rasterTypeSize=%d\n", rasterTypeSize);
+	globalInfo.band.type = bandType = band1->GetRasterDataType(); 
+	globalInfo.band.typeSize = bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
+	//fprintf(stdout, "bandTypeSize=%d\n", bandTypeSize);
 
 	// get raster size and coordinates
 	rast->getSize(&width, &height, &bands);
@@ -57,11 +57,11 @@ Traverser::Traverser(Raster* raster, Vector* vector) {
 	raster_ring.addPoint(x1, y0);
 	raster_ring.addPoint(x1, y1);
 	raster_ring.addPoint(x0, y1);
-	raster_poly.addRing(&raster_ring);
-	raster_poly.closeRings();
-	raster_poly.getEnvelope(&raster_env);
+	globalInfo.rasterPoly.addRing(&raster_ring);
+	globalInfo.rasterPoly.closeRings();
+	globalInfo.rasterPoly.getEnvelope(&raster_env);
 	
-	signature_buffer = new double[bands];   // large enough
+	bandValues_buffer = new double[bands];   // large enough
 	
 	lineRasterizer = new LineRasterizer(pix_x_size, pix_y_size);
 	lineRasterizer->setObserver(this);
@@ -71,24 +71,24 @@ Traverser::Traverser(Raster* raster, Vector* vector) {
 //
 //
 Traverser::~Traverser() {
-	delete[] signature_buffer;
+	delete[] bandValues_buffer;
 	delete lineRasterizer;
 }
 
 //
-// read in signature in (col,row):
+// read in band values in (col,row):
 //
-void Traverser::getSignature(int col, int row) {
-	char* signature = (char*) signature_buffer;
+void Traverser::getBandValues(int col, int row) {
+	char* bandValues = (char*) bandValues_buffer;
 	for(int i = 0; i < bands; i++ ) {
 		GDALRasterBand* band = dataset->GetRasterBand(i+1);
 		band->RasterIO(
 			GF_Read,
 			col, row,
 			1, 1,                         // nXSize, nYSize
-			signature + i*rasterTypeSize, // pData
+			bandValues + i*bandTypeSize, // pData
 			1, 1,                         // nBufXSize, nBufYSize
-			rasterType,                   // eBufType
+			bandType,                   // eBufType
 			0, 0                          // nPixelSpace, nLineSpace
 		);
 	}
@@ -119,17 +119,15 @@ void Traverser::pixelFound(double x, double y) {
 	int col, row;
 	toColRow(x, y, &col, &row);
 	TraversalEvent event;
-	event.pixelLocation.col = col + 1;  // location is (1,1) based
-	event.pixelLocation.row = row + 1;
-	event.pixelLocation.x = x;
-	event.pixelLocation.y = y;
+	event.pixel.col = col + 1;  // location is (1,1) based
+	event.pixel.row = row + 1;
+	event.pixel.x = x;
+	event.pixel.y = y;
 	
 	if ( !observer->isSimple() ) {
-		// get also signature and raster info:
-		getSignature(col, row);
-		event.signature = signature_buffer;
-		event.rasterType = rasterType;
-		event.typeSize = rasterTypeSize;
+		// get also band values
+		getBandValues(col, row);
+		event.bandValues = bandValues_buffer;
 	}
 	
 	// notify observer:
@@ -363,7 +361,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	//
 	// intersect this feature with raster (raster ring)
 	//
-	OGRGeometry* intersection_geometry = feature_geometry->Intersection(&raster_poly);
+	OGRGeometry* intersection_geometry = feature_geometry->Intersection(&globalInfo.rasterPoly);
 	if ( !intersection_geometry ) {
 		return;
 	}
@@ -439,9 +437,9 @@ void Traverser::traverse() {
 	}
 
 	//
-	// notify observer about raster ring
+	// notify observer about initialization of process
 	//
-	observer->rasterPoly(&raster_poly);
+	observer->init(globalInfo);
 
     OGRFeature* feature;
 	

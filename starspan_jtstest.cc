@@ -53,8 +53,8 @@ struct JtsTestObserver : public Observer {
 	/**
 	  *
 	  */
-	void rasterPoly(OGRPolygon* raster_poly_) {
-		raster_poly = raster_poly_;
+	void init(GlobalInfo& info) { 
+		raster_poly = &info.rasterPoly;
 		fprintf(stdout, "raster_poly: ");
 		raster_poly->dumpReadable(stdout);
 		fprintf(stdout, "\n");
@@ -92,8 +92,8 @@ struct JtsTestObserver : public Observer {
 	  * a point.
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		double x = ev.pixelLocation.x;
-		double y = ev.pixelLocation.y;
+		double x = ev.pixel.x;
+		double y = ev.pixel.y;
 		assert(pp);
 		if ( use_polys ) {
 			double x0, y0, x1, y1;

@@ -34,11 +34,11 @@ static DBFFieldType fieldtype_2_dbftype(OGRFieldType ft) {
 }
 
 /**
-  * Gets a value from a signature band as a double.
+  * Gets a value from a band as a double.
   */
-static double extract_double_value(GDALDataType rasterType, char* sign) {
+static double extract_double_value(GDALDataType bandType, char* sign) {
 	double value;
-	switch(rasterType) {
+	switch(bandType) {
 		case GDT_Byte:
 			value = (double) *( (char*) sign );
 			break;
@@ -61,7 +61,7 @@ static double extract_double_value(GDALDataType rasterType, char* sign) {
 			value = (double) *( (double*) sign );
 			break;
 		default:
-			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(rasterType));
+			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
 			exit(1);
 	}
 	return value;
@@ -75,6 +75,8 @@ class DBObserver : public Observer {
 public:
 	Raster* rast; 
 	Vector* vect;
+	GDALDataType bandType;
+	int typeSize;
 	DBFHandle file;
 	bool includePixelLocation;
 	int numBands;
@@ -173,6 +175,16 @@ public:
 		fprintf(stdout, "   %d fields created\n", next_field_index);
 	}
 	
+	
+	/**
+	  *
+	  */
+	void init(GlobalInfo& info) { 
+		bandType = info.band.type;
+		typeSize = info.band.typeSize;
+	}
+	
+	
 	/**
 	  * Used here to update currentFeature
 	  */
@@ -185,13 +197,9 @@ public:
 	  * Adds a record to the output file.
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		int col = ev.pixelLocation.col;
-		int row = ev.pixelLocation.row;
-		void* signature = ev.signature;
-		GDALDataType rasterType = ev.rasterType;
-		int typeSize = ev.typeSize;
-		
-		//	fprintf(stdout, "signature %d\n", next_record_index);
+		int col = ev.pixel.col;
+		int row = ev.pixel.row;
+		void* band_values = ev.bandValues;
 		
 		//
 		// Add field values to new record:
@@ -267,11 +275,11 @@ public:
 		 
 		
 		
-		// add signature values to record:
-		char* sign = (char*) signature;
+		// add band values to record:
+		char* sign = (char*) band_values;
 		for ( int i = 0; i < numBands; i++, sign += typeSize ) {
 			// extract value:
-			double val = extract_double_value(rasterType, sign);
+			double val = extract_double_value(bandType, sign);
 			
 			int ok = DBFWriteDoubleAttribute(
 				file,

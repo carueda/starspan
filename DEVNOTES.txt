@@ -8,6 +8,9 @@ $Id$
 	starspan_jtstest: new parameter use_polys to represent pixels as
 	polygons (rectangles) for visualization in the JTS test builder.
 	
+	Some cleaning up and minor refactoring before working on multiple
+	raster inputs.
+	
 2004-09-08
 	New option -csv to generate a CSV output file.
 	Option -db renamed to -dbf

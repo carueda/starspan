@@ -23,12 +23,13 @@
   */
 class EnviSlObserver : public Observer {
 public:
+	int typeSize;
 	int numBands;
 	FILE* data_file;
 	FILE* header_file;
 	
 	OGRFeature* current_feature;
-	int numSignatures;	
+	int numSpectra;	
 	long lines_offset;
 	
 	/**
@@ -39,7 +40,7 @@ public:
 		data_file = df; 
 		header_file = hf;
 		
-		numSignatures = 0;
+		numSpectra = 0;
 		
 		// first part of header:
 		fprintf(header_file,
@@ -101,6 +102,14 @@ public:
 	
 
 	/**
+	  *
+	  */
+	void init(GlobalInfo& info) { 
+		typeSize = info.band.typeSize;
+	}
+	
+
+	/**
 	  * Used here to update current_feature
 	  */
 	void intersectionFound(OGRFeature* feature) {
@@ -114,24 +123,23 @@ public:
 	  *      FID:col:row
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		int col = ev.pixelLocation.col;
-		int row = ev.pixelLocation.row;
-		void* signature = ev.signature;
-		int typeSize = ev.typeSize;
+		int col = ev.pixel.col;
+		int row = ev.pixel.row;
+		void* band_values = ev.bandValues;
 		
-		// write signature to binary file:
-		fwrite(signature, typeSize, numBands, data_file);
+		// write bands to binary file:
+		fwrite(band_values, typeSize, numBands, data_file);
 		
-		char signature_name[1024];
-		sprintf(signature_name, "%ld:%d:%d", current_feature->GetFID(), col, row);
+		char spectrum_name[1024];
+		sprintf(spectrum_name, "%ld:%d:%d", current_feature->GetFID(), col, row);
 		
 		// add spectrum name
-		if ( numSignatures > 0 )
+		if ( numSpectra > 0 )
 			fprintf(header_file, ",");
 		
-		fprintf(header_file, "\n  %s", signature_name);
+		fprintf(header_file, "\n  %s", spectrum_name);
 		
-		numSignatures++;
+		numSpectra++;
 	}
 	
 	/**
@@ -143,7 +151,7 @@ public:
 		
 		// update number of lines:
 		fseek(header_file, lines_offset, SEEK_SET);
-		fprintf(header_file, "%*d", LINES_WIDTH, numSignatures);
+		fprintf(header_file, "%*d", LINES_WIDTH, numSpectra);
 	}
 };
 
@@ -190,7 +198,7 @@ int starspan_gen_envisl(
 	
 	fclose(header_file);
 	fclose(data_file);
-	fprintf(stdout, "numSignatures = %d\n", obs.numSignatures);
+	fprintf(stdout, "numSpectra = %d\n", obs.numSpectra);
 	fprintf(stdout, "envisl finished.\n");
 
 	return 0;

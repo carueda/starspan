@@ -13,12 +13,12 @@
 
 
 /**
-  * Gets a value from a signature band as a string.
+  * Gets a value from a band as a string.
   */
-static char* extract_value(GDALDataType rasterType, char* sign) {
+static char* extract_value(GDALDataType bandType, char* sign) {
 	static char value[1024];
 	
-	switch(rasterType) {
+	switch(bandType) {
 		case GDT_Byte:
 			sprintf(value, "%d", (int) *( (char*) sign ));
 			break;
@@ -41,7 +41,7 @@ static char* extract_value(GDALDataType rasterType, char* sign) {
 			sprintf(value, "%f", *( (double*) sign ));
 			break;
 		default:
-			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(rasterType));
+			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
 			exit(1);
 	}
 	return value;
@@ -55,6 +55,8 @@ class CSVObserver : public Observer {
 public:
 	Raster* rast; 
 	Vector* vect;
+	GDALDataType bandType;
+	int typeSize;
 	FILE* file;
 	bool includePixelLocation;
 	int numBands;
@@ -119,6 +121,15 @@ public:
 	}
 	
 	/**
+	  *
+	  */
+	void init(GlobalInfo& info) { 
+		bandType = info.band.type;
+		typeSize = info.band.typeSize;
+	}
+	
+
+	/**
 	  * Used here to update currentFeature
 	  */
 	void intersectionFound(OGRFeature* feature) {
@@ -130,11 +141,9 @@ public:
 	  * Adds a record to the output file.
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		int col = ev.pixelLocation.col;
-		int row = ev.pixelLocation.row;
-		void* signature = ev.signature;
-		GDALDataType rasterType = ev.rasterType;
-		int typeSize = ev.typeSize;
+		int col = ev.pixel.col;
+		int row = ev.pixel.row;
+		void* band_values = ev.bandValues;
 		
 		//
 		// Add field values to new record:
@@ -178,11 +187,11 @@ public:
 		 
 		
 		
-		// add signature values to record:
-		char* sign = (char*) signature;
+		// add band values to record:
+		char* sign = (char*) band_values;
 		for ( int i = 0; i < numBands; i++, sign += typeSize ) {
 			// extract value:
-			fprintf(file, ",%s", extract_value(rasterType, sign));
+			fprintf(file, ",%s", extract_value(bandType, sign));
 		}
 		fprintf(file, "\n");
 	}
