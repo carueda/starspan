@@ -25,6 +25,7 @@ Traverser::Traverser() {
 	observer = &null_observer;
 	pixelProportion = -1.0;   // disabled
 	desired_FID = -1;
+	bandValues_buffer = 0;
 }
 
 void Traverser::setPixelProportion(double pixprop) {
@@ -120,6 +121,8 @@ Traverser::~Traverser() {
 // Values are stored in bandValues_buffer.
 //
 void Traverser::getBandValues(int col, int row) {
+	assert(bandValues_buffer);
+	
 	char* ptr = (char*) bandValues_buffer;
 	for ( unsigned i = 0; i < globalInfo.bands.size(); i++ ) {
 		GDALRasterBand* band = globalInfo.bands[i];
@@ -470,6 +473,13 @@ void Traverser::process_feature(OGRFeature* feature) {
 // main method for traversal
 //
 void Traverser::traverse() {
+	// don't allow a second call, for now
+	if ( bandValues_buffer ) {
+		fprintf(stderr, "traverser.traverse: second call!\n");
+		exit(1);
+	}
+
+	// do some checks:
 	if ( !vect ) {
 		fprintf(stderr, "traverser: Vector datasource not specified!\n");
 		exit(1);
@@ -478,7 +488,6 @@ void Traverser::traverse() {
 		fprintf(stderr, "traverser: No raster datasets were specified!\n");
 		exit(1);
 	}
-	
 	//
 	// Only first layer (0) is processed (which assumes only one layer exists)
 	//
@@ -496,6 +505,7 @@ void Traverser::traverse() {
 		exit(1);
 	}
 
+	
 	// assuming biggest data type we assign enough memory:
 	bandValues_buffer = new double[globalInfo.bands.size()];
 		
