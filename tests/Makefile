@@ -5,29 +5,34 @@
 
 STARSPAN=../starspan
 
-test: init test_miniraster
+.PHONY: test init test_miniraster
+
+ALL_TESTS: init test_miniraster
+	@echo "!!!!!!! $@ : OK !!!!!!!"
 
 init:
-	mkdir -p _generated/
+	mkdir -p generated/
 
 test_miniraster:
-	mkdir -p _generated/miniraster/
+	mkdir -p generated/miniraster/
 	${STARSPAN} \
 		--vector data/vector/starspan_testply.shp \
 		--raster data/raster/starspan2raster.img \
-		--mr _generated/miniraster/myprefix_ \
+		--mr generated/miniraster/myprefix_ \
 		--in \
 		--nodata 1 \
 		--fid 3 
-	cmp pre_generated/miniraster/myprefix_0003.img \
-		   _generated/miniraster/myprefix_0003.img
+	cmp expected/miniraster/myprefix_0003.img \
+	   generated/miniraster/myprefix_0003.img
 	${STARSPAN} \
 		--vector data/vector/starspan_testply.shp \
 		--raster data/raster/starspan2raster.img \
-		--mr _generated/miniraster/myprefix_buff2_ \
+		--mr generated/miniraster/myprefix_buff2_ \
 		--in \
 		--buffer 2 \
 		--fid 3
-	cmp pre_generated/miniraster/myprefix_buff2_0003.img \
-		   _generated/miniraster/myprefix_buff2_0003.img
-
+	cmp expected/miniraster/myprefix_buff2_0003.img \
+	   generated/miniraster/myprefix_buff2_0003.img
+	@echo "$@ : OK"
+	@echo
+	

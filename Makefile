@@ -63,7 +63,7 @@ starspan2: starspan2.cc $(SRCS)
 	    $(LIBPATH) -o starspan2 starspan2.cc $(SRCS) $(LDFLAGS)
 
 test:
-	(cd tests/ && ./run_tests.sh ../starspan)
+	(cd tests/ && make)
 	
 install:
 	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/ 
