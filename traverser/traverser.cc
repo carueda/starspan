@@ -112,9 +112,6 @@ void Traverser::addRaster(Raster* raster) {
 		globalInfo.rasterPoly.addRing(&raster_ring);
 		globalInfo.rasterPoly.closeRings();
 		globalInfo.rasterPoly.getEnvelope(&raster_env);
-		
-		lineRasterizer = new LineRasterizer(x0, y0, pix_x_size, pix_y_size);
-		lineRasterizer->setObserver(this);
 	}
 	
 	if ( rasts.size() > 1 ) {
@@ -778,6 +775,8 @@ void Traverser::traverse() {
 	}
 	layer->ResetReading();
 
+	lineRasterizer = new LineRasterizer(x0, y0, pix_x_size, pix_y_size);
+	lineRasterizer->setObserver(this);
 	
 	memset(&summary, 0, sizeof(summary));
 	
@@ -837,16 +836,14 @@ void Traverser::traverse() {
 	else {
 		Progress* progress = 0;
 		if ( progress_out ) {
-			*progress_out << "Number of features: ";
 			long psize = layer->GetFeatureCount();
 			if ( psize >= 0 ) {
-				*progress_out << psize << "\n\t";
 				progress = new Progress(psize, progress_perc, *progress_out);
 			}
 			else {
-				*progress_out << "(not known in advance)\n\t";
 				progress = new Progress((long)progress_perc, *progress_out);
 			}
+			*progress_out << "\t";
 			progress->start();
 		}
 		while( (feature = layer->GetNextFeature()) != NULL ) {
@@ -871,6 +868,8 @@ void Traverser::traverse() {
 
 	delete[] bandValues_buffer;
 	bandValues_buffer = 0;
+	delete lineRasterizer;
+	lineRasterizer = 0;
 }
 
 
