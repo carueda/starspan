@@ -6,10 +6,11 @@
 //
 
 #include "starspan.h"           
+#include "traverser.h"           
 
 #include <stdlib.h>
 
-#define VERSION "0.3"
+#define VERSION "0.4"
 
 
 static char rcsid[] = "$Id$";
@@ -57,6 +58,10 @@ static void usage(const char* msg) {
 		"              -xhelp explains what to do next.\n"
 		"\n"
 		"   options:\n"
+		"      -pf <value>\n"
+		"              Minimum fraction of pixel area in intersection so that\n"
+		"              the pixel is included.  <value> in [0.0, 1.0]. Defaults to %g.\n"
+		"              Only used in intersections resulting in polygons.\n"
 		"      -in     (Used with -mr)\n"
 		"              Only pixels contained in geometry features are retained.\n"
 		"              Zero (0) is used to nullify pixels outside features.\n"
@@ -65,7 +70,8 @@ static void usage(const char* msg) {
 		"              See gdal_translate option -a_srs.\n"
 		"              By default projection is taken from input raster.\n"
 		"\n"
-		, VERSION, __DATE__, __TIME__
+		, VERSION, __DATE__, __TIME__,
+		Traverser::DEFAULT_FRACTION_FOR_INCLUSION
 	);
 	exit(0);
 }
@@ -128,6 +134,14 @@ int main(int argc, char ** argv) {
 		}
 		
 		// OPTIONS
+		else if ( 0==strcmp("-pf", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-pf: pixel fraction?");
+			double pix_fraction = atof(argv[i]);
+			if ( pix_fraction < 0.0 || pix_fraction > 1.0 )
+				usage("invalid pixel fraction");
+			Traverser::setFractionForInclusion(pix_fraction);
+		}
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
 		}
@@ -168,20 +182,20 @@ int main(int argc, char ** argv) {
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
-	// options for generating data take precedence.
-	if ( envisl_name ) { 
-		if ( !rast || !vect ) {
-			usage("-envisl option requires both a raster and a vector file to proceed\n");
-		}
-		return starspan_gen_envisl(rast, vect, envisl_name, mini_srs);
-	}
-	else if ( db_name ) { 
+	// COMMANDS
+	if ( db_name ) { 
 		if ( !rast || !vect ) {
 			usage("-db option requires both a raster and a vector file to proceed\n");
 		}
 		return starspan_db(rast, vect, db_name);
 	}
-	else if ( mini_prefix ) { // this option takes precedence.
+	else if ( envisl_name ) { 
+		if ( !rast || !vect ) {
+			usage("-envisl option requires both a raster and a vector file to proceed\n");
+		}
+		return starspan_gen_envisl(rast, vect, envisl_name, mini_srs);
+	}
+	else if ( mini_prefix ) {
 		if ( !rast || !vect ) {
 			usage("-mr option requires both a raster and a vector file to proceed\n");
 		}

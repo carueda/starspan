@@ -1,6 +1,12 @@
 starspan devnotes
 $Id$
 
+2004-09-08
+	Traverser: new approach for pixel inclusion in intersections
+	resulting in polygons. A parameter fractionForInclusion is used.
+	Basic scheme implemented but should be adjusted for better 
+	efficiency.
+	
 2004-09-07
 	Complete build process revised and reported in
 	http://starspan.casil.ucdavis.edu/?Build

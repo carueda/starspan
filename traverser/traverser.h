@@ -87,15 +87,39 @@ public:
   */
 class Traverser : LineRasterizerObserver {
 public:
+
+	/** 0.5 */
+	static const double DEFAULT_FRACTION_FOR_INCLUSION = 0.5;
+
+	/**
+	  * Sets the fraction of intersected area required for a pixel to be included.
+	  * This fraction is only used during processing of polygons.
+	  *
+	  * @param frac A value assumed to be in [0.0, 1.0].
+	  */
+	static void setFractionForInclusion(double frac);
+
+	/**
+	  * Creates traverser.
+	  * Then you will call setObserver() and maybe setFractionForInclusion().
+	  */
 	Traverser(Raster* r, Vector* v);
+	
 	~Traverser();
 	
 	/**
-	  * Set the observer for this traverser.
+	  * Sets the observer for this traverser.
 	  */
 	void setObserver(Observer* aObserver) { observer = aObserver; }
+
+	/**
+	  * Gets the observer associated to this traverser.
+	  */
 	Observer* getObserver(void) { return observer; }
-	
+
+	/**
+	  * Executes the traversal.
+	  */
 	void traverse(void);
 	
 private:
@@ -116,7 +140,12 @@ private:
 	LineRasterizer* lineRasterizer;
 	void getSignature(int col, int row);
 	void toColRow(double x, double y, int *col, int *row);
-	void lineString(OGRLineString* linstr);
+	void toGridXY(int col, int row, double *x, double *y);
+	void processPoint(OGRPoint*);
+	void processMultiPoint(OGRMultiPoint*);
+	void processLineString(OGRLineString* linstr);
+	void processMultiLineString(OGRMultiLineString* coll);
+	void processPolygon(OGRPolygon* poly);
 
 	// LineRasterizerObserver	
 	void pixelFound(double x, double y);
