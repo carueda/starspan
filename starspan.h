@@ -301,18 +301,6 @@ Observer* starspan_jtstest(
 	const char* jtstest_filename
 );
 
-/** 
-  * Generate mini rasters
-  * @return 0 iff OK.
-  */
-int starspan_minirasters(
-	Traverser& tr,
-	const char* prefix,
-	const char* pszOutputSRS  // see gdal_translate option -a_srs 
-	                         // If NULL, projection is taken from input dataset
-);
-
-// NEW SCHEME TO GENERATE MINI-RASTERS:
 /**
   * Creates mini-rasters.
   *
@@ -328,6 +316,21 @@ Observer* starspan_getMiniRasterObserver(
 	Traverser& tr,
 	const char* prefix,
 	const char* pszOutputSRS
+);
+
+
+
+/**
+  * Creates a strip of mini-rasters.
+  *
+  * @param tr Data traverser
+  * @param filename  Name used to create output files
+  *
+  * @return observer to be added to traverser. 
+  */
+Observer* starspan_getMiniRasterStripObserver(
+	Traverser& tr,
+	const char* filename
 );
 
 

@@ -12,9 +12,6 @@
 #include <ctime>
 
 
-//static char rcsid[] = "$Id$";
-
-
 GlobalOptions globalOptions;
 
 
@@ -49,6 +46,7 @@ static void usage(const char* msg) {
 		"      --report \n"
 		"      --dump_geometries <filename>\n"
 		"      --mr <prefix> \n"
+		"      --mini_raster_strip <filename> \n"
 		"      --jtstest <filename>\n"
 		"\n"
 		"   options:\n"
@@ -110,6 +108,7 @@ int main(int argc, char ** argv) {
 	const char*  update_csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
+	const char* mini_raster_strip_filename = NULL;
 	const char* jtstest_filename = NULL;
 	
 	const char* vector_filename = 0;
@@ -214,6 +213,12 @@ int main(int argc, char ** argv) {
 				--i;
 		}
 
+		else if ( 0==strcmp("--mini_raster_strip", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--mini_raster_strip: filename?");
+			mini_raster_strip_filename = argv[i];
+		}
+		
 		else if ( 0==strcmp("--mr", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--mr: which prefix?");
@@ -445,7 +450,7 @@ int main(int argc, char ** argv) {
 			);
 		}
 			
-		if ( csv_name || envi_name || mini_prefix || jtstest_filename) { 
+		if ( csv_name || envi_name || mini_prefix || mini_raster_strip_filename || jtstest_filename) { 
 			if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
 				usage("Specified output option requires both a raster and a vector to proceed\n");
 			}
@@ -481,6 +486,12 @@ int main(int argc, char ** argv) {
 	
 		if ( jtstest_filename ) {
 			Observer* obs = starspan_jtstest(tr, jtstest_filename);
+			if ( obs )
+				tr.addObserver(obs);
+		}
+	
+		if ( mini_raster_strip_filename ) {
+			Observer* obs = starspan_getMiniRasterStripObserver(tr, mini_raster_strip_filename);
 			if ( obs )
 				tr.addObserver(obs);
 		}
