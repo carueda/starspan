@@ -33,7 +33,7 @@ public:
 		int row;
 		Pixel(int col, int row) : col(col), row(row) {}
 	};
-	vector<Pixel> pixels;
+	vector<Pixel*> pixels;
 	
 	// indices into result_stats:
 	enum {
@@ -98,10 +98,14 @@ public:
 			fprintf(stdout, "Stats: finished.\n");
 			file = 0;
 		}
-		if ( bandValues_buffer )
+		if ( bandValues_buffer ) {
 			delete[] (double*) bandValues_buffer;
-		if ( bandValues )
+			bandValues_buffer = 0;
+		}
+		if ( bandValues ) {
 			delete[] bandValues;
+			bandValues = 0;
+		}
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 			if ( result_stats[i] ) {
 				delete[] result_stats[i];
@@ -176,9 +180,9 @@ public:
 		}
 
 		unsigned num_pixels = 0;
-		for ( vector<Pixel>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++, num_pixels++ ) {
+		for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++, num_pixels++ ) {
 			// first get buffer with all bands
-			tr.getBandValues(pixel->col, pixel->row, bandValues_buffer);
+			tr.getBandValues((*pixel)->col, (*pixel)->row, bandValues_buffer);
 
 			// now get those values in double format:
 			char* ptr = (char*) bandValues_buffer;
@@ -238,9 +242,9 @@ public:
 				}
 				
 				// take pixels again
-				for ( vector<Pixel>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++, num_pixels++ ) {
+				for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++, num_pixels++ ) {
 					// first get buffer with all bands
-					tr.getBandValues(pixel->col, pixel->row, bandValues_buffer);
+					tr.getBandValues((*pixel)->col, (*pixel)->row, bandValues_buffer);
 		
 					// now get those values in double format:
 					char* ptr = (char*) bandValues_buffer;
@@ -312,6 +316,9 @@ public:
 			}
 			fprintf(file, "\n");
 			currentFeatureID = -1;
+			for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
+				delete *pixel;
+			}
 			pixels.empty();
 		}
 	}
@@ -331,7 +338,7 @@ public:
 	  * Adds a new pixel to aggregation
 	  */
 	void addPixel(TraversalEvent& ev) {
-		pixels.push_back(Pixel(ev.pixel.col, ev.pixel.row));
+		pixels.push_back(new Pixel(ev.pixel.col, ev.pixel.row));
 	}
 
 };

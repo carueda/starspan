@@ -11,6 +11,8 @@ $Id$
 	StatsObserver: new observer to compute basic statistics.
 	command-line scheme:
 		-stats [avg | stdev | min | max ]... file.csv
+		
+	NOTE: i'm having weird slight differences .... (?)
 	
 	
 2004-09-16
