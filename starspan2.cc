@@ -45,10 +45,11 @@ static bool intersect_envelopes(OGREnvelope& oEnv1, OGREnvelope& oEnv2, OGREnvel
 	return true;
 }
 
-
+/*
 static void print_envelope(FILE* file, const char* msg, OGREnvelope& env) {
-	fprintf(file, "%s %7.1f %7.1f %7.1f %7.1f\n", msg, env.MinX, env.MinY, env.MaxX, env.MaxY);
+	fprintf(file, "%s %g %g %g %g\n", msg, env.MinX, env.MinY, env.MaxX, env.MaxY);
 }
+*/
 
 
 // central process
@@ -98,6 +99,7 @@ static void process(Raster& rast, Vector& vect, FILE* jtstest_file) {
 	
 	
 	jts_test_init(jtstest_file);
+	int jtstest_count = 0;
 	
     OGRPoint* point = new OGRPoint();
 
@@ -118,6 +120,7 @@ static void process(Raster& rast, Vector& vect, FILE* jtstest_file) {
 		
 		if ( intersect_envelopes(raster_env, feature_env, intersection_env) ) {
 			if ( jtstest_file ) {
+				jtstest_count++;
 				jts_test_case_init(jtstest_file);
 				
 				jts_test_case_arg_init(jtstest_file, "a");
@@ -157,7 +160,7 @@ static void process(Raster& rast, Vector& vect, FILE* jtstest_file) {
 							if ( jtstest_file ) {
 								if ( num_points > 0 )
 									fprintf(jtstest_file, ", ");
-								fprintf(jtstest_file, "%7.1f  %7.1f", x, y);
+								fprintf(jtstest_file, "%.3f  %.3f", x, y);
 							}
 							num_points++;
 						}
@@ -168,6 +171,7 @@ static void process(Raster& rast, Vector& vect, FILE* jtstest_file) {
 						fprintf(jtstest_file, ")\n");
 					else
 						fprintf(jtstest_file, "EMPTY)\n");
+					fprintf(stdout, "case %d: %d points\n", jtstest_count, num_points);
 				}
 				jts_test_case_arg_end(jtstest_file, "b");
 				jts_test_case_end(jtstest_file);
@@ -182,7 +186,10 @@ static void process(Raster& rast, Vector& vect, FILE* jtstest_file) {
 	delete point;
 	delete raster_ring;
 	
-	jts_test_end(jtstest_file);
+	if ( jtstest_file ) {
+		jts_test_end(jtstest_file);
+		fprintf(stdout, "%d test cases generated\n", jtstest_count);
+	}
 }
 
 
@@ -207,16 +214,22 @@ static void usage(const char* msg) {
 		"(under development)\n"
 		"\n"
 		"USAGE:\n"
+		"\n"
 		"  starspan -help\n"
 		"      prints this message and exits\n"
 		"\n"
+		"  starspan -xhelp\n"
+		"      prints help for extended usage\n"
+		"\n"
+		"\n"
 		"  starspan args...\n"
 		"\n"
-		"   required args:\n"
-		"    -vector <filename>   An OGR recognized vector file\n"
-		"    -raster <filename>   A GDAL recognized raster file\n"
+		"   Inputs:\n"
+		"      -vector <filename>   An OGR recognized vector file\n"
+		"      -raster <filename>   A GDAL recognized raster file\n"
 		"\n"
-		"    -jtstest <filename>  generate a JTS test file\n"
+		"   Options:\n"
+		"      -jtstest <filename>  generates a JTS test file\n"
 		"\n"
 		"\n"
 		, VERSION, __DATE__, __TIME__
