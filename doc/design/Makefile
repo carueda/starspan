@@ -1,28 +1,60 @@
+DOT=dot
 
-all: classdiagram.eps classdiagram.png \
-	envisl-sd.eps envisl-sd.png
-
+############################################# 
 # class diagrams
 
-classdiagram.png: classdiagram.eps
-	convert classdiagram.eps classdiagram.png
-	
-classdiagram.eps: classdiagram.dot
-	dot -Tps -oclassdiagram.eps classdiagram.dot
-	
-classdiagram.dot: classdiagram.java
-	javadoc -docletpath ~/prg/UMLGraph-2.8/UmlGraph.jar\
-	        -doclet UmlGraph \
-			-output classdiagram.dot \
-			-private classdiagram.java
+java_files := $(shell find $(diagrams) -name *.java)
+dot_files  := $(subst .java,.dot,$(java_files))
 
+png_files := $(subst .dot,.png,$(dot_files))
+eps_files := $(subst .dot,.eps,$(dot_files))
+
+
+uml_graph:=/home/carueda/prg/UMLGraph-2.8/UmlGraph.jar
+
+jd:=javadoc
+jd_flags := -docletpath $(uml_graph) -doclet UmlGraph -private
+# jd_flags += -nodefontname luxisr -nodefontabstractname luxisri
+# jd_flags += -edgefontname luxisr
+# jd_flags += -nodefontsize 8 -edgefontsize 8
+jd_flags += -nodefillcolor LemonChiffon
+detailed_flags := -attributes -operations -types
+
+
+%.png : %.eps
+	#$(DOT)-Elabelfontcolor=DarkSlateBlue -Tpng -o $@ $<
+	convert -resize 100% $< $@
+
+%.eps : %.dot
+	$(DOT) -Nheight=0.2 -Elabelfontcolor=DarkSlateBlue -Elabelfontsize=8 -Tps -o $@ $<
+
+%.dot : %.java
+	$(jd) $(jd_flags) $(detailed_flags) -output $@ $<
+
+
+	
+all: $(eps_files) $(png_files) \
+	dbf-sd.eps dbf-sd.png \
+	envisl-sd.eps envisl-sd.png
+
+
+############################################# 
 # sequence diagrams
 
-envisl-sd.png: envisl-sd.eps
-	convert envisl-sd.eps envisl-sd.png
+dbf-sd.png: dbf-sd.eps
+	convert -resize 120% $< dbf-sd.png
 
-envisl-sd.eps: envisl-sd.pic
-	pic2plot -Tps envisl-sd.pic > envisl-sd.eps
+dbf-sd.eps: dbf-sd.pic
+	pic2plot -Tps $< > dbf-sd.eps
 	
 
+envisl-sd.png: envisl-sd.eps
+	convert -resize 120% $< envisl-sd.png
 
+envisl-sd.eps: envisl-sd.pic
+	pic2plot -Tps $< > envisl-sd.eps
+	
+
+############################################# 
+clean:
+	rm -f *~ *.png *.eps *.dot
