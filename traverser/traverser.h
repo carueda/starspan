@@ -11,6 +11,7 @@
 #include "Vector.h"
 #include "rasterizers.h"
 
+#include <set>
 #include <list>
 #include <vector>
 #include <stdio.h>
@@ -264,6 +265,27 @@ private:
 	
 	// LineRasterizerObserver	
 	void pixelFound(double x, double y);
+
+	//
+	// Element info for set of visited pixels
+	//
+	class EPixel {
+		int col, row;
+		public:
+		EPixel(int col, int row) : col(col), row(row) {}
+		EPixel(const EPixel& p) : col(p.col), row(p.row) {}
+		bool operator<(EPixel const &right) const {
+			if ( col < right.col )
+				return true;
+			else if ( col == right.col )
+				return row < right.row;
+			else
+				return false;
+		}
+	};
+	set<EPixel>* pixset;
+
+
 };
 
 

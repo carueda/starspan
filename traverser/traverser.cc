@@ -15,7 +15,6 @@
 #include <geos.h>
 
 
-
 Traverser::Traverser() {
 	vect = 0;
 	pixelProportion = -1.0;   // disabled
@@ -30,6 +29,7 @@ Traverser::Traverser() {
 	notSimpleObserver = false;
 	
 	lineRasterizer = 0;
+	pixset = 0;
 }
 
 void Traverser::addObserver(Observer* aObserver) { 
@@ -194,12 +194,23 @@ inline void Traverser::toGridXY(int col, int row, double *x, double *y) {
 
 //
 // implementation as a LineRasterizerObserver, but also called directly, 
-// see processPoint, processMultiPoint, processPolygon
+// see processPoint, processMultiPoint, processPolygon.
+// If pixset is not null, it checks for duplicate pixel.
 //
 void Traverser::pixelFound(double x, double y) {
 	// get pixel location:
 	int col, row;
 	toColRow(x, y, &col, &row);
+	
+	if ( pixset ) {
+		// check this location has not been processed
+		EPixel colrow(col, row);
+		if ( pixset->find(colrow) != pixset->end() ) {
+			return;
+		}
+		pixset->insert(colrow);
+	}
+	
 	TraversalEvent event;
 	event.pixel.col = col;
 	event.pixel.row = row;
@@ -465,8 +476,11 @@ void Traverser::process_feature(OGRFeature* feature) {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->intersectionFound(feature);
 
+	assert(!pixset);
+	
 	//
 	// get intersection type and process accordingly
+	// Note that pixset is created where duplicate pixel control is required.
 	//
 	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
 	switch ( intersection_type ) {
@@ -477,16 +491,19 @@ void Traverser::process_feature(OGRFeature* feature) {
 	
 		case wkbMultiPoint:
 			fputc(':', stdout); fflush(stdout);
+			pixset = new set<EPixel>();
 			processMultiPoint((OGRMultiPoint*) intersection_geometry);
 			break;
 	
 		case wkbLineString:
 			fputc('|', stdout); fflush(stdout);
+			pixset = new set<EPixel>();
 			processLineString((OGRLineString*) intersection_geometry);
 			break;
 	
 		case wkbMultiLineString:
 			fputc('!', stdout); fflush(stdout);
+			pixset = new set<EPixel>();
 			processMultiLineString((OGRMultiLineString*) intersection_geometry);
 			break;
 			
@@ -498,7 +515,11 @@ void Traverser::process_feature(OGRFeature* feature) {
 		default:
 			fprintf(stdout, "?: intersection type not considered\n");
 	}
-	
+
+	if ( pixset ) {
+		delete pixset;
+		pixset = 0;
+	}
 	delete intersection_geometry;
 }
 

@@ -17,17 +17,17 @@
 // (null-object pattern)
 static LineRasterizerObserver null_observer;
 
-
-
 // user location to agg location with 8-bit accuracy
 inline int to_int(double dv, double size_v) { 
-	int v = (int) floor( 256.0 * (dv / size_v) );
+	//***int v = (int) rint( 256.0 * (dv / size_v) );
+	int v = (int) rint( 256.0 * ((dv + size_v/2) / size_v) );
 	return v;
 }
 
 // agg location to user location
 inline double to_double(int iv, double size_v) { 
-	double v = iv * size_v;
+	//***double v = iv * size_v;
+	double v = iv * size_v - size_v/2;
 	return v;
 }
 

@@ -7,6 +7,8 @@ $Id$
 		LineRasterizer#line now includes flag 'last' to indicate if ending
 		pixel should be reported.
 		
+		LineRasterizer: more tests to verify intersections by using
+		JTS test builder and Envi ...
 	
 2004-09-25
 	stats: fixed extraction bug: (col,row) were 1-based via TraversalEvent's, 

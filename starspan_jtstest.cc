@@ -167,9 +167,11 @@ struct JtsTestObserver : public Observer {
 		if ( pp ) {
 			finish_case();
 		}
-		jtstest->end();
-		delete jtstest;
-		jtstest = 0;
+		if ( jtstest ) {
+			jtstest->end();
+			delete jtstest;
+			jtstest = 0;
+		}
 	}
 };
 
