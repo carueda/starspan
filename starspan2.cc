@@ -58,6 +58,8 @@ static void usage(const char* msg) {
 		"              contains the upper left corner of the pixel.\n"
 		"      -fid <value>\n"
 		"              Only the given FID will be scanned.\n"
+		"      -ppoly  (Used with -jtstest)\n"
+		"              Pixels are represented as polygons instead of points.\n"
 		"      -in     (Used with -mr)\n"
 		"              Only pixels contained in geometry features are retained.\n"
 		"              Zero (0) is used to nullify pixels outside features.\n"
@@ -82,6 +84,7 @@ int main(int argc, char ** argv) {
 	const char* vector_filename = NULL;
 	bool do_report = false;
 	bool only_in_feature = false;
+	bool use_polys = false;
 	const char*  envisl_name = NULL;
 	const char*  dbf_name = NULL;
 	const char*  csv_name = NULL;
@@ -168,6 +171,9 @@ int main(int argc, char ** argv) {
 				usage("invalid FID");
 			Traverser::setDesiredFID(FID);
 		}
+		else if ( 0==strcmp("-ppoly", argv[i]) ) {
+			use_polys = true;
+		}
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
 		}
@@ -221,7 +227,7 @@ int main(int argc, char ** argv) {
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
 	}
 	else if ( jtstest_filename ) {
-		starspan_jtstest(*rast, *vect, jtstest_filename);
+		starspan_jtstest(*rast, *vect, use_polys, jtstest_filename);
 	}
 	else if ( do_report ) {
 		if ( !rast && !vect ) {

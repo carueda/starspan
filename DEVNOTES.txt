@@ -5,6 +5,9 @@ $Id$
 	TraversalEvent: (col,row) are now (1,1)-based (to be more
 	compatible with standard tools, e.g. envi).
 	
+	starspan_jtstest: new parameter use_polys to represent pixels as
+	polygons (rectangles) for visualization in the JTS test builder.
+	
 2004-09-08
 	New option -csv to generate a CSV output file.
 	Option -db renamed to -dbf

@@ -79,8 +79,16 @@ int starspan_minirasters(
 );
 
 
-/** Generate a JTS test */
-void starspan_jtstest(Raster& rast, Vector& vect, const char* jtstest_filename);
+/**
+  * Generate a JTS test.
+  * @param use_polys If true, pixels are represented as polygons;
+  *        otherwise as points.
+  */
+void starspan_jtstest(
+	Raster& rast, Vector& vect, 
+	bool use_polys,
+	const char* jtstest_filename
+);
 
 
 /////////////////////////////////////////////////////////////////////////////

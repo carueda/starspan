@@ -17,8 +17,6 @@
 #include "rasterizers.h"
 
 
-static bool use_polys = false;
-
 /**
   *
   */
@@ -28,12 +26,14 @@ struct JtsTestObserver : public Observer {
 	OGRPolygon* raster_poly;
 	OGRGeometryCollection* pp;
 	double pix_x_size, pix_y_size;
+	bool use_polys;
+
 	
 	/**
-	  *
+	  * creates the traversal observer
 	  */
-	JtsTestObserver(const char* jtstest_filename, double pix_x_size_, double pix_y_size_)
-	: pix_x_size(pix_x_size_), pix_y_size(pix_y_size_) {
+	JtsTestObserver(const char* jtstest_filename, double pix_x_size_, double pix_y_size_, bool use_polys_)
+	: pix_x_size(pix_x_size_), pix_y_size(pix_y_size_), use_polys(use_polys_) {
 		jtstest = new JTS_TestGenerator(jtstest_filename);
 		jtstest_count = 0;
 		raster_poly = NULL;
@@ -88,7 +88,8 @@ struct JtsTestObserver : public Observer {
 	}
 	
 	/**
-	  *
+	  * A geometry is added: a poly if use_polys is true, otherwise
+	  * a point.
 	  */
 	void addPixel(TraversalEvent& ev) { 
 		double x = ev.pixelLocation.x;
@@ -167,10 +168,14 @@ struct JtsTestObserver : public Observer {
 /**
   * implementation
   */
-void starspan_jtstest(Raster& rast, Vector& vect, const char* jtstest_filename) {
+void starspan_jtstest(
+	Raster& rast, Vector& vect, 
+	bool use_polys,
+	const char* jtstest_filename
+) {
 	double pix_x_size, pix_y_size;
 	rast.getPixelSize(&pix_x_size, &pix_y_size);
-	JtsTestObserver observer(jtstest_filename, pix_x_size, pix_y_size);
+	JtsTestObserver observer(jtstest_filename, pix_x_size, pix_y_size, use_polys);
 	Traverser traverser(&rast, &vect);
 	traverser.setObserver(&observer);
 	traverser.traverse();
