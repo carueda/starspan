@@ -179,7 +179,7 @@ void* Traverser::getBandValuesForPixel(double x, double y, void* buffer) {
 		if ( Raster::toColRow(dataset, x, y, &col, &row) ) {
 			int width = band->GetXSize();
 			int height = band->GetYSize();
-			if ( col >= width || row >= height ) {
+			if ( col < 0 || col >= width || row < 0 || row >= height ) {
 				// leave NODATA value.
 			}
 			else {
