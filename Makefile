@@ -70,12 +70,9 @@ prof: starspan2.cc $(SRCS)
 	    $(CXXFLAGS) $(OBJ_OPT) \
 	    $(LIBPATH) -o starspan2_prof starspan2.cc $(SRCS) $(LDFLAGS)
 
-starspan1: starspan1.o $(SRCS)
-	g++ $(LIBPATH) -o starspan1 starspan1.o $(SRCS) $(LDFLAGS)
-
 
 .cc.o:
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
 clean:
-	rm -f *.o *~ *.da starspan1 starspan2 starspan2_prof
+	rm -f *.o *~ *.da  starspan2 starspan2_prof

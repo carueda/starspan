@@ -11,14 +11,12 @@ starspan.h    Declaration of main operations.
 starspan2.cc  Contains the main() function.
 
 starspan_csv.cc           CSV creation
-starspan_db.cc            DBF creation
 starspan_dump.cc          for geometry visualization
 starspan_gen_envisl.cc    Envi standard/spectral library creation
 starspan_jtstest.cc       JTS test suit creation
 starspan_minirasters.cc   miniraster creation
 starspan_stats.cc         Basic statistics
 starspan_update_csv.cc    update table in csv format        
-starspan_update_db.cc     update table in dbf format   
 starspan_util.cc          misc supporting utilities
 
 Interfaces aimed to have some abstraction on raster and

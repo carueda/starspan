@@ -2,6 +2,8 @@
 // starspan1 - first sketch
 // $Id$
 //
+//	NOTE: this file is no longer used.
+
 #include "shapefil.h"
 #include "Polygon.h"
 
