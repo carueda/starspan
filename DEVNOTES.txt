@@ -11,6 +11,9 @@ $Id$
 	
 	New objects for traversal: TraversalEvent, PixelLocation
 	
+	starspan_db: now puts: FID, col,row, {vect-attrs}, {rast-bands}
+	See doc in starspan.h
+	
 2004-09-06
 	A second pass over the traverser module.
 	It now uses a LineRasterizer to process linestrings.

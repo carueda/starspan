@@ -69,7 +69,7 @@ static double extract_double_value(GDALDataType rasterType, char* sign) {
 
 
 /**
-  *
+  * Creates fields and populates the table.
   */
 class DBObserver : public Observer {
 public:
@@ -137,9 +137,9 @@ public:
 		
 		// Create fields from layer definition 
 		OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
-		int field_count = poDefn->GetFieldCount();
+		int feature_field_count = poDefn->GetFieldCount();
 		
-		for ( int i = 0; i < field_count; i++ ) {
+		for ( int i = 0; i < feature_field_count; i++ ) {
 			OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
 			const char* pfield_name = poField->GetNameRef();
 			
@@ -223,8 +223,8 @@ public:
 		}
 		
 		// add attribute fields from source currentFeature to record:
-		int field_count = currentFeature->GetFieldCount();
-		for ( int i = 0; i < field_count; i++ ) {
+		int feature_field_count = currentFeature->GetFieldCount();
+		for ( int i = 0; i < feature_field_count; i++ ) {
 			OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
 			OGRFieldType ft = poField->GetType();
 			switch(ft) {
