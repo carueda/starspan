@@ -413,6 +413,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
 		}
 		delete geos_poly;
+		return;
 	}
 	const double pix_area = fabs(pix_x_size*pix_y_size);
 	
