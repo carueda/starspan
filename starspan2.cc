@@ -60,11 +60,6 @@ static void usage(const char* msg) {
 		"      -in          only pixels contained in polygons\n"
 		"      -srs <srs>\n"
 		"\n"
-		"Example:\n"
-		"   starspan -vector V.shp  -raster R.img  -csv D.csv  -fields species,foo,baz\n"
-		" creates D.csv with pixels extracted from R.img that intersect\n"
-		" features in V.shp; only the given fields from V.shp are written to D.csv.\n"
-		"\n"
 		"Visit http://starspan.casil.ucdavis.edu/?Usage for more details.\n"
 		"\n"
 		, STARSPAN_VERSION, __DATE__, __TIME__
