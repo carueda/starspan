@@ -31,9 +31,6 @@ public:
 	GDALDatasetH hOutDS;
 	long pixel_count;
 
-	// is there a previous feature to be finalized?
-	bool previous;
-	
 	vector<CRPixel> pixels;
 	
 	// last processed FID
@@ -85,7 +82,7 @@ public:
 	  * dispatches finalization of previous feature
 	  */
 	void finalizePreviousFeatureIfAny(void) {
-		if ( !previous )
+		if ( !pixels.length() )
 			return;
 		
 		int mini_x0, mini_y0, mini_x1, mini_y1;
@@ -137,7 +134,6 @@ public:
 		fprintf(stdout, "\n");
 
 		pixels.clear();
-		previous = false;
 	}
 
 	/**
@@ -148,9 +144,6 @@ public:
 		
 		// keep track of last FID processed:
 		last_FID = feature->GetFID();
-
-		// rest of record will be done by finalizePreviousFeatureIfAny
-		previous = true;
 	}
 
 	/**
