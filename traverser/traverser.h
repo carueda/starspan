@@ -25,6 +25,26 @@ using namespace std;
 
 
 /**
+  * Pixel location.
+  * Used as element for set of visited pixels
+  */
+class EPixel {
+	int col, row;
+	public:
+	EPixel(int col, int row) : col(col), row(row) {}
+	EPixel(const EPixel& p) : col(p.col), row(p.row) {}
+	bool operator<(EPixel const &right) const {
+		if ( col < right.col )
+			return true;
+		else if ( col == right.col )
+			return row < right.row;
+		else
+			return false;
+	}
+};
+
+
+/**
   * Info passed in observer#init(info)
   */
 struct GlobalInfo {
@@ -312,6 +332,14 @@ public:
 	  * behaviour may occur.
 	  */
 	void traverse(void);
+
+	/**
+	  * True if pixel at [col,row] has been already visited
+	  * according to current feature.
+	  */
+	inline bool pixelVisited(int col, int row) {
+		return pixset.find(EPixel(col, row)) != pixset.end() ;
+	}
 	
 	/** summary results for each traversal */
 	struct {
@@ -371,23 +399,7 @@ private:
 	// LineRasterizerObserver	
 	void pixelFound(double x, double y);
 
-	//
-	// Element info for set of visited pixels
-	//
-	class EPixel {
-		int col, row;
-		public:
-		EPixel(int col, int row) : col(col), row(row) {}
-		EPixel(const EPixel& p) : col(p.col), row(p.row) {}
-		bool operator<(EPixel const &right) const {
-			if ( col < right.col )
-				return true;
-			else if ( col == right.col )
-				return row < right.row;
-			else
-				return false;
-		}
-	};
+	// set of visited pixels:
 	set<EPixel> pixset;
 
 	ostream* progress_out;
