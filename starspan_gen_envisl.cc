@@ -9,6 +9,7 @@
 #include "traverser.h"       
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 // used to write the number of lines in header since this is
@@ -27,19 +28,20 @@ public:
 	int numBands;
 	FILE* data_file;
 	FILE* header_file;
+	FILE* class_file;
+	const char* select_fields;
 	
-	OGRFeature* current_feature;
+	OGRFeature* currentFeature;
 	int numSpectra;	
 	long lines_offset;
 	
 	/**
 	  * Initializes the header.
 	  */
-	EnviSlObserver(int bands, FILE* df, FILE* hf) {
-		numBands = bands;
-		data_file = df; 
-		header_file = hf;
-		
+	EnviSlObserver(int bands, FILE* df, FILE* hf, FILE* cf, const char* select_fields_)
+	: numBands(bands), data_file(df), header_file(hf), class_file(cf),
+	  select_fields(select_fields_)
+	{
 		numSpectra = 0;
 		
 		// first part of header:
@@ -91,7 +93,7 @@ public:
 			"spectra names = {"
 		);
 		
-		current_feature = NULL;
+		currentFeature = NULL;
 	}
 	
 	/**
@@ -110,10 +112,10 @@ public:
 	
 
 	/**
-	  * Used here to update current_feature
+	  * Used here to update currentFeature
 	  */
 	void intersectionFound(OGRFeature* feature) {
-		current_feature = feature;
+		currentFeature = feature;
 	}
 
 	
@@ -131,13 +133,56 @@ public:
 		fwrite(band_values, typeSize, numBands, data_file);
 		
 		char spectrum_name[1024];
-		sprintf(spectrum_name, "%ld:%d:%d", current_feature->GetFID(), col, row);
+		sprintf(spectrum_name, "%ld:%d:%d", currentFeature->GetFID(), col, row);
 		
 		// add spectrum name
 		if ( numSpectra > 0 )
 			fprintf(header_file, ",");
 		
 		fprintf(header_file, "\n  %s", spectrum_name);
+		
+		/////////////////////
+		// add class fields
+		if ( class_file && select_fields ) {
+			int num_fields = 0;
+			char buff[strlen(select_fields) + 1];
+			strcpy(buff, select_fields);
+			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
+				if ( num_fields++ )
+					fprintf(class_file, ", ");
+				
+				const int i = currentFeature->GetFieldIndex(fname);
+				if ( i < 0 ) {
+					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					exit(1);
+				}
+				OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
+				OGRFieldType ft = poField->GetType();
+				switch(ft) {
+					case OFTString: {
+						const char* str = currentFeature->GetFieldAsString(i);
+						fprintf(class_file, "%s", str);
+						break;
+					}
+					case OFTInteger: { 
+						int val = currentFeature->GetFieldAsInteger(i);
+						fprintf(class_file, "%d", val);
+						break;
+					}
+					case OFTReal: { 
+						double val = currentFeature->GetFieldAsDouble(i);
+						fprintf(class_file, "%f", val);
+						break;
+					}
+					default:
+						fprintf(stderr, "addPixel: expecting: "
+								"OFTString, OFTInteger, or OFTReal \n");
+						exit(2);
+				}
+			}
+			fprintf(class_file, "\n");
+		}		 
+		
 		
 		numSpectra++;
 	}
@@ -161,10 +206,9 @@ public:
   */
 int starspan_gen_envisl(
 	Raster* rast, 
-	Vector* vect, 
-	const char* envisl_name,
-	const char* pszOutputSRS  // see gdal_translate option -a_srs 
-	                         // If NULL, projection is taken from input dataset
+	Vector* vect,
+	const char* select_fields,
+	const char* envisl_name
 ) {
 	// output files
 	char data_filename[1024];
@@ -185,10 +229,23 @@ int starspan_gen_envisl(
 		return 1;
 	}
 	
+	FILE* class_file = NULL;
+	if ( select_fields ) {
+		char class_filename[1024];
+		sprintf(class_filename, "%s_classes.txt", envisl_name);
+		class_file = fopen(class_filename, "w");
+		if ( !class_file ) {
+			fclose(header_file);
+			fclose(data_file);
+			fprintf(stderr, "Couldn't create %s\n", class_filename);
+			return 1;
+		}
+	}
+	
 	
 	int bands;
 	rast->getSize(NULL, NULL, &bands);
-	EnviSlObserver obs(bands, data_file, header_file);	
+	EnviSlObserver obs(bands, data_file, header_file, class_file, select_fields);	
 	Traverser tr(rast, vect);
 	tr.setObserver(&obs);
 	
@@ -198,6 +255,8 @@ int starspan_gen_envisl(
 	
 	fclose(header_file);
 	fclose(data_file);
+	if ( class_file )
+		fclose(class_file);
 	fprintf(stdout, "numSpectra = %d\n", obs.numSpectra);
 	fprintf(stdout, "envisl finished.\n");
 

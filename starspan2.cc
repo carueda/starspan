@@ -29,12 +29,6 @@ static void usage(const char* msg) {
 		"http://starspan.casil.ucdavis.edu\n"
 		"\n"
 		"USAGE:\n"
-		"  starspan -help\n"
-		"      prints this message and exits.\n"
-		"\n"
-		"  starspan -xhelp\n"
-		"      prints help for extended usage and exits.\n"
-		"\n"
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
 		"   inputs:\n"
@@ -50,23 +44,19 @@ static void usage(const char* msg) {
 		"      -jtstest <filename>  Generates a JTS test file\n"
 		"\n"
 		"   options:\n"
+		"      -fields field1,field2,...,fieldn\n"
 		"      -pixprop <value>\n"
-		"              Minimum proportion of pixel area in intersection so that\n"
-		"              the pixel is included.  <value> in [0.0, 1.0].\n"
-		"              Only used in intersections resulting in polygons.\n"
-		"              By default, the pixel is included only if the polygon \n"
-		"              contains the upper left corner of the pixel.\n"
-		"      -fid <value>\n"
-		"              Only the given FID will be scanned.\n"
-		"      -ppoly  (Used with -jtstest)\n"
-		"              Pixels are represented as polygons instead of points.\n"
-		"      -in     (Used with -mr)\n"
-		"              Only pixels contained in geometry features are retained.\n"
-		"              Zero (0) is used to nullify pixels outside features.\n"
-		"              By default all pixels in envelope are retained.\n"
-		"      -srs <srs>   (Used with -mr)\n"
-		"              See gdal_translate option -a_srs.\n"
-		"              By default projection is taken from input raster.\n"
+		"      -fid <FID>\n"
+		"      -ppoly\n"
+		"      -in\n"
+		"      -srs <srs>\n"
+		"\n"
+		"Example:\n"
+		"   starspan -vector V.shp -raster R.img -dbf D.dbf -fields species,foo,baz\n"
+		" creates D.dbf with pixels extracted from R.img that intersect\n"
+		" features in V.shp; only the given fields from V.shp are written to D.dbf.\n"
+		"\n"
+		"More details at http://starspan.casil.ucdavis.edu/?Usage\n"
 		"\n"
 		, VERSION, __DATE__, __TIME__
 	);
@@ -86,6 +76,7 @@ int main(int argc, char ** argv) {
 	bool only_in_feature = false;
 	bool use_polys = false;
 	const char*  envisl_name = NULL;
+	const char*  select_fields = NULL;
 	const char*  dbf_name = NULL;
 	const char*  csv_name = NULL;
 	const char*  mini_prefix = NULL;
@@ -163,6 +154,7 @@ int main(int argc, char ** argv) {
 				usage("invalid pixel proportion");
 			Traverser::setPixelProportion(pix_prop);
 		}
+		
 		else if ( 0==strcmp("-fid", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-fid: desired FID?");
@@ -171,12 +163,21 @@ int main(int argc, char ** argv) {
 				usage("invalid FID");
 			Traverser::setDesiredFID(FID);
 		}
+		
 		else if ( 0==strcmp("-ppoly", argv[i]) ) {
 			use_polys = true;
 		}
+		
+		else if ( 0==strcmp("-fields", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-fields: which fields to select?");
+			select_fields = argv[i];
+		}
+
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
 		}
+		
 		else if ( 0==strcmp("-srs", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-srs: which srs?");
@@ -215,13 +216,13 @@ int main(int argc, char ** argv) {
 	}
 	// COMMANDS
 	if ( dbf_name ) { 
-		return starspan_db(rast, vect, dbf_name);
+		return starspan_db(rast, vect, select_fields, dbf_name);
 	}
 	else if ( csv_name ) { 
-		return starspan_csv(rast, vect, csv_name);
+		return starspan_csv(rast, vect, select_fields, csv_name);
 	}
 	else if ( envisl_name ) { 
-		return starspan_gen_envisl(rast, vect, envisl_name, mini_srs);
+		return starspan_gen_envisl(rast, vect, select_fields, envisl_name);
 	}
 	else if ( mini_prefix ) {
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);

@@ -81,17 +81,16 @@ public:
 	bool includePixelLocation;
 	int numBands;
 	OGRFeature* currentFeature;
-	int next_record_index;	
+	int next_record_index;
+	const char* select_fields;	
 
 	
 	/**
 	  * Creates fields: FID, col, row, fields-from-feature, bands-from-raster
 	  */
-	DBObserver(Raster* r, Vector* v, DBFHandle f) {
-		rast = r;
-		vect = v;
-		file = f;
-		
+	DBObserver(Raster* r, Vector* v, DBFHandle f, const char* select_fields_)
+	: rast(r), vect(v), file(f), select_fields(select_fields_) 
+	{
 		// PENDING maybe read this from a parameter
 		includePixelLocation = true;
 		
@@ -139,20 +138,36 @@ public:
 		
 		// Create fields from layer definition 
 		OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
-		int feature_field_count = poDefn->GetFieldCount();
-		
-		for ( int i = 0; i < feature_field_count; i++ ) {
-			OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
-			const char* pfield_name = poField->GetNameRef();
-			
-			// is this field to be included?  
-			// FIXME: now all fields are included.
-			if ( true ) {
+		if ( select_fields ) {
+			char buff[strlen(select_fields) + 1];
+			strcpy(buff, select_fields);
+			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
+				const int i = poDefn->GetFieldIndex(fname);
+				if ( i < 0 ) {
+					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					exit(1);
+				}
+				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
 				field_type = fieldtype_2_dbftype(poField->GetType());
 				field_width = poField->GetWidth();
 				field_precision = poField->GetPrecision();
-				fprintf(stdout, "Creating field: %s\n", pfield_name);
-				DBFAddField(file, pfield_name, field_type, field_width, field_precision);
+				fprintf(stdout, "Creating field: %s\n", fname);
+				DBFAddField(file, fname, field_type, field_width, field_precision);
+				next_field_index++;
+			}
+		}
+		else {
+			int feature_field_count = poDefn->GetFieldCount();
+			
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
+				const char* fname = poField->GetNameRef();
+				
+				field_type = fieldtype_2_dbftype(poField->GetType());
+				field_width = poField->GetWidth();
+				field_precision = poField->GetPrecision();
+				fprintf(stdout, "Creating field: %s\n", fname);
+				DBFAddField(file, fname, field_type, field_width, field_precision);
 				next_field_index++;
 			}
 		}
@@ -192,6 +207,48 @@ public:
 		currentFeature = feature;
 	}
 	
+
+	void write_field(int i, int next_field_index) {
+		OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
+		OGRFieldType ft = poField->GetType();
+		switch(ft) {
+			case OFTString: {
+				const char* str = currentFeature->GetFieldAsString(i);
+				DBFWriteStringAttribute(
+					file,
+					next_record_index,            // int iShape -- record number
+					next_field_index,           // int iField,
+					str 
+				);
+				break;
+			}
+			case OFTInteger: { 
+				int val = currentFeature->GetFieldAsInteger(i);
+				DBFWriteIntegerAttribute(
+					file,
+					next_record_index,            // int iShape -- record number
+					next_field_index,           // int iField,
+					val
+				);
+				break;
+			}
+			case OFTReal: { 
+				double val = currentFeature->GetFieldAsDouble(i);
+				DBFWriteDoubleAttribute(
+					file,
+					next_record_index,            // int iShape -- record number
+					next_field_index,           // int iField,
+					val
+				);
+				break;
+			}
+			default:
+				fprintf(stderr, "fieldtype_2_dbftype: expecting: "
+						"OFTString, OFTInteger, or OFTReal \n");
+				exit(2);
+		}
+	}
+
 	
 	/**
 	  * Adds a record to the output file.
@@ -231,48 +288,25 @@ public:
 		}
 		
 		// add attribute fields from source currentFeature to record:
-		int feature_field_count = currentFeature->GetFieldCount();
-		for ( int i = 0; i < feature_field_count; i++ ) {
-			OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
-			OGRFieldType ft = poField->GetType();
-			switch(ft) {
-				case OFTString: {
-					const char* str = currentFeature->GetFieldAsString(i);
-					DBFWriteStringAttribute(
-						file,
-						next_record_index,            // int iShape -- record number
-						next_field_index++,           // int iField,
-						str 
-					);
-					break;
+		if ( select_fields ) {
+			char buff[strlen(select_fields) + 1];
+			strcpy(buff, select_fields);
+			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
+				const int i = currentFeature->GetFieldIndex(fname);
+				if ( i < 0 ) {
+					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					exit(1);
 				}
-				case OFTInteger: { 
-					int val = currentFeature->GetFieldAsInteger(i);
-					DBFWriteIntegerAttribute(
-						file,
-						next_record_index,            // int iShape -- record number
-						next_field_index++,           // int iField,
-						val
-					);
-					break;
-				}
-				case OFTReal: { 
-					double val = currentFeature->GetFieldAsDouble(i);
-					DBFWriteDoubleAttribute(
-						file,
-						next_record_index,            // int iShape -- record number
-						next_field_index++,           // int iField,
-						val
-					);
-					break;
-				}
-				default:
-					fprintf(stderr, "fieldtype_2_dbftype: expecting: "
-							"OFTString, OFTInteger, or OFTReal \n");
-					exit(2);
+				write_field(i, next_field_index++);
 			}
 		}
-		 
+		else {
+			// all fields
+			int feature_field_count = currentFeature->GetFieldCount();
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				write_field(i, next_field_index++);
+			}
+		}		 
 		
 		
 		// add band values to record:
@@ -309,15 +343,20 @@ public:
 /**
   * implementation
   */
-int starspan_db(Raster* rast, Vector* vect, const char* db_filename) {
+int starspan_db(
+	Raster* rast, 
+	Vector* vect, 
+	const char* select_fields,
+	const char* filename
+) {
 	// create output file
-	DBFHandle file = DBFCreate(db_filename);
+	DBFHandle file = DBFCreate(filename);
 	if ( !file ) {
-		fprintf(stderr, "Couldn't create %s\n", db_filename);
+		fprintf(stderr, "Couldn't create %s\n", filename);
 		return 1;
 	}
 
-	DBObserver obs(rast, vect, file);	
+	DBObserver obs(rast, vect, file, select_fields);	
 	Traverser tr(rast, vect);
 	tr.setObserver(&obs);
 	tr.traverse();

@@ -33,6 +33,7 @@
 int starspan_db(
 	Raster* rast, 
 	Vector* vect, 
+	const char* select_fields,     // comma-separated field names
 	const char* db_filename
 );
 
@@ -53,17 +54,17 @@ int starspan_db(
 int starspan_csv(
 	Raster* rast, 
 	Vector* vect, 
+	const char* select_fields,     // comma-separated field names
 	const char* csv_filename
 );
 
-/** Generates envi spectral library ... (preliminaries)
+/** Generates envi spectral library.
     returns 0 iff OK. */
 int starspan_gen_envisl(
 	Raster* rast, 
 	Vector* vect, 
-	const char* envisl_name,
-	const char* pszOutputSRS  // see gdal_translate option -a_srs 
-	                         // If NULL, projection is taken from input dataset
+	const char* select_fields,     // comma-separated field names
+	const char* envisl_name
 );
 
 	

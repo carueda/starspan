@@ -61,17 +61,15 @@ public:
 	bool includePixelLocation;
 	int numBands;
 	OGRFeature* currentFeature;
-
+	const char* select_fields;
 	
 	/**
 	  * Creates first line with column headers:
 	  *    FID, col, row, fields-from-feature, bands-from-raster
 	  */
-	CSVObserver(Raster* r, Vector* v, FILE* f) {
-		rast = r;
-		vect = v;
-		file = f;
-		
+	CSVObserver(Raster* r, Vector* v, FILE* f, const char* select_fields_)
+	: rast(r), vect(v), file(f), select_fields(select_fields_) 
+	{
 		// PENDING maybe read this from a parameter
 		includePixelLocation = true;
 		
@@ -94,17 +92,22 @@ public:
 			fprintf(file, ",row");
 		}
 		
-		// Create fields from layer definition 
-		OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
-		int feature_field_count = poDefn->GetFieldCount();
-		
-		for ( int i = 0; i < feature_field_count; i++ ) {
-			OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
-			const char* pfield_name = poField->GetNameRef();
+		// Create fields:
+		if ( select_fields ) {
+			char buff[strlen(select_fields) + 1];
+			strcpy(buff, select_fields);
+			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
+				fprintf(file, ",%s", fname);
+			}
+		}
+		else {
+			// all fields from layer definition
+			OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
+			int feature_field_count = poDefn->GetFieldCount();
 			
-			// is this field to be included?  
-			// FIXME: now all fields are included.
-			if ( true ) {
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
+				const char* pfield_name = poField->GetNameRef();
 				fprintf(file, ",%s", pfield_name);
 			}
 		}
@@ -158,30 +161,25 @@ public:
 		}
 		
 		// add attribute fields from source currentFeature to record:
-		int feature_field_count = currentFeature->GetFieldCount();
-		for ( int i = 0; i < feature_field_count; i++ ) {
-			OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
-			OGRFieldType ft = poField->GetType();
-			switch(ft) {
-				case OFTString: {
-					const char* str = currentFeature->GetFieldAsString(i);
-					fprintf(file, ",%s", str);
-					break;
+		if ( select_fields ) {
+			char buff[strlen(select_fields) + 1];
+			strcpy(buff, select_fields);
+			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
+				const int i = currentFeature->GetFieldIndex(fname);
+				if ( i < 0 ) {
+					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					exit(1);
 				}
-				case OFTInteger: { 
-					int val = currentFeature->GetFieldAsInteger(i);
-					fprintf(file, ",%d", val);
-					break;
-				}
-				case OFTReal: { 
-					double val = currentFeature->GetFieldAsDouble(i);
-					fprintf(file, ",%f", val);
-					break;
-				}
-				default:
-					fprintf(stderr, "CSVObserver: expecting: "
-							"OFTString, OFTInteger, or OFTReal \n");
-					exit(2);
+				const char* str = currentFeature->GetFieldAsString(i);
+				fprintf(file, ",%s", str);
+			}
+		}
+		else {
+			// all fields
+			int feature_field_count = currentFeature->GetFieldCount();
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				const char* str = currentFeature->GetFieldAsString(i);
+				fprintf(file, ",%s", str);
 			}
 		}
 		 
@@ -202,7 +200,12 @@ public:
 /**
   * implementation
   */
-int starspan_csv(Raster* rast, Vector* vect, const char* filename) {
+int starspan_csv(
+	Raster* rast, 
+	Vector* vect, 
+	const char* select_fields,     // comma-separated field names
+	const char* filename
+) {
 	// create output file
 	FILE* file = fopen(filename, "w");
 	if ( !file ) {
@@ -210,7 +213,7 @@ int starspan_csv(Raster* rast, Vector* vect, const char* filename) {
 		return 1;
 	}
 
-	CSVObserver obs(rast, vect, file);	
+	CSVObserver obs(rast, vect, file, select_fields);	
 	Traverser tr(rast, vect);
 	tr.setObserver(&obs);
 	tr.traverse();
