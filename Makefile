@@ -17,7 +17,8 @@ include Makefile.props
 
 #------------------------------------------------------------
 
-INCLUDE := -Isrc -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil
+INCLUDE := -Isrc -Isrc/csv -Isrc/jts -Isrc/raster -Isrc/rasterizers -Isrc/stats \
+           -Isrc/traverser -Isrc/util -Isrc/vector 
 
 INCLUDE += -I$(GDAL_PREFIX)/include
 INCLUDE += -I$(GDAL_SRC_DIR)/frmts
@@ -36,14 +37,14 @@ SRCS =	src/starspan_stats.cc \
 		src/starspan_util.cc \
 		src/starspan_dump.cc \
 		src/starspan_tuct2.cc \
-		jts/jts.cc \
-		traverser/traverser.cc \
-		raster/Raster_gdal.cc \
-		vector/Vector_ogr.cc \
-		rasterizers/LineRasterizer.cc \
-		csv/Csv.cc \
-		stats/Stats.cc \
-		util/Progress.cc
+		src/csv/Csv.cc \
+		src/jts/jts.cc \
+		src/raster/Raster_gdal.cc \
+		src/rasterizers/LineRasterizer.cc \
+		src/stats/Stats.cc \
+		src/traverser/traverser.cc \
+		src/util/Progress.cc \
+		src/vector/Vector_ogr.cc
 
 
 OBJS = $(subst .cc,.o,$(SRCS))

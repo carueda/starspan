@@ -2,8 +2,13 @@ starspan devnotes
 $Id$
 
 
+2005-02-19 (0.951beta)
+	- new scheme to make source distribution (see mksrcdist.sh)
+	- source restructuring. These dirs were move to src/:
+		csv jts raster rasterizers stats traverser util vector
+	
 2005-02-18 (0.95beta)
-	- Top-level sources move to src/
+	- Top-level sources moved to src/
 	
 2005-02-16 (0.95beta)
 	- 0.94beta released.
