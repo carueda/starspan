@@ -10,11 +10,11 @@ include Makefile.props
 
 #------------------------------------------------------------
 
-INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil		 
+INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil
 
 INCLUDE += -I$(GDAL_PREFIX)/include
-INCLUDE += -I$(GDAL_SRC_DIR)/frmts 
-		 
+INCLUDE += -I$(GDAL_SRC_DIR)/frmts
+
 INCLUDE += -I/usr/local/include
 
 
@@ -58,16 +58,16 @@ all: starspan2
 
 # yet to be used
 objs : $(OBJS)
-	   
+
 starspan2: starspan2.cc $(SRCS)
 	g++ $(CXXFLAGS) $(OBJ_OPT) \
 	    $(LIBPATH) -o starspan2 starspan2.cc $(SRCS) $(LDFLAGS)
 
 test:
 	(cd tests/ && make)
-	
+
 install:
-	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/ 
+	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/
 
 prof: starspan2.cc $(SRCS)
 	g++ $(PROF) \
@@ -78,11 +78,29 @@ prof: starspan2.cc $(SRCS)
 .cc.o:
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
+VERSION=""
+cvsroot=":pserver:anonymous@cvs.casil.ucdavis.edu:/cvsroot/starspan"
+
+dist: DISTDIR
+
+DISTDIR:
+	$(shell \
+	mkdir -p DISTDIR &&\
+	cd DISTDIR &&\
+	cvs -d$(cvsroot) login && cvs -z3 -d$(cvsroot) co starspan &&\
+	(find starspan -name CVS -exec rm -rf {} \; 2>/dev/null || /bin/true) &&\
+	mv starspan starspan-$(VERSION) &&\
+	tar cf starspan-$(VERSION).tar starspan-$(VERSION) &&\
+	gzip -9 starspan-$(VERSION).tar &&\
+	rm -rf starspan-$(VERSION) && ls -l )
+	echo "Done."
+
 tidy:
-	rm -f *.o *~
-	
+	rm -rf *.o *~ DISTDIR/
+
 clean-test:
 	rm -rf tests/generated/
-	
+
 clean: clean-test tidy
 	rm -f *.da  starspan2 starspan2_prof
+

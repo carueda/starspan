@@ -3,7 +3,11 @@ $Id$
 
 
 2005-02-10 (0.92beta)
-	- Minor Makefile changes
+	- Makefile changes and new target `dist' to create a source distribution
+	  from current CVS repository. E.g:
+		make dist VERSION=0.92beta
+	  created:
+	  	DISTDIR/starspan-0.92beta.tar.gz
 	
 2005-02-07 (0.92beta)
 	- Starting to work on new --mini_raster_strip option.
