@@ -20,6 +20,10 @@ $Id$
 	  getPixelDoubleValuesInBand(unsigned band_index, vector<double>& list);
 	which work on set of visited pixels in current feature.
 	
+	Removed methods in Traverser:
+	  getPixelIntegerValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<int>& list);
+	  getPixelDoubleValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
+	  
 	StatsObserver: eliminated list of pixels in current feature. This
 	functionality is already provided by the traverser.
 	

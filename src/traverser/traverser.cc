@@ -239,45 +239,6 @@ int Traverser::getPixelIntegerValuesInBand(
 	return 0;
 }
 
-int Traverser::getPixelIntegerValuesInBand(
-	unsigned band_index, 
-	vector<CRPixel>* colrows,
-	vector<int>& list
-) {
-	if ( band_index <= 0 || band_index > globalInfo.bands.size() ) {
-		cerr<< "Traverser::getPixelDoubleValuesInBand: band_index " <<band_index<< " out of range\n";
-		return 1;
-	}
-	
-	GDALRasterBand* band = globalInfo.bands[band_index-1];
-	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
-		int col = colrow->col;
-		int row = colrow->row;
-		int value = 0;
-		if ( col < 0 || col >= width || row < 0 || row >= height ) {
-			// nothing:  keep the 0 value
-		}
-		else {
-			int status = band->RasterIO(
-				GF_Read,
-				col, row,
-				1, 1,             // nXSize, nYSize
-				&value,           // pData
-				1, 1,             // nBufXSize, nBufYSize
-				GDT_Int32,        // eBufType
-				0, 0              // nPixelSpace, nLineSpace
-			);
-			
-			if ( status != CE_None ) {
-				cerr<< "Error reading band value, status=" <<status<< "\n";
-				exit(1);
-			}
-		}
-		list.push_back(value);
-	}
-	return 0;
-}
-
 int Traverser::getPixelDoubleValuesInBand(
 	unsigned band_index, 
 	vector<double>& list
@@ -315,46 +276,6 @@ int Traverser::getPixelDoubleValuesInBand(
 	}
 	return 0;
 }
-
-int Traverser::getPixelDoubleValuesInBand(
-	unsigned band_index, 
-	vector<CRPixel>* colrows,
-	vector<double>& list
-) {
-	if ( band_index <= 0 || band_index > globalInfo.bands.size() ) {
-		cerr<< "Traverser::getPixelDoubleValuesInBand: band_index " <<band_index<< " out of range\n";
-		return 1;
-	}
-	
-	GDALRasterBand* band = globalInfo.bands[band_index-1];
-	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
-		int col = colrow->col;
-		int row = colrow->row;
-		double value = 0.0;
-		if ( col < 0 || col >= width || row < 0 || row >= height ) {
-			// nothing:  keep the 0.0 value
-		}
-		else {
-			int status = band->RasterIO(
-				GF_Read,
-				col, row,
-				1, 1,             // nXSize, nYSize
-				&value,           // pData
-				1, 1,             // nBufXSize, nBufYSize
-				GDT_Float64,      // eBufType
-				0, 0              // nPixelSpace, nLineSpace
-			);
-			
-			if ( status != CE_None ) {
-				cerr<< "Error reading band value, status=" <<status<< "\n";
-				exit(1);
-			}
-		}
-		list.push_back(value);
-	}
-	return 0;
-}
-
 
 
 //

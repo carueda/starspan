@@ -287,18 +287,6 @@ public:
 	  */
 	int getPixelIntegerValuesInBand(unsigned band_index, vector<int>& list);
 	
-	/** TO BE REMOVED
-	  * Gets the values in integer type corresponding to a given list of pixel
-	  * locations from a given band.
-	  * @param band_index Desired band. Note that 1 corresponds to the first band
-	  *              (to keep consistency with GDAL).
-	  * @param colrows Desired locations.
-	  * @param list Where values are to be added.
-	  *             Note that a 0 will be added where (col,row) is not valid.
-	  * @return 0 iff OK.
-	  */
-	int getPixelIntegerValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<int>& list);
-	
 	/**
 	  * Gets the values in double type corresponding to the set of
 	  * visited pixels in current traversed feature.
@@ -309,18 +297,6 @@ public:
 	  * @return 0 iff OK.
 	  */
 	int getPixelDoubleValuesInBand(unsigned band_index, vector<double>& list);
-	
-	/** TO BE REMOVED
-	  * Gets the values in double type corresponding to a given list of pixel
-	  * locations from a given band.
-	  * @param band_index Desired band. Note that 1 corresponds to the first band
-	  *              (to keep consistency with GDAL).
-	  * @param colrows Desired locations.
-	  * @param list Where values are to be added.
-	  *             Note that a 0.0 will be added where (col,row) is not valid.
-	  * @return 0 iff OK.
-	  */
-	int getPixelDoubleValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
 	
 	/**
 	  * Reads in values from all bands (all given rasters) at pixel in (col,row).
