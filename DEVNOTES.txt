@@ -3,7 +3,7 @@ $Id$
                                     
 
 2005-04-04
-	New BUILD.windows.txt with notes about compiling the while
+	New BUILD.windows.txt with notes about compiling the whole
 	system in windows
 
 2005-03-23 (0.963beta)
