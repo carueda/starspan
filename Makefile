@@ -4,15 +4,18 @@
 #
 #
 
-INCLUDE= -Ivector -Iraster -Ijts \
+INCLUDE= -Ivector -Iraster -Itraverser -Ijts \
          -I/usr/local/include  \
          -I/home/carueda/cstars/GDAL/gdal/frmts  \
 		 -I/usr/local/include/libshp
 
-SRCS = starspan_minirasters.cc \
+SRCS = starspan_db.cc \
+       starspan_gen_envisl.cc \
+       starspan_minirasters.cc \
        starspan_jtstest.cc \
        starspan_util.cc \
 	   jts/jts.cc \
+	   traverser/traverser.cc \
 	   raster/Raster_gdal.cc \
 	   vector/Vector_ogr.cc
 

@@ -1,8 +1,24 @@
 starspan devnotes
 $Id$
 
+2004-08-22
+	New option -envisl to create en envi spectral library.
+	This function uses a traverser object.
+	Still lacking enough testing.
+	GDAL limitation: no access to wavelength metadata. 
+	It seems some ENVI functionality will have to be written anyway.
+	
+2004-08-21
+	New traverser module to provide a skeleton for basic processing.
+	The observer pattern is used so interested objects can perform
+	a number of tasks.
+
+2004-08-20
+	Option -in to work with -mr
+	
 2004-08-10
 	(unsuccessful) workarounds for proper projection in mini rasters
+	(beacuse of GDAL limitations).
 
 2004-08-08
 	organization
