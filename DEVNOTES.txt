@@ -8,6 +8,8 @@ $Id$
 	The idea is to node the segments defining a "bad" (self-intersecting) 
 	polygon, and then polygonize the resulting multilinestring.
 	See Traverser#processPolygon().
+	Now working.  But there are some memory leaks associated with
+	Polygonizer..
 	
 	(my first test of Polygonizer was in java using JTS directly:  
 	See java/src/starspan/tools/PolygonizerTest.java.)
