@@ -42,26 +42,19 @@ static void usage(const char* msg) {
 		"      -raster <filename>   A GDAL recognized raster file.\n"
 		"\n"
 		"   commands:\n"
-		"      -report\n"
-		"              Shows info about given input files.\n"
-		"              Similar to gdalinfo (for rasters) and ogrinfo (for vectors).\n"
-		"      -db <name>\n"
-		"              Generates a DBF file with pixels contained in given features\n"
-		"      -mr <prefix>\n"
-		"              Generates a mini raster for each intersecting feature.\n"
-		"              The <prefix> is used to compose raster names.\n"
-		"      -envisl <name>\n"
-		"              (preliminary) Generates an ENVI spectral library with pixels\n"
-		"              contained in given features\n"
-		"      -jtstest <filename>\n"
-		"              Generates a JTS test file with given name.\n"
-		"              -xhelp explains what to do next.\n"
+		"      -report              Shows info about given input files\n"
+		"      -db <name>           Generates a DBF file\n"
+		"      -envisl <name>       Generates an ENVI spectral library\n"
+		"      -mr <prefix>         Generates mini rasters\n"
+		"      -jtstest <filename>  Generates a JTS test file\n"
 		"\n"
 		"   options:\n"
-		"      -pf <value>\n"
-		"              Minimum fraction of pixel area in intersection so that\n"
-		"              the pixel is included.  <value> in [0.0, 1.0]. Defaults to %g.\n"
+		"      -pixprop <value>\n"
+		"              Minimum proportion of pixel area in intersection so that\n"
+		"              the pixel is included.  <value> in [0.0, 1.0].\n"
 		"              Only used in intersections resulting in polygons.\n"
+		"              By default, the pixel is included only if the polygon \n"
+		"              contains the upper left corner of the pixel.\n"
 		"      -in     (Used with -mr)\n"
 		"              Only pixels contained in geometry features are retained.\n"
 		"              Zero (0) is used to nullify pixels outside features.\n"
@@ -70,8 +63,7 @@ static void usage(const char* msg) {
 		"              See gdal_translate option -a_srs.\n"
 		"              By default projection is taken from input raster.\n"
 		"\n"
-		, VERSION, __DATE__, __TIME__,
-		Traverser::DEFAULT_FRACTION_FOR_INCLUSION
+		, VERSION, __DATE__, __TIME__
 	);
 	exit(0);
 }
@@ -134,13 +126,13 @@ int main(int argc, char ** argv) {
 		}
 		
 		// OPTIONS
-		else if ( 0==strcmp("-pf", argv[i]) ) {
+		else if ( 0==strcmp("-pixprop", argv[i]) ) {
 			if ( ++i == argc )
-				usage("-pf: pixel fraction?");
-			double pix_fraction = atof(argv[i]);
-			if ( pix_fraction < 0.0 || pix_fraction > 1.0 )
-				usage("invalid pixel fraction");
-			Traverser::setFractionForInclusion(pix_fraction);
+				usage("-pixprop: pixel proportion?");
+			double pix_prop = atof(argv[i]);
+			if ( pix_prop < 0.0 || pix_prop > 1.0 )
+				usage("invalid pixel proportion");
+			Traverser::setPixelProportion(pix_prop);
 		}
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;

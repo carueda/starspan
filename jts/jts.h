@@ -46,7 +46,7 @@ public:
 	/**
 	  * ends a case.
 	  */
-	void case_end(void);
+	void case_end(const char* predicate);
 	
 	/**
 	  * cancels a case.

@@ -49,10 +49,10 @@ void JTS_TestGenerator::case_arg_end(const char* argname) {
 	}
 }
 
-void JTS_TestGenerator::case_end() {
+void JTS_TestGenerator::case_end(const char* predicate) {
 	if ( file ) {
 		fprintf(file, "    <test>\n");
-		fprintf(file, "      <op name=\"contains\" arg1=\"a\" arg2=\"b\">true</op>\n");
+		fprintf(file, "      <op name=\"%s\" arg1=\"a\" arg2=\"b\">true</op>\n", predicate);
 		fprintf(file, "    </test>\n");
 		fprintf(file, "  </case>\n");
 		no_cases++;

@@ -88,19 +88,18 @@ public:
 class Traverser : LineRasterizerObserver {
 public:
 
-	/** 0.5 */
-	static const double DEFAULT_FRACTION_FOR_INCLUSION = 0.5;
-
 	/**
-	  * Sets the fraction of intersected area required for a pixel to be included.
-	  * This fraction is only used during processing of polygons.
+	  * Sets the proportion of intersected area required for a pixel to be included.
+	  * This parameter is only used during processing of polygons.
+	  * By default, a point-in-poly criterion is used: if the polygon contains 
+	  * the upper left corner of the pixel, then the pixel is included.
 	  *
-	  * @param frac A value assumed to be in [0.0, 1.0].
+	  * @param pixprop A value assumed to be in [0.0, 1.0].
 	  */
-	static void setFractionForInclusion(double frac);
+	static void setPixelProportion(double pixprop);
 
 	/**
-	  * Creates traverser.
+	  * Creates a traverser.
 	  * Then you will call setObserver() and maybe setFractionForInclusion().
 	  */
 	Traverser(Raster* r, Vector* v);
@@ -146,6 +145,8 @@ private:
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
 	void processPolygon(OGRPolygon* poly);
+	void processPolygon_point(OGRPolygon* poly);
+	void processPolygon_pixel(OGRPolygon* poly);
 
 	// LineRasterizerObserver	
 	void pixelFound(double x, double y);

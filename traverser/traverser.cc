@@ -11,12 +11,15 @@
 #include <stdlib.h>
 #include <assert.h>
 
+// for processPolygon_pixel:
+#include <geos.h>
 
-static double fractionForInclusion = Traverser::DEFAULT_FRACTION_FOR_INCLUSION;
+
+static double pixelProportion = -1.0;   // disabled
 
 
-void Traverser::setFractionForInclusion(double frac) {
-	fractionForInclusion = frac; 
+void Traverser::setPixelProportion(double pixprop) {
+	pixelProportion = pixprop; 
 }
 
 
@@ -98,8 +101,8 @@ inline void Traverser::toColRow(double x, double y, int *col, int *row) {
 // (col,row) to (x,y) conversion
 //
 inline void Traverser::toGridXY(int col, int row, double *x, double *y) {
-	*x = col * pix_x_size;
-	*y = row * pix_y_size;
+	*x = x0 + col * pix_x_size;
+	*y = y0 + row * pix_y_size;
 }
 
 //
@@ -180,18 +183,34 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 	}
 }
 
+
 //
 // process a polygon intersection
+// If a pixel proportion has been specified via setPixelProportion(), then
+// the area of intersections are used to determine if a pixel is to be
+// included. Otherwise, the pixel is included only if the upper left corner
+// of the pixel is within the polygon. 
 //
-#if 0
-// previous version--to be deleted
 void Traverser::processPolygon(OGRPolygon* poly) {
+	if ( pixelProportion < 0.0 )
+		processPolygon_point(poly);
+	else
+		processPolygon_pixel(poly);
+}
+
+
+//
+// processPolygon_point:
+// process a polygon intersection: checking point inclusion
+//
+void Traverser::processPolygon_point(OGRPolygon* poly) {
 	OGREnvelope intersection_env;
 	poly->getEnvelope(&intersection_env);
 	
 	// extern void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env);
 	// starspan_print_envelope(stdout, "poly envolppe: ", intersection_env);
 	
+	// get envelope corners in pixel coordinates:
 	int minCol, minRow, maxCol, maxRow;
 	toColRow(intersection_env.MinX, intersection_env.MinY, &minCol, &minRow);
 	toColRow(intersection_env.MaxX, intersection_env.MaxY, &maxCol, &maxRow);
@@ -200,18 +219,27 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	fprintf(stdout, " minCol=%d, minRow=%d\n", minCol, minRow); 
 	fprintf(stdout, " maxCol=%d, maxRow=%d\n", maxCol, maxRow); 
 	
-	int rows_env = abs(maxRow - minRow +1);
-	int cols_env = abs(maxCol - minCol +1);
+	// get envelope corners in grid coordinates:
+	double minX, minY, maxX, maxY;
+	toGridXY(minCol, minRow, &minX, &minY);
+	toGridXY(maxCol, maxRow, &maxX, &maxY);
+
+	fprintf(stdout, " minX=%g, minY=%g\n", minX, minY); 
+	fprintf(stdout, " maxX=%g, maxY=%g\n", maxX, maxY); 
+	
+	// envelope dimensions:
+	int rows_env = abs(maxRow - minRow) +1;
+	int cols_env = abs(maxCol - minCol) +1;
 	int num_points_in_poly = 0;
 	
 	fprintf(stdout, " %d cols x %d rows\n", cols_env, rows_env);
-	fprintf(stdout, " processing rows: "); fflush(stdout);
+	fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
 	
 	double abs_pix_y_size = fabs(pix_y_size);
 	double abs_pix_x_size = fabs(pix_x_size);
-	double y = intersection_env.MinY;
+	double y = minY;
 	for ( int i = 0; i < rows_env; i++, y += abs_pix_y_size) {
-		double x = intersection_env.MinX;
+		double x = minX;
 		for (int j = 0; j < cols_env; j++, x += abs_pix_x_size) {
 			OGRPoint point(x, y);
 			if ( poly->Contains(&point) ) {
@@ -219,7 +247,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				pixelFound(x, y);
 			}
 		}
-		fprintf(stdout, "%d ", (i+1)); fflush(stdout);
+		fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
 	}
 	fprintf(stdout, "\n"); 
 	fprintf(stdout, " %d points in poly out of %d points in envelope\n", 
@@ -227,12 +255,12 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	);
 }
 
-#else 
-// new version
-
-#include <geos.h>
-
-
+//
+// processPolygon_pixel:
+// process a polygon intersection: checking area of pixel intersection
+//
+// To avoid some OGR overhead, use GEOS directly.
+//
 static geos::GeometryFactory* global_factory = new geos::GeometryFactory();
 
 // create pixel polygon
@@ -249,10 +277,7 @@ inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, do
 	return poly;
 }
 
-//
-// 
-//
-void Traverser::processPolygon(OGRPolygon* poly) {
+void Traverser::processPolygon_pixel(OGRPolygon* poly) {
 	OGREnvelope intersection_env;
 	poly->getEnvelope(&intersection_env);
 	
@@ -274,29 +299,35 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	fprintf(stdout, " maxX=%g, maxY=%g\n", maxX, maxY); 
 	
 	// envelope dimensions:
-	int rows_env = abs(maxRow - minRow +1);
-	int cols_env = abs(maxCol - minCol +1);
+	int rows_env = abs(maxRow - minRow) +1;
+	int cols_env = abs(maxCol - minCol) +1;
 	
 	// number of pixels found in polygon:
 	int num_pixels_in_poly = 0;
 	
 	fprintf(stdout, " %d cols x %d rows\n", cols_env, rows_env);
-	fprintf(stdout, " processing rows: "); fflush(stdout);
+	fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
 
 	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
 	const double pix_area = fabs(pix_x_size*pix_y_size);
 	
+	//geos::WKTWriter wktWriter;
+	
+	double abs_pix_y_size = fabs(pix_y_size);
+	double abs_pix_x_size = fabs(pix_x_size);
 	double y = minY;
-	for ( int i = 0; i < rows_env; i++, y += pix_y_size) {
+	for ( int i = 0; i < rows_env; i++, y += abs_pix_y_size) {
 		double x = minX;
-		for (int j = 0; j < cols_env; j++, x += pix_x_size) {
+		for (int j = 0; j < cols_env; j++, x += abs_pix_x_size) {
 			// create pixel polygon for (x,y) grid location:
 			geos::Polygon* pix_poly = create_pix_poly(x, y, x + pix_x_size, y + pix_y_size);
 			// intersect
 			geos::Geometry* pix_inters = geos_poly->intersection(pix_poly);
 			if ( pix_inters ) {
 				double area = pix_inters->getArea();
-				if ( area >= fractionForInclusion * pix_area ) { 
+				//cout << wktWriter.write(pix_inters) << " area=" << area << endl;
+				//cout " area=" << area << endl;
+				if ( area >= pixelProportion * pix_area ) { 
 					num_pixels_in_poly++;
 					pixelFound(x, y);
 				}
@@ -304,14 +335,14 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			}
 			delete pix_poly;
 		}
-		fprintf(stdout, "%d ", (i+1)); fflush(stdout);
+		fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
 	}
 	fprintf(stdout, "\n"); 
 	fprintf(stdout, " %d pixels in poly out of %d pixels in envelope\n", 
 		num_pixels_in_poly, rows_env * cols_env
 	);
 }
-#endif
+
 
 //
 // main method for traversal

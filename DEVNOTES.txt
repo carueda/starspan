@@ -3,7 +3,8 @@ $Id$
 
 2004-09-08
 	Traverser: new approach for pixel inclusion in intersections
-	resulting in polygons. A parameter fractionForInclusion is used.
+	resulting in polygons. A parameter pixelProprtion is used.
+	New option -pixprop.
 	Basic scheme implemented but should be adjusted for better 
 	efficiency.
 	
