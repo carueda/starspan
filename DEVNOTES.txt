@@ -1,7 +1,11 @@
 starspan devnotes
 $Id$
 
-2004-09-26
+2004-09-27 (0.8beta)
+	-update_{csv,dbf} options: fixed bug: col,row were not made 0-based for
+	proper extraction.
+	
+2004-09-26 (0.7beta)
 	pixel duplicates revisited:
 	
 		LineRasterizer#line now includes flag 'last' to indicate if ending

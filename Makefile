@@ -84,4 +84,4 @@ starspan1: starspan1.o $(SRCS)
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
 clean:
-	rm -f *.o starspan1 starspan2
+	rm -f *.o *~ starspan1 starspan2

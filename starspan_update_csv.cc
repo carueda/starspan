@@ -146,6 +146,9 @@ int starspan_update_csv(
 			col = atoi(csv.getfield(col_field_index).c_str());
 			row = atoi(csv.getfield(row_field_index).c_str());
 			fprintf(stdout, "col , row = %d , %d\n", col, row);
+			// make col and row 0-based:
+			--col;
+			--row;
 		}
 		
 		
@@ -165,8 +168,6 @@ int starspan_update_csv(
 			// else: (col,row) already given above.
 			
 			
-			//fprintf(stdout, "col, row = %d , %d\n", col, row);
-
 			//
 			// extract pixel at (col,row) from rast
 			char* ptr = (char*) rast->getBandValues(col, row);
