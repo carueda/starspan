@@ -111,7 +111,9 @@ void Traverser::addRaster(Raster* raster) {
 	
 	if ( rasts.size() == 1 ) {
 		// info taken from first raster.
-		rasts[0]->getPixelSize(&grid.pix_x_size, &grid.pix_y_size);
+		double pix_x_size, pix_y_size;
+		rasts[0]->getPixelSize(&pix_x_size, &pix_y_size);
+		grid.setPixelSize(pix_x_size, pix_y_size);
 		
 		double x0, y0, x1, y1;
 		rasts[0]->getCoordinates(&x0, &y0, &x1, &y1);
@@ -125,7 +127,8 @@ void Traverser::addRaster(Raster* raster) {
 		// we keep the restriction that pixel size must be equal
 		double pix_x_size, pix_y_size;
 		rasts[last]->getPixelSize(&pix_x_size, &pix_y_size);
-		if ( grid.pix_x_size != pix_x_size || grid.pix_y_size != pix_y_size ) {
+		if ( grid.abs_pix_x_size != fabs(pix_x_size) 
+		||   grid.abs_pix_y_size != fabs(pix_y_size) ) {
 			cerr<< "Different pixel size\n";
 			exit(1);
 		}
@@ -149,8 +152,7 @@ void Traverser::addRaster(Raster* raster) {
 	// update grid info
 	OGREnvelope env;
 	globalInfo.rastersGeometry->getEnvelope(&env);
-	grid.x0 = env.MinX;
-	grid.y0 = env.MinY;
+	grid.setOrigin(env);
 }
 
 //
@@ -302,7 +304,8 @@ void Traverser::pixelFound(double x, double y) {
 	int col, row;
 	grid.toColRow(x, y, &col, &row);
 	
-	assert ( col >= 0 && row >= 0 );
+	assert ( col >= 0 );
+	assert ( row >= 0 );
 	
 	// check this location has not been processed
 	EPixel colrow(col, row);
@@ -320,7 +323,7 @@ void Traverser::pixelFound(double x, double y) {
 	if ( notSimpleObserver ) {
 		// get also all values for this pixel from the bands.
 		// Use point at center of the pixel:
-		getBandValuesForPixel(x + grid.pix_x_size/2, y + grid.pix_y_size/2);
+		getBandValuesForPixel(x + grid.abs_pix_x_size/2, y + grid.abs_pix_y_size/2);
 		event.bandValues = bandValues_buffer;
 	}
 	
@@ -411,17 +414,39 @@ inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, do
 inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 	const geos::Envelope* intersection_env = geos_poly->getEnvelopeInternal();
 	
+	double actual_min_x, actual_max_x;
+	if ( intersection_env->getMinX() < intersection_env->getMaxX() ) {
+		actual_min_x = intersection_env->getMinX();
+		actual_max_x = intersection_env->getMaxX();
+	}
+	else {
+		actual_min_x = intersection_env->getMaxX();
+		actual_max_x = intersection_env->getMinX();
+	}
+	double actual_min_y, actual_max_y;
+	if ( intersection_env->getMinY() < intersection_env->getMaxY() ) {
+		actual_min_y = intersection_env->getMinY();
+		actual_max_y = intersection_env->getMaxY();
+	}
+	else {
+		actual_min_y = intersection_env->getMaxY();
+		actual_max_y = intersection_env->getMinY();
+	}
+	
+	
 	// get envelope corners in pixel coordinates:
 	int minCol, minRow, maxCol, maxRow;
-	grid.toColRow(intersection_env->getMinX(), intersection_env->getMinY(), &minCol, &minRow);
-	grid.toColRow(intersection_env->getMaxX(), intersection_env->getMaxY(), &maxCol, &maxRow);
-	// Note: minCol is not necessarily <= maxCol (idem for *Row)
+	grid.toColRow(actual_min_x, actual_min_y, &minCol, &minRow);
+	grid.toColRow(actual_max_x, actual_max_y, &maxCol, &maxRow);
 
 	// get envelope corners in grid coordinates:
 	double minX, minY, maxX, maxY;
 	grid.toGridXY(minCol, minRow, &minX, &minY);
 	grid.toGridXY(maxCol, maxRow, &maxX, &maxY);
 
+	assert( minRow <= maxRow );
+	assert( minCol <= maxCol );
+	
 	if ( logstream ) {
 		(*logstream)
 		   << " minCol=" <<minCol<< ", minRow=" <<minRow<< endl 
@@ -431,8 +456,8 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 	}
 	
 	// envelope dimensions:
-	int rows_env = abs(maxRow - minRow) +1;
-	int cols_env = abs(maxCol - minCol) +1;
+	int rows_env = maxRow - minRow +1;
+	int cols_env = maxCol - minCol +1;
 	
 	// number of pixels found in polygon:
 	int num_pixels_in_poly = 0;
@@ -442,16 +467,12 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 		fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
 	}
 
-	const double pix_area = fabs(grid.pix_x_size * grid.pix_y_size);
-	
-	double abs_pix_y_size = fabs(grid.pix_y_size);
-	double abs_pix_x_size = fabs(grid.pix_x_size);
 	double y = minY;
-	for ( int i = 0; i < rows_env; i++, y += abs_pix_y_size) {
+	for ( int i = 0; i < rows_env; i++, y += grid.abs_pix_y_size) {
 		double x = minX;
-		for (int j = 0; j < cols_env; j++, x += abs_pix_x_size) {
+		for (int j = 0; j < cols_env; j++, x += grid.abs_pix_x_size) {
 			// create pixel polygon for (x,y) grid location:
-			geos::Polygon* pix_poly = create_pix_poly(x, y, x + grid.pix_x_size, y + grid.pix_y_size);
+			geos::Polygon* pix_poly = create_pix_poly(x, y, x + grid.abs_pix_x_size, y + grid.abs_pix_y_size);
 			// intersect
 			geos::Geometry* pix_inters = 0;
 			try {
@@ -476,7 +497,7 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 				double area = pix_inters->getArea();
 				//cout << wktWriter.write(pix_inters) << " area=" << area << endl;
 				//cout " area=" << area << endl;
-				if ( area >= pixelProportion * pix_area ) { 
+				if ( area >= pixelProportion * grid.pix_area ) { 
 					num_pixels_in_poly++;
 					
 					// we now check for pixel duplication always
@@ -786,8 +807,8 @@ void Traverser::traverse() {
 	lineRasterizer = new LineRasterizer(
 		grid.x0, 
 		grid.y0, 
-		grid.pix_x_size, 
-		grid.pix_y_size
+		grid.abs_pix_x_size, 
+		grid.abs_pix_y_size
 	);
 	lineRasterizer->setObserver(this);
 

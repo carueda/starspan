@@ -43,21 +43,32 @@ struct GlobalInfo {
 struct GridInfo {
 	double x0, y0;
 	double pix_x_size, pix_y_size;
+	double abs_pix_x_size, abs_pix_y_size;
+	double pix_area;
 	
-	//
-	// (x,y) to (col,row) conversion
-	//
-	void toColRow(double x, double y, int *col, int *row) {
-		*col = (int) floor( (x - x0) / pix_x_size );
-		*row = (int) floor( (y - y0) / pix_y_size );
+	/** sets the pixel size */
+	void setPixelSize(double xs, double ys) {
+		abs_pix_x_size = fabs(pix_x_size = xs);
+		abs_pix_y_size = fabs(pix_y_size = ys);
+		pix_area = abs_pix_x_size * abs_pix_y_size;
 	}
 	
-	//
-	// (col,row) to (x,y) conversion: (x,y) is the upper left corner of pixel [col,row]
-	//
+	void setOrigin(OGREnvelope &env) {
+		x0 = min(env.MinX, env.MaxX);
+		y0 = min(env.MinY, env.MaxY);
+	}
+	
+	/** (x,y) to (col,row) conversion */
+	void toColRow(double x, double y, int *col, int *row) {
+		*col = (int) floor( (x - x0) / abs_pix_x_size );
+		*row = (int) floor( (y - y0) / abs_pix_y_size );
+	}
+	
+	/** (col,row) to (x,y) conversion:  
+	  * (x,y) is the upper left corner of pixel [col,row] */
 	void toGridXY(int col, int row, double *x, double *y) {
-		*x = x0 + col * pix_x_size;
-		*y = y0 + row * pix_y_size;
+		*x = x0 + col * abs_pix_x_size;
+		*y = y0 + row * abs_pix_y_size;
 	}
 	
 };
