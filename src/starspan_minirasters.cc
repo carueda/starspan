@@ -427,8 +427,10 @@ public:
 		
 		////////////////////////////////////////////////////////////////
 		// transfer data, fid, and loc from minirasters to output strips
+		int processed_minirasters = 0;
 		int next_row = 0;
-		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
+		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); 
+		mrbi != mrbi_list->end(); mrbi++, processed_minirasters++ ) {
 			if ( globalOptions.verbose )
 				cout<< "  adding miniraster FID=" <<mrbi->FID<< " to strip...\n";
 
@@ -555,6 +557,18 @@ public:
 						0,                          //nLineSpace,
 						0                           //nBandSpace
 					);
+				}
+			}
+			
+			///////////////////////////////////////////////////////////////
+			if ( processed_minirasters == 0 ) { // is this the first miniraster?
+				// set projection for generated strips using the info from
+				// this (arbitrarely chosen) first miniraster:
+				const char* projection = mini_ds->GetProjectionRef();
+				if ( projection && strlen(projection) > 0 ) {
+					strip_ds->SetProjection(projection);
+					fid_ds->  SetProjection(projection);                   
+					loc_ds->  SetProjection(projection);
 				}
 			}
 			

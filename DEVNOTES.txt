@@ -2,7 +2,13 @@ starspan devnotes
 $Id$
                                     
 
-2005-02-26 (0.961beta)
+2005-02-26 (0.961beta)                                       
+	starspan_miniraster.cc: Since ENVI complains about "Unknown" projections
+	(which us the map info created by GDAL by default),	I decided to set
+	this projection explicitly by using the projection from the (arbitrarely
+	chosen) first miniraster. Now ENVI opens the generated strips without 
+	any complain. This fixes bug #200073
+	
 	--report now also shows projection info for rasters.
 	
 	starspan_miniraster.cc: workaround to GDAL bug which
