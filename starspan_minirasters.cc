@@ -115,7 +115,7 @@ public:
 		
 		GDALDatasetH hOutDS = starspan_subset_raster(
 			rast.getDataset(),
-			mini_x0, mini_y0, mini_width, mini_height,
+			mini_x0-1, mini_y0-1, mini_width+2, mini_height+2,
 			mini_filename,
 			pszOutputSRS
 		);
