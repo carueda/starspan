@@ -10,6 +10,7 @@
 #include <map>
 #include <cstdio>
 #include <cstdlib>  // atof
+#include <cmath>  // sqrt
 
 
 void Stats::compute(vector<double>* values) {
