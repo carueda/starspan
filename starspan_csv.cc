@@ -238,6 +238,7 @@ int starspan_csv(
 	// if file exists, append new rows. Otherwise create file.
 	file = fopen(csv_filename, "r+");
 	if ( file ) {
+		fseek(file, 0, SEEK_END);
 		if ( globalOptions.verbose )
 			fprintf(stdout, "Appending to existing file %s\n", csv_filename);
 	}
