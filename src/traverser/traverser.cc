@@ -758,7 +758,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	summary.num_intersecting_features++;
 
 	if ( verbose ) {
-		cout<< " Type of intersection: ",
+		cout<< " Type of intersection: "
 		    << intersection_geometry->getGeometryName()<< endl;
 	}
 	
