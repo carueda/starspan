@@ -219,6 +219,15 @@ void Raster::report(FILE* file) {
 	else {
 		fprintf(file, "\tNo metadata is given by the driver.\n");
 	}
+	
+	fprintf(file, "Projection:\n");
+	const char* projection = hDataset->GetProjectionRef();
+	if ( projection && strlen(projection) > 0 ) {
+		fprintf(file, "%s\n", projection);
+	}
+	else {
+		fprintf(file, "\tNo projection info is given by the driver.\n");
+	}
 }
 
 void Raster::report_corner(FILE* file, const char* corner_name, int ix, int iy) {

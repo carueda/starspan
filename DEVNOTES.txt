@@ -3,6 +3,8 @@ $Id$
                                     
 
 2005-02-26 (0.961beta)
+	--report now also shows projection info for rasters.
+	
 	starspan_miniraster.cc: workaround to GDAL bug which
 	generates repeated header items when FlushCache is called
 	multiple time on an ENVI dataset.
