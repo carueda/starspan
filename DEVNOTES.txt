@@ -11,6 +11,8 @@ $Id$
 	New operation starspan_update_csv
 	New operation starspan_update_dbf
 	
+	(I started to use GDAL 1.2.2 which was just realeased today.)
+	
 2004-09-13
 	General refactoring to allow the processing of multiple input rasters.
 	Traverser has now methods to specify data input objects; all object
