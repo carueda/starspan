@@ -308,6 +308,16 @@ public:
 	  */
 	void traverse(void);
 	
+	/** summary results for each traversal */
+	struct {
+		int num_poly_features;
+		int num_invalid_polys;
+		int num_polys_with_internal_ring;
+		int num_polys_exploded;
+		int num_sub_polys;
+		
+	} summary;
+	
 private:
 	Vector* vect;
 	vector<Raster*> rasts;

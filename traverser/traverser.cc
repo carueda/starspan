@@ -10,6 +10,7 @@
 
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
 
 // for polygon processing:
 #include "geos/opPolygonize.h"
@@ -51,6 +52,7 @@ void Traverser::releaseObservers(void) {
 		delete *obs;
 	
 	observers.empty();
+	notSimpleObserver = false;
 }
 
 
@@ -556,13 +558,17 @@ public:
 // included.  
 //
 void Traverser::processPolygon(OGRPolygon* poly) {
+	summary.num_poly_features++;
+	
 	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
 	if ( geos_poly->isValid() ) {
 		processValidPolygon(geos_poly);
 	}
 	else {
+		summary.num_invalid_polys++;
+		
 		if ( skip_invalid_polys ) {
-			cerr<< "--skipping invalid polygon--"<< endl;
+			//cerr<< "--skipping invalid polygon--"<< endl;
 			if ( debug_dump_polys ) {
 				cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
 			}
@@ -570,13 +576,14 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 		else {
 			// try to split this poly into smaller ones:
 			if ( geos_poly->getNumInteriorRing() > 0 ) {
-				cerr<< "--Invalid polygon has interior rings: cannot fix it--" << endl;
+				//cerr<< "--Invalid polygon has interior rings: cannot fix it--" << endl;
+				summary.num_polys_with_internal_ring++;
 			} 
 			else {
 				const geos::LineString* lines = geos_poly->getExteriorRing();
 				// get noded linestring:
 				geos::Geometry* noded = 0;
-				int num_points = lines->getNumPoints();
+				const int num_points = lines->getNumPoints();
 				const geos::CoordinateSequence* coordinates = lines->getCoordinatesRO();
 				for ( int i = 1; i < num_points; i++ ) {
 					vector<geos::Coordinate>* subcoordinates = new vector<geos::Coordinate>();
@@ -601,6 +608,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 					// and process generated sub-polygons:
 					vector<geos::Polygon*>* polys = polygonizer.getPolygons();
 					if ( polys ) {
+						summary.num_polys_exploded++;
+						summary.num_sub_polys += polys->size();
 						if ( verbose )
 							cout << polys->size() << " sub-polys obtained\n";
 						for ( unsigned i = 0; i < polys->size(); i++ ) {
@@ -790,6 +799,8 @@ void Traverser::traverse() {
 	}
 	layer->ResetReading();
 
+	
+	memset(&summary, 0, sizeof(summary));
 	
 	// assuming biggest data type we assign enough memory:
 	bandValues_buffer = new double[globalInfo.bands.size()];

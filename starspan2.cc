@@ -465,7 +465,16 @@ int main(int argc, char ** argv) {
 	if ( tr.getNumObservers() > 0 ) {
 		// let's get to work!	
 		tr.traverse();
-	
+
+		// show a summary of traversal:
+		cout<< "Traversal summary:\n"
+			<< "\tnum_poly_features: " <<tr.summary.num_poly_features<< endl
+			<< "\tnum_invalid_polys: " <<tr.summary.num_invalid_polys<< endl
+			<< "\tnum_polys_with_internal_ring: " <<tr.summary.num_polys_with_internal_ring<< endl
+			<< "\tnum_polys_exploded: " <<tr.summary.num_polys_exploded<< endl
+			<< "\tnum_sub_polys: " <<tr.summary.num_sub_polys<< endl
+		;
+		
 		// release observers:
 		tr.releaseObservers();
 	}

@@ -11,6 +11,7 @@ $Id$
 		In particular, calculation of MODE should now be more efficient
 		because a map<int,int> is used.
 	
+	Traverser::summary with some counters for a summary report.
 	
 2004-10-20
 	More checks for malformed (WKT) geometries.
