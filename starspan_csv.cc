@@ -246,21 +246,22 @@ int starspan_csv(
 	}
 
 	Vector vect(vector_filename);
+	Traverser tr;
+	tr.setVector(&vect);
+	if ( globalOptions.pix_prop >= 0.0 )
+		tr.setPixelProportion(globalOptions.pix_prop);
+	if ( globalOptions.FID >= 0 )
+		tr.setDesiredFID(globalOptions.FID);
+	tr.setVerbose(globalOptions.verbose);
+	if ( globalOptions.progress )
+		tr.setProgress(globalOptions.progress_perc, cout);
+	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		Raster raster(raster_filenames[i]);
 		bool write_header = i == 0;
-		Traverser tr;
+		tr.removeRasters();
 		tr.addRaster(&raster);
-		if ( globalOptions.pix_prop >= 0.0 )
-			tr.setPixelProportion(globalOptions.pix_prop);
-		if ( globalOptions.FID >= 0 )
-			tr.setDesiredFID(globalOptions.FID);
-		tr.setVerbose(globalOptions.verbose);
-		if ( globalOptions.progress )
-			tr.setProgress(globalOptions.progress_perc, cout);
-		tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
-		tr.setVector(&vect);
 		
 		Observer* obs = new CSVObserver(tr, select_fields, write_header, file);
 		tr.addObserver(obs);

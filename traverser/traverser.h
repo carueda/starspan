@@ -206,7 +206,7 @@ public:
 	  * (eventually this would become addVector)
 	  * @param v vector datadource
 	  */
-	  void setVector(Vector* vector);
+	void setVector(Vector* vector);
 
 	/**
 	  * Gets the vector associated to this traverser.
@@ -229,6 +229,11 @@ public:
 	  */
 	Raster* getRaster(int i) { return rasts[i]; }
 	
+	
+	/** 
+	  * Clear the list of rasters.
+	  */
+	void removeRasters(void);
 	
 	/**
 	  * Sets the proportion of intersected area required for a pixel to be included.

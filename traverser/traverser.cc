@@ -158,6 +158,14 @@ void Traverser::addRaster(Raster* raster) {
 	grid.setOrigin(env);
 }
 
+void Traverser::removeRasters() {
+	if ( globalInfo.rastersUnion ) {
+		delete globalInfo.rastersUnion;
+		globalInfo.rastersUnion = 0;
+	}
+	rasts.clear();
+}
+
 //
 // destroys this traverser
 //
@@ -765,9 +773,9 @@ void Traverser::process_feature(OGRFeature* feature) {
 // main method for traversal
 //
 void Traverser::traverse() {
-	// don't allow a second call, for now
+	// don't allow a recursive call
 	if ( bandValues_buffer ) {
-		cerr<< "traverser.traverse: second call!\n";
+		cerr<< "traverser.traverse: recursive call!\n";
 		return;
 	}
 
@@ -907,6 +915,9 @@ void Traverser::traverse() {
 	//
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->end();
+	
+	delete[] bandValues_buffer;
+	bandValues_buffer = 0;
 }
 
 
