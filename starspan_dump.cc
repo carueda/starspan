@@ -56,7 +56,7 @@ public:
 	void end() {
 		if ( file ) {
 			fclose(file);
-			fprintf(stdout, "dump: finished.\n");
+			cout<< "dump: finished.\n";
 			file = 0;
 		}
 	}
@@ -178,9 +178,10 @@ public:
 				break;
 				
 			default:
-				fprintf(stdout, "%s: intersection type not considered\n",
-					OGRGeometryTypeToName(type)
-				);
+				cerr<< "dump: " 
+				    << OGRGeometryTypeToName(type)
+				    << ": intersection type not considered\n"
+				;
 		}
 	}
 	
@@ -218,17 +219,17 @@ Observer* starspan_dump(
 	const char* filename
 ) {	
 	if ( !tr.getVector() ) {
-		fprintf(stderr, "vector datasource expected\n");
+		cerr<< "vector datasource expected\n";
 		return 0;
 	}
 	OGRLayer* layer = tr.getVector()->getLayer(0);
 	if ( !layer ) {
-		fprintf(stdout, "warning: No layer 0 found\n");
+		cerr<< "warning: No layer 0 found\n";
 		return 0;
 	}
 
 	if ( tr.getNumRasters() == 0 ) {
-		fprintf(stderr, "raster expected\n");
+		cerr<< "raster expected\n";
 		return 0;
 	}
 	Raster* rast = tr.getRaster(0);
