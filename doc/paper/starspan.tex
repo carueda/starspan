@@ -1,0 +1,279 @@
+%%
+%% starspan
+%% 2005-01-17
+%% Carlos A. Rueda-Velasquez
+%%
+\documentclass{elsart}
+\usepackage{natbib,url,amssymb}
+
+\journal{Computers \& Geosciences}
+
+
+\newcommand{\starspan}{STARSPAN{}}
+
+\begin{document}
+\begin{frontmatter}
+
+\title{\starspan: 
+A Tool for Fast Selective Pixel Extraction 
+from Remotely Sensed Data}
+\thanks[label1]{Available from \url{http://starspan.casil.ucdavis.edu}}
+
+\author{Carlos A. Rueda\corauthref{cor}},
+\corauth[cor]{Corresponding author.}
+\ead{carueda@ucdavis.edu}
+\author{Jonathan Greenberg\thanksref{greenberg}}
+\thanks[greenberg]{Present address: NASA Ames ...}
+\ead{greenberg@ucdavis.edu}
+
+\address{Center for Spatial Technologies and Remote Sensing (CSTARS).
+The Barn. University of California, Davis. One Shields Avenue, Davis, CA 95616}
+
+
+
+% use optional labels to link authors explicitly to addresses:
+% \author[label1,label2]{}
+% \address[label1]{}
+% \address[label2]{}
+
+
+\begin{abstract}
+	
+	\starspan{} is a computer program for fast extraction of data from spectral
+	raster images.
+	
+\end{abstract}
+
+\begin{keyword}
+GIS \sep remote sensing
+% PACS codes here, in the form: \PACS code \sep code
+\end{keyword}
+
+\end{frontmatter}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}\label{intro}
+
+	\starspan{} is an open source computer program developed at Center of Spatial
+	Technologies and Remote Sensing (CSTARS) for fast and flexible extraction of
+	pixel data from spectral raster images. The tool was developed as part
+	of project for mapping invasive species ... \citep{ustin04}
+	It works on two basic inputs: 1.Raster
+	data: one or multiple raster files 2.Vector data: a file defining a set of
+	geometry features The basic operation performed by \starspan{} is the
+	extraction of the spectral data from the raster files whose pixels are
+	geometrically contained in the geometry features (points, lines, polygons)
+	in the vector data. Extracted pixel data are stored in a number of different
+	formats, including CSV files, a common text-based format that can be
+	imported in many standard applications for further processing. Other
+	functionalities include: band-wise statistics generation per feature,
+	generation of paired pixel band values for subsequent calculation of
+	calibration coefficients, update options, and generation of output data in
+	ENVI formats (standard image and spectral library).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A use case}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Usage}
+
+Figure \ref{fig-usage} contains the usage message given by the program.
+In this section we explain some of the most important \starspan{} commands.
+\begin{figure}[!ht]
+\centering
+\caption{Usage message}
+\scriptsize{
+\begin{verbatim}
+starspan 0.9beta (Nov 13 2004 15:11:22)    UNDER DEVELOPMENT
+
+USAGE:
+  starspan <inputs/commands/options>...
+
+   inputs:
+      -raster <filenames>...
+      -vector <filename>
+      -speclib <filename>
+      -update-csv <filename>
+      -update-dbf <filename>
+
+   commands:
+      -raster_field <name>
+      -raster_directory <directory>
+      -csv <name>
+      -envi <name>
+      -envisl <name>
+      -stats outfile.csv [avg|mode|stdev|min|max]...
+      -calbase <link> <filename> [<stats>...]
+      -report
+      -dbf <name>
+      -dump_geometries <filename>
+      -mr <prefix>
+      -jtstest <filename>
+
+   options:
+      -fields field1 field2 ... fieldn
+      -pixprop <minimum-pixel-proportion>
+      -noColRow
+      -noXY
+      -fid <FID>
+      -skip_invalid_polys
+      -progress [value]
+      -RID_as_given
+      -verbose
+      -ppoly
+      -in
+      -srs <srs>
+\end{verbatim}
+}
+\label{fig-usage}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Inputs and general options}
+
+Raster data is given through the \verb|-raster| option:
+
+	\verb|-raster| $R_1\ R_2\ \cdots\ R_n$
+
+where $R_1, R_2, \ldots, R_n$ are raster datasets recognized by the GDAL library.
+
+Vector data is given with the \verb|-vector| option:
+	
+	\verb|-vector| $V$
+
+where $V$ is a vector datasource recognized by the OGR library.
+
+There are some general options ...
+
+	\verb|-fields| field$_1$ field$_2\ \cdots$ field$_n$
+	
+Only the specified fields will be transferred from vector file $V$
+to the output. Use spaces to separate the field names.  Example:
+
+   \verb|starspan -vector V -raster R -csv my.csv  -fields species foo|
+
+will extract the fields with names `species' and `foo.' If no field from the
+vector metadata is desired, just give the keyword \verb|-fields| with no
+arguments. By default, all fields from vector will be extracted.
+
+	\verb|-pixprop| value
+
+Minimum proportion of pixel area in intersection so that the pixel is included.
+A value in [0.0, 1.0] must be given.
+Only used in intersections resulting in polygons. 
+By default, the pixel proportion is 0.5. 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Statistics}
+
+Command \verb|-stats| is used to generate basic band-wise statistics for each
+intersecting feature. Example:
+
+	\verb|starspan -vector V -raster R -stats mystats.csv avg mode|
+
+Creates \verb|mystats.csv|, a CSV (comma-separated-values) file containing
+computed statistics for each FID. In the above example, codes \verb|avg| and
+\verb|mode|
+indicate to compute the average and mode statistics. Available statistics 
+are shown in Table \ref{table-stats}.
+\begin{table}[!ht]
+\centering
+\caption{Statistics}
+\begin{tabular}{|l|l|}
+\hline 
+  code        & computes for each feature\\
+\hline
+\verb|avg  |  &   average of pixels in feature\\
+\verb|mode |  &   Most frequent value\\
+\verb|stdev|  &   sample standard deviation of pixels in feature\\
+\verb|min  |  &   minimum value of pixels in feature\\
+\verb|max  |  &   maximum value of pixels in feature\\
+\hline
+\end{tabular}
+\label{table-stats}
+\end{table}
+
+Output:
+
+    * mystats.csv : containing computed statistics.
+
+First line in resulting \verb|myfile.csv| contain column headers:
+
+    * FID: Feature ID
+    * Names of attributes from the given input vector $V$ associated to FID. 
+	If option \verb|-fields| is given, only the given fields will be extracted.
+    * Band names. Each name takes the form $s$\_Band\#, where $s$
+	is the code of the statistics, eg. \verb|stdev|, and \# is the band number 
+	according to given rasters.
+
+Subsequent lines contain corresponding values for each FID.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Software requirements}
+
+	In order to build \starspan{} the following libraries are required.
+	
+	\begin{itemize}
+		\item GEOS, Geometry Engine \citep{geos}.
+				This library is required to support geometry operations.
+				
+		\item GDAL - Geospatial Data Abstraction Library \citep{gdal}.
+	\end{itemize}
+
+
+\section{Conclusion and further work}
+
+	Currently \starspan{} has been tested and used on Linux based operating
+	environments. On the works is to make the tool publicly available and easy
+	to install on different operating systems.
+
+
+	For up-to-date documentation, including installation instructions and user
+	manual, please visit: \url{http://starspan.casil.ucdavis.edu}
+
+\section*{Acknowledments}
+
+	GDAL, GEOS, 
+
+
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+% Bibliographic references with the natbib package:
+% Parenthetical: \citep{Bai92} produces (Bailyn 1992).
+% Textual: \citet{Bai95} produces Bailyn et al. (1995).
+% An affix and part of a reference:
+%   \citep[e.g.][Ch. 2]{Bar76}
+%   produces (e.g. Barnes et al. 1976, Ch. 2).
+
+\begin{thebibliography}{}
+
+% \bibitem[Names(Year)]{label} or \bibitem[Names(Year)Long names]{label}.
+% (\harvarditem{Name}{Year}{label} is also supported.)
+% Text of bibliographic item
+
+\bibitem[Ustin et al. (2004)]{ustin04}
+	
+	Susan L. Ustin, Emma C. Underwood, Melinda
+	J. Mulitsch, Jonathan A. Greenberg, Shawn C. Kefauver, Michael L.
+	Whiting, Carlos A. Rueda, Carlos M. Ramirez, George J. Scheer, and Lawrence
+	F. Ross. 2004.
+	Mapping Invasive Plant Species in the Sacramento- San Joaquin Delta Region
+	Using Hyperspectral Imagery.
+	
+
+\bibitem[GEOS (2004)]{geos}
+	
+	\url{http://geos.refractions.net}	
+
+\bibitem[GDAL (2004)]{gdal}
+	
+	\url{http://www.gdal.org}	
+
+\end{thebibliography}
+
+\end{document}
+
