@@ -39,21 +39,14 @@ public:
 	Raster* rast; 
 	Vector* vect;
 	DBFHandle file;
-	int first_band_field_index;
+	int attrFieldIndexOffset;   // first index for attribute fields
+	int bandFieldIndexOffset;   // first index for band fields
 	int numBands;
-	int current_feature_id;
+	OGRFeature* currentFeature;
 	int no_records;	
 	
-	
 	DBObserver(Raster* r, Vector* v, DBFHandle f);
-	
-	/**
-	  * Used here to update current_feature_id
-	  */
-	void intersection(int feature_id, OGREnvelope intersection_env) {
-		current_feature_id = feature_id;
-	}
-	
+	void intersection(OGRFeature* feature, OGREnvelope intersection_env);
 	void addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize);
 };
 
@@ -71,15 +64,46 @@ DBObserver::DBObserver(Raster* r, Vector* v, DBFHandle f) {
 		exit(1);
 	}
 	
-	current_feature_id = -1;
-	
 	// Create desired fields:
 	
-	// first, create fields from layer definition 
+	
+	// Create (x,y) fields, if so indicated?
+	// PENDING
+	if ( true ) {
+		char field_name[64];
+		const DBFFieldType field_type = FTDouble;
+		const int field_width = 18;
+		const int field_precision = 3;
+		
+		sprintf(field_name, "x");
+		fprintf(stdout, "Creating field: %s\n", field_name);
+		DBFAddField(
+			file,
+			field_name,
+			field_type,
+			field_width,
+			field_precision
+		);
+
+		sprintf(field_name, "y");
+		fprintf(stdout, "Creating field: %s\n", field_name);
+		DBFAddField(
+			file,
+			field_name,
+			field_type,
+			field_width,
+			field_precision
+		);
+		attrFieldIndexOffset = 2;
+	}
+	else {
+		attrFieldIndexOffset = 0;
+	}
+	
+	// Create fields from layer definition 
 	OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
 	int field_count = poDefn->GetFieldCount();
 	
-	printf("Field Count in layer 0: %d\n", field_count);
 	for ( int i = 0; i < field_count; i++ ) {
 		OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
 		const char* field_name = poField->GetNameRef();
@@ -102,8 +126,8 @@ DBObserver::DBObserver(Raster* r, Vector* v, DBFHandle f) {
 		}
 	}
 	
-	// then, create fields for bands
-	first_band_field_index = field_count;
+	// Create fields for bands
+	bandFieldIndexOffset = attrFieldIndexOffset + field_count;
 	rast->getSize(NULL, NULL, &numBands);
 	for ( int i = 0; i < numBands; i++ ) {
 		char field_name[64];
@@ -124,9 +148,20 @@ DBObserver::DBObserver(Raster* r, Vector* v, DBFHandle f) {
 	}
 	
 	no_records = 0;
+	currentFeature = NULL;
 }
 
-/** Gets a value from a signature band as a double.
+
+/**
+  * Used here to update currentFeature
+  */
+void DBObserver::intersection(OGRFeature* feature, OGREnvelope intersection_env) {
+	currentFeature = feature;
+}
+
+
+/**
+  * Gets a value from a signature band as a double.
   */
 static double extract_double_value(GDALDataType rasterType, char* sign) {
 	double value;
@@ -163,22 +198,78 @@ static double extract_double_value(GDALDataType rasterType, char* sign) {
 void DBObserver::addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize) {
 //	fprintf(stdout, "signature %d\n", no_records);
 
-	// add fields from source vector file to  record:
-	// ...
+	// add (x,y) fields
+	if ( 2 == attrFieldIndexOffset ) {
+		DBFWriteDoubleAttribute(
+			file,
+			no_records,                   // int iShape -- record number
+			0,                            // int iField,
+			x
+		);
+		DBFWriteDoubleAttribute(
+			file,
+			no_records,                   // int iShape -- record number
+			1,                            // int iField,
+			y
+		);
+	}
 	
+	// add attribute fields from source currentFeature to record:
+	int field_count = currentFeature->GetFieldCount();
+	for ( int i = 0; i < field_count; i++ ) {
+		OGRFieldDefn* poField = currentFeature->GetFieldDefnRef(i);
+		OGRFieldType ft = poField->GetType();
+		switch(ft) {
+			case OFTString: {
+				const char* str = currentFeature->GetFieldAsString(i);
+				DBFWriteStringAttribute(
+					file,
+					no_records,                   // int iShape -- record number
+					attrFieldIndexOffset + i,     // int iField,
+					str 
+				);
+				break;
+			}
+			case OFTInteger: { 
+				int val = currentFeature->GetFieldAsInteger(i);
+				DBFWriteIntegerAttribute(
+					file,
+					no_records,                   // int iShape -- record number
+					attrFieldIndexOffset + i,     // int iField,
+					val
+				);
+				break;
+			}
+			case OFTReal: { 
+				double val = currentFeature->GetFieldAsDouble(i);
+				DBFWriteDoubleAttribute(
+					file,
+					no_records,                   // int iShape -- record number
+					attrFieldIndexOffset + i,     // int iField,
+					val
+				);
+				break;
+			}
+			default:
+				fprintf(stderr, "fieldtype_2_dbftype: expecting: "
+						"OFTString, OFTInteger, or OFTReal \n");
+				exit(2);
+		}
+	}
+	 
 	
 	
 	// add signature values to record:
 	char* sign = (char*) signature;
 	for ( int i = 0; i < numBands; i++, sign += typeSize ) {
 		// extract value:
-		double dFieldValue = extract_double_value(rasterType, sign);
+		double val = extract_double_value(rasterType, sign);
 		
 		int ok = DBFWriteDoubleAttribute(
 			file,
 			no_records,                   // int iShape -- record number
-			first_band_field_index + i,   // int iField,
-			dFieldValue 
+			bandFieldIndexOffset + i,     // int iField,
+			val 
 		);
 		
 		// false: I'm skipping this test for now.

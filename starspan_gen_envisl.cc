@@ -24,7 +24,7 @@ public:
 	FILE* data_file;
 	FILE* header_file;
 	
-	int current_feature_id;
+	OGRFeature* current_feature;
 	int numSignatures;	
 	long lines_offset;
 	
@@ -34,7 +34,6 @@ public:
 		header_file = hf;
 		
 		numSignatures = 0;
-		current_feature_id = -1;
 		
 		// first part of header:
 		fprintf(header_file,
@@ -84,6 +83,8 @@ public:
 		fprintf(header_file,
 			"spectra names = {"
 		);
+		
+		current_feature = NULL;
 	}
 	
 	~EnviSlObserver() {
@@ -91,11 +92,10 @@ public:
 	
 
 	/**
-	  * Used here to update current_feature_id
+	  * Used here to update current_feature
 	  */
-	void intersection(int feature_id, OGREnvelope intersection_env) {
-		current_feature_id = feature_id;
-		//starspan_print_envelope(header_file, " intersection_env:", intersection_env);
+	void intersection(OGRFeature* feature, OGREnvelope intersection_env) {
+		current_feature = feature;
 	}
 
 	
@@ -104,7 +104,7 @@ public:
 		fwrite(signature, typeSize, numBands, data_file);
 		
 		char signature_name[1024];
-		sprintf(signature_name, "%d:%.3f:%.3f", current_feature_id, x, y);
+		sprintf(signature_name, "%ld:%.3f:%.3f", current_feature->GetFID(), x, y);
 		
 		// add spectrum name
 		if ( numSignatures > 0 )

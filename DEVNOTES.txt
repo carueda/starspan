@@ -1,6 +1,12 @@
 starspan devnotes
 $Id$
 
+2004-08-31
+	-db now includes the fields, in the given order:
+		- (x,y)  location of signature
+		- attributes from source geometry feature
+		- band values
+		
 2004-08-30
 	Option -db to create a DBF with pixels contained in vector features.
 	Added some design documentation.

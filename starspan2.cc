@@ -46,7 +46,6 @@ static void usage(const char* msg) {
 		"              Similar to gdalinfo (for rasters) and ogrinfo (for vectors).\n"
 		"      -db <name>\n"
 		"              Generates a DBF file with pixels contained in given features\n"
-		"              Note: currently only band values are written in the records.\n"
 		"      -mr <prefix>\n"
 		"              Generates a mini raster for each intersecting feature.\n"
 		"              The <prefix> is used to compose raster names.\n"

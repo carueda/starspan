@@ -7,6 +7,7 @@ class UMLOptions {}
 
 /** @hidden */  class OGRLayer {}
 /** @hidden */  class GDALDataset {}
+/** @hidden */  class OGRFeature {}
 /** @hidden */  class OGREnvelope {}
 /** @hidden */  class GDALDataType {}
 /** @hidden */  class Signature {}
@@ -44,7 +45,7 @@ class Traverser {
 }
 
 interface Observer {
-	public void intersection(int fid, OGREnvelope e);
+	public void intersection(OGRFeature f, OGREnvelope e);
 	public void addSignature(double x, double y, Signature s, GDALDataType t, int ts);
 }
 
