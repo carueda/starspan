@@ -156,8 +156,9 @@ public:
 	/**
 	  *
 	  */
-	void init(GlobalInfo& info) { 
-		typeSize = info.band.typeSize;
+	void init(GlobalInfo& info) {
+		GDALDataType bandType = info.bands[0]->GetRasterDataType();
+		typeSize = GDALGetDataTypeSize(bandType) >> 3;
 	}
 	
 

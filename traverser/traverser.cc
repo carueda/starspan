@@ -21,7 +21,6 @@ static Observer null_observer;
 
 
 Traverser::Traverser() {
-	rasts = new vector<Raster*>();
 	vect = 0;
 	observer = &null_observer;
 	pixelProportion = -1.0;   // disabled
@@ -46,59 +45,86 @@ void Traverser::setVector(Vector* vector) {
 
 
 //
-// FIXME
-// Raster type info is taken from first band (assumed valid for all bands).
 //
 void Traverser::addRaster(Raster* raster) {
-	rasts->push_back(raster);
-	if ( rasts->size() == 1 ) {
-		rast = raster;   // temporary
+	rasts.push_back(raster);
+	
+	GDALDataset* dataset = raster->getDataset();
+	
+	// add band info from given raster
+	for ( int i = 0; i < dataset->GetRasterCount(); i++ ) {
+		GDALRasterBand* band = dataset->GetRasterBand(i+1);
+		globalInfo.bands.push_back(band);
 	}
 	
-	
-	dataset = rast->getDataset();
-	// some info from the first band (assumed to be valid for all bands)
-	band1 = dataset->GetRasterBand(1);
-	globalInfo.band.type = bandType = band1->GetRasterDataType(); 
-	globalInfo.band.typeSize = bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
-	//fprintf(stdout, "bandTypeSize=%d\n", bandTypeSize);
+	if ( rasts.size() == 1 ) {
+		// info taken from first raster.
+		
+		rasts[0]->getSize(&width, &height, NULL);
+		rasts[0]->getCoordinates(&x0, &y0, &x1, &y1);
+		rasts[0]->getPixelSize(&pix_x_size, &pix_y_size);
 
-	// get raster size and coordinates
-	rast->getSize(&width, &height, &bands);
-	rast->getCoordinates(&x0, &y0, &x1, &y1);
-	rast->getPixelSize(&pix_x_size, &pix_y_size);
+		// create a geometry for raster envelope:
+		OGRLinearRing raster_ring;
+		raster_ring.addPoint(x0, y0);
+		raster_ring.addPoint(x1, y0);
+		raster_ring.addPoint(x1, y1);
+		raster_ring.addPoint(x0, y1);
+		globalInfo.rasterPoly.addRing(&raster_ring);
+		globalInfo.rasterPoly.closeRings();
+		globalInfo.rasterPoly.getEnvelope(&raster_env);
+		
+		lineRasterizer = new LineRasterizer(pix_x_size, pix_y_size);
+		lineRasterizer->setObserver(this);
+	}
+	
+	if ( rasts.size() > 1 ) {
+		// check compatibility against first raster:
+		// (rather strict for now)
+		
+		int last = rasts.size() -1;
+		int _width, _height;
+		double _x0, _y0, _x1, _y1;
+		double _pix_x_size, _pix_y_size;
+		rasts[last]->getSize(&_width, &_height, NULL);
+		rasts[last]->getCoordinates(&_x0, &_y0, &_x1, &_y1);
+		rasts[last]->getPixelSize(&_pix_x_size, &_pix_y_size);
 
-	// create a geometry for raster envelope:
-	OGRLinearRing raster_ring;
-	raster_ring.addPoint(x0, y0);
-	raster_ring.addPoint(x1, y0);
-	raster_ring.addPoint(x1, y1);
-	raster_ring.addPoint(x0, y1);
-	globalInfo.rasterPoly.addRing(&raster_ring);
-	globalInfo.rasterPoly.closeRings();
-	globalInfo.rasterPoly.getEnvelope(&raster_env);
-	
-	bandValues_buffer = new double[bands];   // large enough
-	
-	lineRasterizer = new LineRasterizer(pix_x_size, pix_y_size);
-	lineRasterizer->setObserver(this);
+		if ( _width != width || _height != height ) {
+			fprintf(stderr, "Different number of lines/cols\n");
+			exit(1);
+		}
+		if ( _x0 != x0 || _y0 != y0 || _x1 != x1 || _y1 != y1) {
+			fprintf(stderr, "Different geographic location\n");
+			exit(1);
+		}
+		if ( _pix_x_size != pix_x_size || _pix_y_size != pix_y_size ) {
+			fprintf(stderr, "Different pixel size\n");
+			exit(1);
+		}
+	}
 }
 
 //
 //
 //
 Traverser::~Traverser() {
-	delete[] bandValues_buffer;
-	delete lineRasterizer;
+	if ( bandValues_buffer )
+		delete[] bandValues_buffer;
+	if ( lineRasterizer )
+		delete lineRasterizer;
 }
 
 //
-// read in band values in (col,row):
+// read in band values in (col,row) from all given rasters
+// Values are stored in bandValues_buffer.
 //
 void Traverser::getBandValues(int col, int row) {
 	char* ptr = (char*) bandValues_buffer;
-	for(int i = 0; i < bands; i++, ptr += bandTypeSize ) {
-		GDALRasterBand* band = dataset->GetRasterBand(i+1);
+	for ( unsigned i = 0; i < globalInfo.bands.size(); i++ ) {
+		GDALRasterBand* band = globalInfo.bands[i];
+		GDALDataType bandType = band->GetRasterDataType();
+	
 		int status = band->RasterIO(
 			GF_Read,
 			col, row,
@@ -113,7 +139,9 @@ void Traverser::getBandValues(int col, int row) {
 			fprintf(stdout, "Error reading band value, status= %d\n", status);
 			exit(1);
 		}
-		//fprintf(stdout, "    %d -- %f\n", i, *( (float*) ptr ));
+		
+		int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
+		ptr += bandTypeSize;
 	}
 }
 
@@ -373,7 +401,7 @@ void Traverser::processPolygon_pixel(OGRPolygon* poly) {
 
 
 //
-// main method for traversal
+// processes a given feature
 //
 void Traverser::process_feature(OGRFeature* feature) {
 	//
@@ -446,15 +474,9 @@ void Traverser::traverse() {
 		fprintf(stderr, "traverser: Vector datasource not specified!\n");
 		exit(1);
 	}
-	if ( rasts->size() == 0 ) {
+	if ( rasts.size() == 0 ) {
 		fprintf(stderr, "traverser: No raster datasets were specified!\n");
 		exit(1);
-	}
-	if ( rasts->size() > 1 ) {
-		// a warning while we implement the whole functionality
-		fprintf(stderr, "\ntraverser: Warning: ONLY first raster '%s' will be processed\n",
-			rast->getDataset()->GetDescription()
-		);
 	}
 	
 	//
@@ -474,6 +496,9 @@ void Traverser::traverse() {
 		exit(1);
 	}
 
+	// assuming biggest data type we assign enough memory:
+	bandValues_buffer = new double[globalInfo.bands.size()];
+		
 	//
 	// notify observer about initialization of process
 	//

@@ -21,11 +21,8 @@
   */
 struct GlobalInfo {
 	
-	/** Band info in raster */
-	struct {
-		GDALDataType type;
-		int typeSize;
-	} band;
+	/** info about all bands in given rasters */
+	vector<GDALRasterBand*> bands;
 	
 	/** A rectangle polygon covering the raster extension. */
 	OGRPolygon rasterPoly;
@@ -153,12 +150,12 @@ public:
 	/**
 	  * Gets the number of rasters.
 	  */
-	int getNumRasters(void) { return rasts->size(); }
+	int getNumRasters(void) { return rasts.size(); }
 
 	/**
 	  * Gets a raster from the list of rasters.
 	  */
-	Raster* getRaster(int i) { return (*rasts)[i]; }
+	Raster* getRaster(int i) { return rasts[i]; }
 	
 	
 	/**
@@ -196,22 +193,17 @@ public:
 	void traverse(void);
 	
 private:
-	vector<Raster*>* rasts;
-	Raster* rast;  // transitional member
 	Vector* vect;
+	vector<Raster*> rasts;
 	Observer* observer;
+
 	double pixelProportion;
 	long desired_FID;
 	
-	GDALDataset* dataset;
-	GDALRasterBand* band1;
-	GDALDataType bandType; 
-	int bandTypeSize;
-	int width, height, bands;
+	GlobalInfo globalInfo;
+	int width, height;
 	double x0, y0, x1, y1;
 	double pix_x_size, pix_y_size;
-	
-	GlobalInfo globalInfo;
 	OGREnvelope raster_env;
 	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
