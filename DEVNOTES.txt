@@ -2,6 +2,9 @@ starspan devnotes
 $Id$
                                     
 
+2005-03-04 (0.961beta)
+	Minor text updates in starspan script.
+	
 2005-02-26 (0.961beta)                  
 	Added option --separation <num-pixels> to include a	separation
 	between minirasters in strip. Feature request #200074.
