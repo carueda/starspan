@@ -7,11 +7,16 @@
 
 #include "starspan.h"           
 #include "traverser.h"       
+#include <iostream>
+#include <cstdlib>
 
 #include "unistd.h"   // unlink           
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
+
+
+using namespace std;
 
 
 
