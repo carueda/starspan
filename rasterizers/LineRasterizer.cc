@@ -1,7 +1,7 @@
 //
 // STARSpan project
 // Line rasterization using a Bresenham interpolator 
-// with subpixel accuracy (AGG)
+// with subpixel accuracy (Anti-grain geometry, AGG)
 // Carlos A. Rueda
 // $Id$
 //
@@ -37,7 +37,10 @@ LineRasterizer::LineRasterizer(double pixel_size_x_, double pixel_size_y_)
 	observer = &null_observer;
 }
 
-void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2)  {
+//
+// Based on agg::renderer_primitives#line
+//
+void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2, bool last=false)  {
 	int x1 = to_int(dx1, pixel_size_x);
 	int y1 = to_int(dy1, pixel_size_y);
 	int x2 = to_int(dx2, pixel_size_x);
@@ -47,13 +50,16 @@ void LineRasterizer::line(double dx1, double dy1, double dx2, double dy2)  {
 
 	unsigned len = li.len();
 	if(len == 0) {
-		double x = to_double(li.line_lr(x1),  pixel_size_x);
-		double y = to_double(li.line_lr(y1),  pixel_size_y);
-		observer->pixelFound(x, y);
+		if ( last ) {
+			double x = to_double(li.line_lr(x1),  pixel_size_x);
+			double y = to_double(li.line_lr(y1),  pixel_size_y);
+			observer->pixelFound(x, y);
+		}
 		return;
 	}
 
-	++len;
+	if ( last )
+		++len;
 
 	if(li.is_ver()) {
 		do {

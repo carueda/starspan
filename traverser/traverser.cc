@@ -245,15 +245,18 @@ void Traverser::processLineString(OGRLineString* linstr) {
 	if ( num_points > 0 ) {
 		OGRPoint point0;
 		linstr->getPoint(0, &point0);
+		//
+		// Note that connecting pixels between lines are not repeated.
+		//
 		for ( int i = 1; i < num_points; i++ ) {
 			OGRPoint point;
 			linstr->getPoint(i, &point);
 
-			//traverse line from point0 to point:
-			lineRasterizer->line(point0.getX(), point0.getY(), point.getX(), point.getY());
 			//
-			// FIXME: We don't want to repeat pixels...
+			// Traverse line from point0 to point:
 			//
+			bool last = i == num_points - 1;
+			lineRasterizer->line(point0.getX(), point0.getY(), point.getX(), point.getY(), last);
 			
 			point0 = point;
 		}

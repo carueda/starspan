@@ -52,8 +52,11 @@ public:
 	  * Rasterization is accomplished by calling observer->pixelFound
 	  * for each pixel in the interpolation connecting
 	  * (x1,y1) and (x2,y2).
+	  *
+	  * @param last true to include last pixel corresponding to end point
+	  *         (x2,y2).  false by default.
 	  */
-	void line(double x1, double y1, double x2, double y2); 
+	void line(double x1, double y1, double x2, double y2, bool last=false); 
 	
 protected:
 	double pixel_size_x;
