@@ -556,9 +556,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 						cout << polys->size() << " sub-polys obtained\n";
 						for ( unsigned i = 0; i < polys->size(); i++ ) {
 							processValidPolygon((*polys)[i]);
-							delete (*polys)[i];
 						}
-						delete polys;
 					}
 					else {
 						cerr << "could not generate sub-polys\n";
