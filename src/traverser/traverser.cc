@@ -152,7 +152,8 @@ void Traverser::addRaster(Raster* raster) {
 void Traverser::removeRasters() {
 	rasts.clear();
 	globalInfo.bands.clear();
-	assert(rasts.size() == 0);
+	// make sure we have a an empty rasterPoly:
+	globalInfo.rasterPoly.empty();
 	memset(&summary, 0, sizeof(summary));
 }
 
@@ -752,7 +753,6 @@ void Traverser::process_feature(OGRFeature* feature) {
 	if ( !intersection_geometry ) {
 		if ( verbose ) {
 			cout<< " NO INTERSECTION:\n";
-			globalInfo.rasterPoly.dumpReadable(stdout, "rasterPoly");
 		}
 		goto done;
 	}
