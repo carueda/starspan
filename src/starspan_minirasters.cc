@@ -215,7 +215,7 @@ public:
 			double nodata = globalOptions.nodata;
 			
 			if ( globalOptions.verbose )
-				fprintf(stdout, "nullifying pixels...\n");
+				cout<< "nullifying pixels...\n";
 
 			const int nBandCount = GDALGetRasterCount(hOutDS);
 			
@@ -244,7 +244,7 @@ public:
 				}
 			}
 			if ( globalOptions.verbose )
-				fprintf(stdout, " %d points retained\n", num_points);
+				cout<< " " <<num_points<< " points retained\n";
 		}
 
 		if ( mrbi_list ) {
@@ -253,7 +253,7 @@ public:
 		
 		
 		GDALClose(hOutDS);
-		fprintf(stdout, "\n");
+		cout<< endl;
 
 		pixels.clear();
 	}
@@ -322,12 +322,12 @@ public:
 	  */
 	void create_strip() {
 		if ( globalOptions.verbose )
-			fprintf(stdout, "Creating miniraster strip...\n");
+			cout<< "Creating miniraster strip...\n";
 
 		const char * const pszFormat = "ENVI";
 		GDALDriver* hDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
 		if( hDriver == NULL ) {
-			fprintf(stderr, "Couldn't get driver %s to create output rasters.\n", pszFormat);
+			cerr<< "Couldn't get driver " <<pszFormat<< " to create output rasters.\n";
 			return;
 		}
 
