@@ -362,15 +362,17 @@ int main(int argc, char ** argv) {
 	// now observer-based processing:
 	//
 	
-	if ( tr.getNumObservers() == 0 && !do_report && !mini_prefix ) {
-		usage("please specify a command\n");
-	}
-
-	// let's get to work!	
-	tr.traverse();
+	if ( tr.getNumObservers() > 0 ) {
+		// let's get to work!	
+		tr.traverse();
 	
-	// release observers:
-	tr.releaseObservers();
+		// release observers:
+		tr.releaseObservers();
+	}
+	else {
+		if ( !do_report && !mini_prefix )
+			usage("please specify a command\n");
+	}
 	
 	return 0;
 }

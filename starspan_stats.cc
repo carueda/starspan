@@ -103,8 +103,10 @@ public:
 		if ( bandValues )
 			delete[] bandValues;
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
-			if ( result_stats[i] )
+			if ( result_stats[i] ) {
 				delete[] result_stats[i];
+				result_stats[i] = 0;
+			}
 		}
 	}
 
