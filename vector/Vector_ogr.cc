@@ -94,6 +94,7 @@ Vector::Vector(const char  *pszDataSource) {
         fprintf(stderr, "Unable to open datasource `%s'\n", pszDataSource);
 		exit(1);
 	}
+	fprintf(stdout, "poDS->GetLayerCount() = %d\n", poDS->GetLayerCount());
 	
 	for( int iLayer = 0; iLayer < poDS->GetLayerCount(); iLayer++ )
 	{
