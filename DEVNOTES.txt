@@ -5,6 +5,7 @@ $Id$
 	Some cleanup and checks for memory leaks:
 		- StatsObserver.computeResults(): vector of values released.
 		- Traverser::processPolygon: geos_poly released.
+		- Traverser: pixset : changing scheme for better control...
 		
 2004-10-11 (0.86beta)
 	Traverser::processPolygon: now catches GEOS exceptions which
