@@ -13,6 +13,14 @@ $Id$
 		-stats [avg | stdev | min | max ]... file.csv
 		
 	NOTE: i'm having weird slight differences .... (?)
+	Test:
+		cd /scratch/scratch_ceres/starspan-tests/emma
+		starspan2_new -raster refs_mnf_img  -vector pampas_v.shp  \
+		              -stats stats.csv min  -csv kk.csv  -fields , -fid 27 -noXY -noColRow
+					  
+		Note: only one point.
+		Now compare  kk.csv and stats.csv:  slight differences at the forst bands
+		
 	
 	
 2004-09-16
