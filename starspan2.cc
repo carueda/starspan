@@ -47,6 +47,8 @@ static void usage(const char* msg) {
 		"   options:\n"
 		"      -fields field1,field2,...,fieldn\n"
 		"      -pixprop <pixel-proportion-value>\n"
+		"      -noColRow\n"
+		"      -noXY\n"
 		"      -fid <FID>\n"
 		"      -ppoly\n"
 		"      -in\n"
@@ -85,6 +87,8 @@ int main(int argc, char ** argv) {
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
+	bool noColRow = false;
+	bool noXY = false;
 	
 	bool an_output_given = false;
 	
@@ -189,6 +193,14 @@ int main(int argc, char ** argv) {
 				usage("invalid FID");
 		}
 		
+		else if ( 0==strcmp("-noColRow", argv[i]) ) {
+			noColRow = true;
+		}
+		
+		else if ( 0==strcmp("-noXY", argv[i]) ) {
+			noXY = true;
+		}
+		
 		else if ( 0==strcmp("-ppoly", argv[i]) ) {
 			use_polys = true;
 		}
@@ -279,10 +291,10 @@ int main(int argc, char ** argv) {
 	
 	// COMMANDS
 	if ( csv_name ) { 
-		return starspan_csv(tr, select_fields, csv_name);
+		return starspan_csv(tr, select_fields, csv_name, noColRow, noXY);
 	}
 	else if ( dbf_name ) { 
-		return starspan_db(tr, select_fields, dbf_name);
+		return starspan_db(tr, select_fields, dbf_name, noColRow, noXY);
 	}
 	else if ( envi_name ) {
 		return starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
