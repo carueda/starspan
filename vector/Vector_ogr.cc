@@ -77,7 +77,7 @@ static void ReportOnLayer(FILE* file, OGRLayer* poLayer) {
 
 
 Vector::Vector(const char* pszDataSource) {
-	poDS = OGRSFDriverRegistrar::Open(pszDataSource, false, &poDriver);
+	poDS = OGRSFDriverRegistrar::Open(pszDataSource);
     if( poDS == NULL ) {
         fprintf(stderr, "Unable to open datasource `%s'\n", pszDataSource);
 		exit(1);

@@ -36,7 +36,6 @@ public:
 	void report(FILE* file);
 	
 private:
-	OGRSFDriver* poDriver;
 	OGRDataSource* poDS;
 };
 
