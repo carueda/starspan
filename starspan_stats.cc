@@ -171,9 +171,10 @@ public:
 	}
 
 	/**
-	  * closes the file
+	  * finalizes current feature if any; closes the file
 	  */
 	void end() {
+		finalizeCurrentFeatureIfAny();
 		if ( file ) {
 			fclose(file);
 			fprintf(stdout, "Stats: finished.\n");
