@@ -18,19 +18,28 @@
 
 
 
-///////////////////////////////////////////////////////////////////////
+/**
+  *
+  */
 struct JtsTestObserver : public Observer {
 	JTS_TestGenerator* jtstest;
 	int jtstest_count;
 	OGRPolygon* raster_poly;
 	OGRMultiPoint* pp;
 	
+	/**
+	  *
+	  */
 	JtsTestObserver(const char* jtstest_filename) {
 		jtstest = new JTS_TestGenerator(jtstest_filename);
 		jtstest_count = 0;
 		raster_poly = NULL;
 		pp = NULL;
 	}
+
+	/**
+	  *
+	  */
 	~JtsTestObserver() {
 		if ( pp ) {
 			finish_case();
@@ -38,6 +47,9 @@ struct JtsTestObserver : public Observer {
 		delete jtstest;
 	}
 
+	/**
+	  *
+	  */
 	void rasterPoly(OGRPolygon* raster_poly_) {
 		raster_poly = raster_poly_;
 		fprintf(stdout, "raster_poly: ");
@@ -45,6 +57,9 @@ struct JtsTestObserver : public Observer {
 		fprintf(stdout, "\n");
 	}
 
+	/**
+	  *
+	  */
 	void intersectionFound(OGRFeature* feature) {
 		if ( pp ) {
 			finish_case();
@@ -66,12 +81,20 @@ struct JtsTestObserver : public Observer {
 		pp = new OGRMultiPoint();
 	}
 	
-	void addPixel(double x, double y) {
+	/**
+	  *
+	  */
+	void addPixel(TraversalEvent& ev) { 
+		double x = ev.pixelLocation.x;
+		double y = ev.pixelLocation.y;
 		assert(pp);
 		OGRPoint p(x,y);
 		pp->addGeometry(&p);
 	}
 
+	/**
+	  *
+	  */
 	void finish_case() {
 		assert(pp);
 		jtstest->case_arg_init("b");
@@ -83,6 +106,9 @@ struct JtsTestObserver : public Observer {
 		pp = NULL;
 	}
 
+	/**
+	  * returns true.
+	  */
 	bool isSimple() { 
 		return true; 
 	}
@@ -90,6 +116,9 @@ struct JtsTestObserver : public Observer {
 
 
 
+/**
+  * implementation
+  */
 void starspan_jtstest(Raster& rast, Vector& vect, const char* jtstest_filename) {
 	JtsTestObserver observer(jtstest_filename);
 	Traverser traverser(&rast, &vect);

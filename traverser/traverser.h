@@ -15,6 +15,31 @@
 
 
 /**
+  * Info about the location of pixels.
+  */
+struct PixelLocation {
+	/** (col,row) location relative to raster image. */
+	int col;
+	int row;
+	
+	/** (x,y) location in geographic coordinates. */
+	double x;
+	double y;
+};
+
+/**
+  * Event sent to traversal observers.
+  */
+struct TraversalEvent {
+	PixelLocation pixelLocation;
+	
+	// data from the scanned raster:
+	void* signature;
+	GDALDataType rasterType;
+	int typeSize;
+};
+
+/**
   * Any object interested in doing some task as geometries are
   * traversed must extend this interface.
   */
@@ -24,13 +49,15 @@ public:
 	
 	/**
 	  * Returns true if this observer is only interested in the location of
-	  * intersecting pixels, in which case addPixel(x,y) will be called 
-	  * instead of addSignature(x,y,signature,...).
+	  * intersecting pixels, in which case traversal event objects will
+	  * be filled with only info about the pixel location.
 	  */
 	virtual bool isSimple(void) { return false; }
 	
 	/**
-	  * Called only once at the beginning of a raster processing. 
+	  * Called only once at the beginning of a raster processing.
+	  * @param rasterPoly A simple, 4-vertex polygon covering the
+	  * raster extension.
 	  */
 	virtual void rasterPoly(OGRPolygon* rasterPoly) {}
 	
@@ -41,9 +68,10 @@ public:
 	
 	/**
 	  * A new pixel location has been computed.
-	  * This is called only if isSimple() returns true.
+	  * @param ev Associated event. Pixel location is always provided
+	  * but raster info is given only if isSimple() returns false.
 	  */
-	virtual void addPixel(double x, double y) {}
+	virtual void addPixel(TraversalEvent& ev) {}
 
 	/**
 	  * A new signature has been extracted. 

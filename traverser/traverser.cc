@@ -82,14 +82,25 @@ void Traverser::toColRow(double x, double y, int *col, int *row) {
 
 // as a LineRasterizerObserver, but also called directly	
 void Traverser::pixelFound(double x, double y) {
-	if ( observer->isSimple() )
-		observer->addPixel(x, y);
-	else {
-		int col, row;
-		toColRow(x, y, &col, &row);
+	// get pixel location:
+	int col, row;
+	toColRow(x, y, &col, &row);
+	TraversalEvent event;
+	event.pixelLocation.col = col;
+	event.pixelLocation.row = row;
+	event.pixelLocation.x = x;
+	event.pixelLocation.y = y;
+	
+	if ( !observer->isSimple() ) {
+		// get also signature and raster info:
 		getSignature(col, row);
-		observer->addSignature(x, y, signature_buffer, rasterType, rasterTypeSize);
+		event.signature = signature_buffer;
+		event.rasterType = rasterType;
+		event.typeSize = rasterTypeSize;
 	}
+	
+	// notify observer:
+	observer->addPixel(event);
 }
 
 // process a line string

@@ -18,6 +18,9 @@
 
 
 
+/**
+  *
+  */
 class EnviSlObserver : public Observer {
 public:
 	int numBands;
@@ -28,6 +31,9 @@ public:
 	int numSignatures;	
 	long lines_offset;
 	
+	/**
+	  *
+	  */
 	EnviSlObserver(int bands, FILE* df, FILE* hf) {
 		numBands = bands;
 		data_file = df; 
@@ -87,6 +93,9 @@ public:
 		current_feature = NULL;
 	}
 	
+	/**
+	  *
+	  */
 	~EnviSlObserver() {
 	}
 	
@@ -99,7 +108,15 @@ public:
 	}
 
 	
-	void addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize) {
+	/**
+	  *
+	  */
+	void addPixel(TraversalEvent& ev) { 
+		double x = ev.pixelLocation.x;
+		double y = ev.pixelLocation.y;
+		void* signature = ev.signature;
+		int typeSize = ev.typeSize;
+		
 		// write signature to binary file:
 		fwrite(signature, typeSize, numBands, data_file);
 		
@@ -115,7 +132,9 @@ public:
 		numSignatures++;
 	}
 	
-	// finishes the header file
+	/**
+	  * Finishes the header file
+	  */
 	void _end() {
 		// close spectra names section:
 		fprintf(header_file, "\n}\n");
@@ -126,6 +145,10 @@ public:
 	}
 };
 
+
+/**
+  * implementation
+  */
 int starspan_gen_envisl(
 	Raster* rast, 
 	Vector* vect, 

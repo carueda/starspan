@@ -9,10 +9,12 @@ $Id$
 	NOTE: A more general scheme (maybe via configure) is
 	still required for a smooth build.
 	
+	New objects for traversal: TraversalEvent, PixelLocation
+	
 2004-09-06
-	A second, more definitive definitive of the traverser module.
+	A second pass over the traverser module.
 	It now uses a LineRasterizer to process linestrings.
-	starspan_jtstest now implemented on a traverser.
+	starspan_jtstest now implemented as a traverser client.
 	
 2004-09-05
 	rasterizers/ New module for rasterizations.
