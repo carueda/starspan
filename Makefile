@@ -17,7 +17,7 @@ include Makefile.props
 
 #------------------------------------------------------------
 
-INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil
+INCLUDE := -Isrc -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil
 
 INCLUDE += -I$(GDAL_PREFIX)/include
 INCLUDE += -I$(GDAL_SRC_DIR)/frmts
@@ -26,14 +26,16 @@ INCLUDE += -I$(GDAL_SRC_DIR)
 INCLUDE += -I/usr/local/include
 
 
-SRCS =	starspan_stats.cc \
-		starspan_update_csv.cc \
-		starspan_csv.cc \
-		starspan_csv_raster_field.cc \
-		starspan_gen_envisl.cc \
-		starspan_minirasters.cc \
-		starspan_jtstest.cc \
-		starspan_util.cc \
+SRCS =	src/starspan_stats.cc \
+		src/starspan_update_csv.cc \
+		src/starspan_csv.cc \
+		src/starspan_csv_raster_field.cc \
+		src/starspan_gen_envisl.cc \
+		src/starspan_minirasters.cc \
+		src/starspan_jtstest.cc \
+		src/starspan_util.cc \
+		src/starspan_dump.cc \
+		src/starspan_tuct2.cc \
 		jts/jts.cc \
 		traverser/traverser.cc \
 		raster/Raster_gdal.cc \
@@ -41,9 +43,7 @@ SRCS =	starspan_stats.cc \
 		rasterizers/LineRasterizer.cc \
 		csv/Csv.cc \
 		stats/Stats.cc \
-		util/Progress.cc \
-		starspan_dump.cc \
-		starspan_tuct2.cc
+		util/Progress.cc
 
 
 OBJS = $(subst .cc,.o,$(SRCS))
@@ -66,9 +66,9 @@ all: starspan2
 # yet to be used
 objs : $(OBJS)
 
-starspan2: starspan2.cc $(SRCS)
+starspan2: src/starspan2.cc $(SRCS)
 	g++ $(CXXFLAGS) $(OBJ_OPT) \
-	    $(LIBPATH) -o starspan2 starspan2.cc $(SRCS) $(LDFLAGS)
+	    $(LIBPATH) -o starspan2 src/starspan2.cc $(SRCS) $(LDFLAGS)
 
 test:
 	(cd tests/ && make)
@@ -76,10 +76,10 @@ test:
 install:
 	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/
 
-prof: starspan2.cc $(SRCS)
+prof: src/starspan2.cc $(SRCS)
 	g++ $(PROF) \
 	    $(CXXFLAGS) $(OBJ_OPT) \
-	    $(LIBPATH) -o starspan2_prof starspan2.cc $(SRCS) $(LDFLAGS)
+	    $(LIBPATH) -o starspan2_prof src/starspan2.cc $(SRCS) $(LDFLAGS)
 
 
 .cc.o:

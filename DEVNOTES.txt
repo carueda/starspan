@@ -2,6 +2,9 @@ starspan devnotes
 $Id$
 
 
+2005-02-18 (0.95beta)
+	- Top-level sources move to src/
+	
 2005-02-16 (0.95beta)
 	- 0.94beta released.
 	- starting 0.95beta
