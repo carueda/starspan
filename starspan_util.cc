@@ -131,14 +131,16 @@ GDALDatasetH starspan_subset_raster(
 
 		char* wkt;
 		oOutputSRS.exportToWkt(&wkt);
-		fprintf(stdout, "---------Setting given projection (wkt):\n %s\n", wkt);
+		fprintf(stdout, "---------Setting given projection (wkt)\n");
+		//fprintf(stdout, "%s\n", wkt);
 		poVDS->SetProjection(wkt);
 		CPLFree(wkt);
 	}
 	else {
 		const char* pszProjection = GDALGetProjectionRef( hDataset );
 		if( pszProjection != NULL && strlen(pszProjection) > 0 ) {
-			fprintf(stdout, "---------Setting projection from input dataset:\n %s\n", pszProjection);
+			fprintf(stdout, "---------Setting projection from input dataset\n");
+			//fprintf(stdout, "%s\n", pszProjection);
 			poVDS->SetProjection(pszProjection);
 		}
 	}
@@ -219,3 +221,6 @@ GDALDatasetH starspan_subset_raster(
 	
 	return hOutDS;
 }
+
+
+

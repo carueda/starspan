@@ -69,7 +69,7 @@ void starspan_jtstest(Raster& rast, Vector& vect, const char* jtstest_filename) 
 		geom->getEnvelope(&feature_env);
 		OGREnvelope intersection_env;
 
-		/* hmm, Intersection() aborts !  why?
+		/* this was first aborting:
 		OGRGeometry* intersection = geom->Intersection(raster_ring);
 		if ( intersection ) {
 			intersection->getEnvelope(&intersection_env);
@@ -94,9 +94,8 @@ void starspan_jtstest(Raster& rast, Vector& vect, const char* jtstest_filename) 
 			double grid_x0 = intersection_env.MinX;
 			double grid_y0 = intersection_env.MinY;
 			
-			// FIXME  adjust (grid_x0,grid_y0) as described !!!
+			// FIXME  adjust (grid_x0,grid_y0) as just described !!!
 			// ...
-			// I'm now testing the Contains() method first ...
 			
 			jtstest.case_arg_init("b");
 			fprintf(jtstest.getFile(), "    MULTIPOINT(");

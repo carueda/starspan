@@ -30,28 +30,37 @@ static void usage(const char* msg) {
 		"USAGE:\n"
 		"\n"
 		"  starspan -help\n"
-		"      prints this message and exits\n"
+		"      prints this message and exits.\n"
 		"\n"
 		"  starspan -xhelp\n"
-		"      prints help for extended usage\n"
+		"      prints help for extended usage.\n"
 		"\n"
 		"\n"
-		"  starspan args...\n"
+		"  starspan <inputs/options>...\n"
 		"\n"
-		"   Inputs:\n"
-		"      -vector <filename>   An OGR recognized vector file\n"
-		"      -raster <filename>   A GDAL recognized raster file\n"
+		"   inputs:\n"
+		"      -vector <filename>   An OGR recognized vector file.\n"
+		"      -raster <filename>   A GDAL recognized raster file.\n"
 		"\n"
-		"   Options:\n"
-		"      -report              shows info about given input files\n"
-		"                           similar to gdalinfo and ogrinfo.\n"
-		"      -mr <prefix> <srs>   generates a mini raster for each intersecting feature\n"
-		"                           <prefix> : used for created raster names\n"
-		"                           <srs>    : See gdal_translate option -a_srs\n"
-		"                                      use - to take projection from input raster\n"
-		"      -jtstest <filename>  generates a JTS test file with given name\n"
-		"                           -xhelp explains what to do next.\n"
-		"\n"
+		"   options:\n"
+		"      -report\n"
+		"              Shows info about given input files.\n"
+		"              Similar to gdalinfo and ogrinfo.\n"
+		"      -mr <prefix>\n"
+		"              Generates a mini raster for each intersecting feature.\n"
+		"              The <prefix> is used to compose raster names.\n"
+		"      -in\n"
+		"              (Used with -mr)\n"
+		"              Only pixels contained in geometry features are retained.\n"
+		"              Zero (0) is used to nullify pixels outside features.\n"
+		"              By default all pixels in envelope are retained.\n"
+		"      -srs <srs>\n"
+		"              (Used with -mr)\n"
+		"              See gdal_translate option -a_srs.\n"
+		"              By default projection is taken from input raster.\n"
+		"      -jtstest <filename>\n"
+		"              Generates a JTS test file with given name.\n"
+		"              -xhelp explains what to do next.\n"
 		"\n"
 		, VERSION, __DATE__, __TIME__
 	);
@@ -68,6 +77,7 @@ int main(int argc, char ** argv) {
 	const char* raster_filename = NULL;
 	const char* vector_filename = NULL;
 	bool do_report = false;
+	bool only_in_feature = false;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
@@ -91,10 +101,14 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc )
 				usage("-mr: which prefix?");
 			mini_prefix = argv[i];
+		}
+		else if ( 0==strcmp("-in", argv[i]) ) {
+			only_in_feature = true;
+		}
+		else if ( 0==strcmp("-srs", argv[i]) ) {
 			if ( ++i == argc )
-				usage("-mr: which srs?");
-			if ( strcmp("-", argv[i]) )
-				mini_srs = argv[i];
+				usage("-srs: which srs?");
+			mini_srs = argv[i];
 		}
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
 			if ( ++i == argc )
@@ -125,12 +139,11 @@ int main(int argc, char ** argv) {
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
-	if ( mini_prefix ) {
-		// this option takes precedence.
-		if ( !rast && !vect ) {
+	if ( mini_prefix ) { // this option takes precedence.
+		if ( !rast || !vect ) {
 			usage("-mr option requires both a raster and a vector file to process\n");
 		}
-		return starspan_minirasters(*rast, *vect, mini_prefix, mini_srs);
+		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
 	}
 	else if ( jtstest_filename ) {
 		starspan_jtstest(*rast, *vect, jtstest_filename);

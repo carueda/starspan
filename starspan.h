@@ -22,7 +22,8 @@ int starspan_minirasters(
 	Raster& rast, 
 	Vector& vect, 
 	const char* prefix,
-	const char* pszOutputSRS    // see -a_srs option for gdal_translate
+	bool only_in_feature,
+	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
 );
 
@@ -58,6 +59,7 @@ GDALDatasetH starspan_subset_raster(
 	const char*  pszOutputSRS     // see -a_srs option for gdal_translate.
 	                              // If NULL, projection is taken from input dataset
 );
+
 
 #endif
 

@@ -16,7 +16,8 @@ int starspan_minirasters(
 	Raster& rast, 
 	Vector& vect, 
 	const char* prefix,
-	const char* pszOutputSRS    // see -a_srs option for gdal_translate
+	bool only_in_feature,
+	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
 ) {
 	//fprintf(stderr, "((mini raster is being implemented right now))\n");
@@ -74,7 +75,6 @@ int starspan_minirasters(
 		OGRGeometry* intersection = geom->Intersection(raster_ring);
 		if ( intersection ) {
 			intersection->getEnvelope(&intersection_env);
-			starspan_print_envelope(stdout, "intersection_env:", intersection_env);
 			
 			assert(intersection_env.MinX >= min_x);
 			assert(intersection_env.MinY >= min_y);
@@ -82,6 +82,11 @@ int starspan_minirasters(
 			// create mini raster
 			char mini_filename[1024];
 			sprintf(mini_filename, "%s%03d.img", prefix, feature_num);
+			
+			fprintf(stdout, "\n%s:\n", mini_filename);
+			starspan_print_envelope(stdout, "intersection_env:", intersection_env);
+			
+			// region
 			int mini_x0 = (int) ((intersection_env.MinX - min_x) / pix_size_x);
 			int mini_y0 = (int) ((intersection_env.MinY - min_y) / pix_size_y);
 			int mini_width =  (int) ((intersection_env.MaxX+pix_size_x - intersection_env.MinX) / pix_size_x); 
@@ -94,46 +99,60 @@ int starspan_minirasters(
 				pszOutputSRS
 			);
 			
+			if ( only_in_feature ) {
+				fprintf(stdout, "nullifying pixels not contained in feature..\n");
+				
+				// check locations in intersection_env.
+				// These locations have to be on the grid defined by the
+				// raster coordinates and resolution. Basically we need
+				// to determine the starting location (grid_x0,grid_y0)
+				// and let the point (x,y) take values on the grid in the
+				// intersection_env.
+				double grid_x0 = intersection_env.MinX;
+				double grid_y0 = intersection_env.MinY;
+				
+				// FIXME  adjust (grid_x0,grid_y0) as just described !!!
+				// ...
+				
+				int num_points = 0;
+				int nYOff = 0;
+				for (double y = grid_y0; nYOff < mini_height; y += pix_size_y, nYOff++) {
+					int nXOff = 0;
+					for (double x = grid_x0; nXOff < mini_width; x += pix_size_x, nXOff++) {
+						point->setX(x);
+						point->setY(y);
+						if ( geom->Contains(point) ) {
+							num_points++;
+						}
+						else {
+							// nullify bands in hOutDS for (x,y):
+							int nBandCount = GDALGetRasterCount(hOutDS);
+							for(int i = 0; i < nBandCount; i++ ) {
+								GDALRasterBand* band = ((GDALDataset *) hOutDS)->GetRasterBand(i+1);
+								double dfNoData = 0.0;
+								
+								band->RasterIO(
+									GF_Write,
+									nXOff, nYOff,
+									1, 1,          // nXSize, nYSize
+									&dfNoData,     // pData
+									1, 1,          // nBufXSize, nBufYSize
+									GDT_Float64,   // eBufType
+									0, 0           // nPixelSpace, nLineSpace
+								);
+								
+							}
+						}
+					}
+				}
+				fprintf(stdout, " %d points retained\n", num_points);
+				
+				
+			}
+			
 			GDALClose(hOutDS);
 			fprintf(stdout, "\n");
 
-			if ( true )
-				continue;
-
-
-			// check locations in intersection_env.
-			// These locations have to be on the grid defined by the
-			// raster coordinates and resolution. Basically we need
-			// to determine the starting location (grid_x0,grid_y0)
-			// and let the point (x,y) take values on the grid in the
-			// intersection_env.
-			double grid_x0 = intersection_env.MinX;
-			double grid_y0 = intersection_env.MinY;
-			
-			// FIXME  adjust (grid_x0,grid_y0) as described !!!
-			// ...
-			// I'm now testing the Contains() method first ...
-			
-			fprintf(stdout, "    MULTIPOINT(");
-			int num_points = 0;
-			for (double y = grid_y0; y <= intersection_env.MaxY+pix_size_y; y += pix_size_y) {
-				for (double x = grid_x0; x <= intersection_env.MaxX+pix_size_x; x += pix_size_x) {
-					point->setX(x);
-					point->setY(y);
-					if ( geom->Contains(point) ) {
-						if ( num_points > 0 )
-							fprintf(stdout, ", ");
-						fprintf(stdout, "%.3f  %.3f", x, y);
-						num_points++;
-					}
-				}
-			}
-			if ( num_points > 0 )
-				fprintf(stdout, ")\n");
-			else
-				fprintf(stdout, "EMPTY)\n");
-			fprintf(stdout, "case with %d points\n", num_points);
-			
 			delete intersection;
 		}
 
