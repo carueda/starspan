@@ -67,9 +67,12 @@ public:
 	  * Creates first line with column headers:
 	  *    FID, col, row, fields-from-feature, bands-from-raster
 	  */
-	CSVObserver(Raster* r, Vector* v, FILE* f, const char* select_fields_)
-	: rast(r), vect(v), file(f), select_fields(select_fields_) 
+	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_)
+	: file(f), select_fields(select_fields_) 
 	{
+		rast = tr.getRaster();
+		vect = tr.getVector();
+		
 		// PENDING maybe read this from a parameter
 		includePixelLocation = true;
 		
@@ -201,8 +204,7 @@ public:
   * implementation
   */
 int starspan_csv(
-	Raster* rast, 
-	Vector* vect, 
+	Traverser& tr,
 	const char* select_fields,     // comma-separated field names
 	const char* filename
 ) {
@@ -213,8 +215,7 @@ int starspan_csv(
 		return 1;
 	}
 
-	CSVObserver obs(rast, vect, file, select_fields);	
-	Traverser tr(rast, vect);
+	CSVObserver obs(tr, file, select_fields);	
 	tr.setObserver(&obs);
 	tr.traverse();
 	

@@ -11,6 +11,7 @@
 #include "Vector.h"
 #include "rasterizers.h"
 
+#include <list.h>   // should be <list>
 #include <stdio.h>
 
 
@@ -124,8 +125,11 @@ public:
 	/**
 	  * Creates a traverser.
 	  * Then you will call setObserver().
+	  *
+	  * @param r rasters -- NOTE: only first one used while complete impl is done
+	  * @param v vector
 	  */
-	Traverser(Raster* r, Vector* v);
+	Traverser(list<Raster*>* r, Vector* v);
 	
 	~Traverser();
 	
@@ -139,13 +143,18 @@ public:
 	  */
 	Observer* getObserver(void) { return observer; }
 
+	Raster* getRaster(void) { return rast; }
+	Vector* getVector(void) { return vect; }
+	
+	
 	/**
 	  * Executes the traversal.
 	  */
 	void traverse(void);
 	
 private:
-	Raster* rast;
+	list<Raster*>* rasts;
+	Raster* rast;  // transitional member
 	Vector* vect;
 	Observer* observer;
 	

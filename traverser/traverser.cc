@@ -34,11 +34,14 @@ static Observer null_observer;
 //
 // Raster type info is taken from first band (assumed valid for all bands).
 //
-Traverser::Traverser(Raster* raster, Vector* vector) {
-	rast = raster;
+Traverser::Traverser(list<Raster*>* rasters, Vector* vector) {
+	rasts = rasters;
 	vect = vector;
 	observer = &null_observer;
 
+	// for transition
+	rast = rasters->front();
+	
 	dataset = rast->getDataset();
 	// some info from the first band (assumed to be valid for all bands)
 	band1 = dataset->GetRasterBand(1);

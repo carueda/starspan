@@ -344,8 +344,7 @@ public:
   * implementation
   */
 int starspan_db(
-	Raster* rast, 
-	Vector* vect, 
+	Traverser& tr,
 	const char* select_fields,
 	const char* filename
 ) {
@@ -356,8 +355,10 @@ int starspan_db(
 		return 1;
 	}
 
+	Raster* rast = tr.getRaster();
+	Vector* vect = tr.getVector();
+
 	DBObserver obs(rast, vect, file, select_fields);	
-	Traverser tr(rast, vect);
 	tr.setObserver(&obs);
 	tr.traverse();
 	

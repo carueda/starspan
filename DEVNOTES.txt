@@ -1,6 +1,19 @@
 starspan devnotes
 $Id$
 
+2004-09-13
+	Main operations now receive a data traverser instead of direct
+	input objects.
+	
+	Some refactoring to start processing multiple input rasters.
+	
+2004-09-11
+	Problems with large file support; this is happening on ceres but
+	works fine on scorpio and px (my laptop). 
+	I'm also having a strange behavior with gdal not being able to 
+	recognize an envi image on scorpio, though it just reads fine on
+	ceres and px (?).
+	
 2004-09-10
 	Band# names now starting from 1.
 	

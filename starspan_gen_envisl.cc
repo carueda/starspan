@@ -254,12 +254,14 @@ public:
   * implementation
   */
 int starspan_gen_envisl(
-	Raster* rast, 
-	Vector* vect,
+	Traverser& tr,
 	const char* select_fields,
 	const char* envisl_name,
 	bool envi_image
 ) {
+	Raster* rast = tr.getRaster();
+	//Vector* vect = tr.getVector();
+
 	// output files
 	char data_filename[1024];
 	sprintf(data_filename, "%s.img", envisl_name);
@@ -305,7 +307,6 @@ int starspan_gen_envisl(
 	int bands;
 	rast->getSize(NULL, NULL, &bands);
 	EnviSlObserver obs(envi_image, bands, data_file, header_file, fields);	
-	Traverser tr(rast, vect);
 	tr.setObserver(&obs);
 	
 	tr.traverse();

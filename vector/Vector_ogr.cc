@@ -105,6 +105,7 @@ OGRLayer* Vector::getLayer(int layer_num) {
 }
 
 void Vector::report(FILE* file) {
+	fprintf(file, "%s\n", poDS->GetName());
 	fprintf(file, "Layers = %d\n", poDS->GetLayerCount());
 	for( int iLayer = 0; iLayer < poDS->GetLayerCount(); iLayer++ ) {
 		OGRLayer* poLayer = poDS->GetLayer(iLayer);

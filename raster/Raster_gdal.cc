@@ -94,6 +94,7 @@ void Raster::getPixelSize(double *pix_x_size, double *pix_y_size) {
 }
 
 void Raster::report(FILE* file) {
+	fprintf(file, "%s\n", hDataset->GetDescription());
     GDALDriver* hDriver = hDataset->GetDriver();
     fprintf(file, "Driver: %s/%s\n",
 		GDALGetDriverShortName(hDriver),

@@ -71,7 +71,6 @@ int main(int argc, char ** argv) {
 		usage(NULL);
 	}
 	
-	const char* raster_filename = NULL;
 	const char* vector_filename = NULL;
 	bool do_report = false;
 	bool only_in_feature = false;
@@ -87,6 +86,17 @@ int main(int argc, char ** argv) {
 	
 	bool an_output_given = false;
 	
+
+	// for inputs:
+	//Raster* rast = NULL;
+	list<Raster*>* rasts = 0;
+	Vector* vect = NULL;
+	
+	// module initialization
+	Raster::init();
+	Vector::init();
+	
+
 	for ( int i = 1; i < argc; i++ ) {
 		
 		// INPUTS:
@@ -97,9 +107,16 @@ int main(int argc, char ** argv) {
 			
 		}
 		else if ( 0==strcmp("-raster", argv[i]) ) {
-			if ( ++i == argc )
+			if ( !rasts )
+				rasts = new list<Raster*>();
+			while ( ++i < argc && argv[i][0] != '-' ) {
+				const char* raster_filename = argv[i];
+				rasts->push_front(new Raster(raster_filename));
+			}
+			if ( rasts->size() == 0 )
 				usage("-raster: which raster file?");
-			raster_filename = argv[i];
+			if ( argv[i][0] == '-' ) 
+				--i;
 		}
 		
 		// COMMANDS
@@ -196,16 +213,6 @@ int main(int argc, char ** argv) {
 		}
 	}
 	
-	// module initialization
-	Raster::init();
-	Vector::init();
-	
-	// create basic objects:
-	Raster* rast = NULL;
-	Vector* vect = NULL;
-	
-	if ( raster_filename )
-		rast = new Raster(raster_filename);
 	if ( vector_filename )
 		vect = new Vector(vector_filename);
 
@@ -213,31 +220,39 @@ int main(int argc, char ** argv) {
 	
 	
 	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
-		if ( !rast || !vect ) {
+		if ( !rasts || !vect ) {
 			usage("Specified output option requires both a raster and a vector to proceed\n");
 		}
 	}
+	
+	Traverser tr(rasts, vect);
+	
 	// COMMANDS
-	if ( dbf_name ) { 
-		return starspan_db(rast, vect, select_fields, dbf_name);
+	if ( csv_name ) { 
+		return starspan_csv(tr, select_fields, csv_name);
 	}
-	else if ( csv_name ) { 
-		return starspan_csv(rast, vect, select_fields, csv_name);
+	else if ( dbf_name ) { 
+		return starspan_db(tr, select_fields, dbf_name);
 	}
-	else if ( envi_name ) { 
-		return starspan_gen_envisl(rast, vect, select_fields, envi_name, envi_image);
+	else if ( envi_name ) {
+		return starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
 	}
 	else if ( mini_prefix ) {
+		if ( rasts->size() > 1 ) {
+			fprintf(stderr, "Sorry, -mr currently accepts only one input raster\n");
+			return 1;
+		}
+		Raster* rast = rasts->front();
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
 	}
 	else if ( jtstest_filename ) {
-		starspan_jtstest(*rast, *vect, use_polys, jtstest_filename);
+		starspan_jtstest(tr, use_polys, jtstest_filename);
 	}
 	else if ( do_report ) {
-		if ( !rast && !vect ) {
+		if ( !rasts && !vect ) {
 			usage("-report: Please give a raster and/or a vector file to report\n");
 		}
-		starspan_report(rast, vect);
+		starspan_report(rasts, vect);
 	}
 	else {
 		usage("what should I do?\n");

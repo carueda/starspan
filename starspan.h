@@ -9,6 +9,7 @@
 
 #include "Raster.h"           
 #include "Vector.h"       
+#include "traverser.h"       
 
 #include <stdio.h> // FILE
 
@@ -25,14 +26,14 @@
   *     {vect-attrs}: attributes from vector
   *     {rast-bands}: bands from raster at corresponding location
   *
-  * @param rast Raster dataset to be scanned.
-  * @param vect Vector datasource defining regions to be extracted from raster.
+  * @param tr Data traverser
+  * @param select_fields comma-separated field names
+  * @param db_filename output file name
   *
   * @return 0 iff OK. 
   */
 int starspan_db(
-	Raster* rast, 
-	Vector* vect, 
+	Traverser& tr,
 	const char* select_fields,     // comma-separated field names
 	const char* db_filename
 );
@@ -46,29 +47,47 @@ int starspan_db(
   *     {vect-attrs}: attributes from vector
   *     {rast-bands}: bands from raster at corresponding location
   *
-  * @param rast Raster dataset to be scanned.
-  * @param vect Vector datasource defining regions to be extracted from raster.
+  * @param tr Data traverser
+  * @param select_fields comma-separated field names
+  * @param csv_filename output file name
   *
   * @return 0 iff OK. 
   */
 int starspan_csv(
-	Raster* rast, 
-	Vector* vect, 
+	Traverser& tr, 
 	const char* select_fields,     // comma-separated field names
 	const char* csv_filename
 );
 
-/** Generates envi spectral library.
+/** Generates ENVI output
+  * @param tr Data traverser
+  * @param select_fields comma-separated field names
+  * @param envisl_filename output file name
+  * @param envi_image  true for image, false for spectral library
+  *
     returns 0 iff OK. */
 int starspan_gen_envisl(
-	Raster* rast, 
-	Vector* vect, 
-	const char* select_fields,     // comma-separated field names
+	Traverser& tr,
+	const char* select_fields,
 	const char* envisl_name,
-	bool envi_image            // true for image, false for spectral lib
+	bool envi_image
 );
 
 	
+
+/**
+  * Generate a JTS test.
+  * @param tr Data traverser
+  * @param use_polys If true, pixels are represented as polygons;
+  *        otherwise as points.
+  * @param jtstest_filename output file name
+  */
+void starspan_jtstest(
+	Traverser& tr,
+	bool use_polys,
+	const char* jtstest_filename
+);
+
 /** Generate mini rasters
     returns 0 iff OK. */
 int starspan_minirasters(
@@ -81,23 +100,12 @@ int starspan_minirasters(
 );
 
 
-/**
-  * Generate a JTS test.
-  * @param use_polys If true, pixels are represented as polygons;
-  *        otherwise as points.
-  */
-void starspan_jtstest(
-	Raster& rast, Vector& vect, 
-	bool use_polys,
-	const char* jtstest_filename
-);
-
 
 /////////////////////////////////////////////////////////////////////////////
 // misc and supporting utilities:
 
 /** aux routine for reporting */ 
-void starspan_report(Raster* rast, Vector* vect);
+void starspan_report(list<Raster*>* rasts, Vector* vect);
 
 /** intersect two envelopes */
 bool starspan_intersect_envelopes(OGREnvelope& oEnv1, OGREnvelope& oEnv2, OGREnvelope& envr);

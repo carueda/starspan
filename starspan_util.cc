@@ -13,13 +13,16 @@
 #include <stdlib.h>
 
 // aux routine for reporting 
-void starspan_report(Raster* rast, Vector* vect) {
-	if ( rast ) {
-		fprintf(stdout, "----------------RASTER--------------\n");
-		rast->report(stdout);
+void starspan_report(list<Raster*>* rasts, Vector* vect) {
+	if ( rasts ) {
+		list<Raster*>::const_iterator rast = rasts->begin();
+		for ( ; rast != rasts->end(); rast++ ) {
+			fprintf(stdout, "\n----------------RASTER--------------\n");
+			(*rast)->report(stdout);
+		}
 	}
 	if ( vect ) {
-		fprintf(stdout, "----------------VECTOR--------------\n");
+		fprintf(stdout, "\n----------------VECTOR--------------\n");
 		vect->report(stdout);
 	}
 }

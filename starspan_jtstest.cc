@@ -169,16 +169,18 @@ struct JtsTestObserver : public Observer {
   * implementation
   */
 void starspan_jtstest(
-	Raster& rast, Vector& vect, 
+	Traverser& tr,
 	bool use_polys,
 	const char* jtstest_filename
 ) {
+	Raster* rast = tr.getRaster();
+	//Vector* vect = tr.getVector();
+
 	double pix_x_size, pix_y_size;
-	rast.getPixelSize(&pix_x_size, &pix_y_size);
+	rast->getPixelSize(&pix_x_size, &pix_y_size);
 	JtsTestObserver observer(jtstest_filename, pix_x_size, pix_y_size, use_polys);
-	Traverser traverser(&rast, &vect);
-	traverser.setObserver(&observer);
-	traverser.traverse();
+	tr.setObserver(&observer);
+	tr.traverse();
 }
 
 
