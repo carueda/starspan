@@ -4,7 +4,7 @@
 # Carlos A. Rueda
 # starspan - launcher script
 # NOTE: Adjust as necessary for your environment
-# 2004-09-07: adjustments for scorpio machine 
+# 2004-09-10: adjustment for cstars machines 
 # $Id$
 #
 
@@ -12,11 +12,13 @@ BINDIR=`dirname $0`
 JTSJARS=$BINDIR/jts.jars/
 STARSPAN2=$BINDIR/starspan2
 
-if [ "`uname -n`" == "scorpio" ]; then
+if [ "`uname -n`" == "px" ]; then
+	# my machine :-)
+	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
+else
+	# cstars machines
 	export LD_LIBRARY_PATH=/net/scratch_ceres/PAVO/lib:/usr/local/lib:$LD_LIBRARY_PATH
 	STARSPAN2=$BINDIR/starspan2-scorpio
-else
-	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
 fi
 
 function usage() {
