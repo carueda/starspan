@@ -43,17 +43,18 @@ static void usage(const char* msg) {
 		"      -envisl <name>       Generates an ENVI spectral library\n"
 		"      -stats outfile.csv [avg|stdev|min|max]...\n"
 		"                           Computes statistics\n"
+		"      -dump_geometries <filename>  saves geometries for vizualization\n"
 		"      -mr <prefix>         Generates mini rasters\n"
 		"      -jtstest <filename>  Generates a JTS test file\n"
 		"\n"
 		"   options:\n"
-		"      -fields field1,field2,...,fieldn\n"
+		"      -fields field1,...,fieldn   only these fields\n"
 		"      -pixprop <pixel-proportion-value>\n"
-		"      -noColRow\n"
-		"      -noXY\n"
-		"      -fid <FID>\n"
-		"      -ppoly\n"
-		"      -in\n"
+		"      -noColRow    do not include (col,row) fields\n"
+		"      -noXY        do not include (x,y) fields\n"
+		"      -fid <FID>   only this FID\n"
+		"      -ppoly       show pixels as polygons in visualization\n"
+		"      -in          only pixel contained in polygon\n"
 		"      -srs <srs>\n"
 		"\n"
 		"Example:\n"
@@ -107,7 +108,9 @@ int main(int argc, char ** argv) {
 	//
 	for ( int i = 1; i < argc; i++ ) {
 		
+		//
 		// INPUTS:
+		//
 		if ( 0==strcmp("-vector", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-vector: which vector file?");
@@ -135,7 +138,9 @@ int main(int argc, char ** argv) {
 			update_dbf_name = argv[i];
 		}
 		
+		//
 		// COMMANDS
+		//
 		else if ( 0==strcmp("-dbf", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-dbf: which name?");
@@ -144,6 +149,7 @@ int main(int argc, char ** argv) {
 			an_output_given = true;
 			dbf_name = argv[i];
 		}
+		
 		else if ( 0==strcmp("-csv", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-csv: which name?");
@@ -152,6 +158,7 @@ int main(int argc, char ** argv) {
 			an_output_given = true;
 			csv_name = argv[i];
 		}
+		
 		else if ( 0==strcmp("-stats", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-stats: which output name?");
@@ -173,6 +180,7 @@ int main(int argc, char ** argv) {
 			an_output_given = true;
 			mini_prefix = argv[i];
 		}
+		
 		else if ( 0==strcmp("-envi", argv[i]) || 0==strcmp("-envisl", argv[i]) ) {
 			envi_image = 0==strcmp("-envi", argv[i]);
 			if ( ++i == argc || argv[i][0] == '-' )
@@ -182,6 +190,13 @@ int main(int argc, char ** argv) {
 			an_output_given = true;
 			envi_name = argv[i];
 		}
+		
+		else if ( 0==strcmp("-dump_geometries", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-dump_geometries: which name?");
+			dump_geometries_filename = argv[i];
+		}
+		
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-jtstest: which JTS test file name?");
@@ -194,7 +209,9 @@ int main(int argc, char ** argv) {
 			do_report = true;
 		}
 		
+		//
 		// OPTIONS
+		//
 		else if ( 0==strcmp("-pixprop", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-pixprop: pixel proportion?");
@@ -239,12 +256,6 @@ int main(int argc, char ** argv) {
 			mini_srs = argv[i];
 		}
 
-		else if ( 0==strcmp("-dump_geometries", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-dump_geometries: which name?");
-			dump_geometries_filename = argv[i];
-		}
-		
 		// HELP
 		else if ( 0==strcmp("-help", argv[i]) ) {
 			usage(NULL);
