@@ -339,6 +339,8 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 //
 // Does NOT check for pixel duplication.
 //
+// N O T E  :   NOT USED
+//
 void Traverser::pixelFoundInPolygon(double x, double y) {
 	// get pixel location:
 	int col, row;
@@ -459,7 +461,10 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 				//cout " area=" << area << endl;
 				if ( area >= pixelProportion * pix_area ) { 
 					num_pixels_in_poly++;
-					pixelFoundInPolygon(x, y);
+					
+					// we now check for pixel duplication always
+					pixelFound(x, y);
+					//pixelFoundInPolygon(x, y);  <-  no any more
 				}
 				delete pix_inters;
 			}
@@ -477,7 +482,6 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 		);
 	}
 }
-
 
 class MyPolygonizer : public geos::Polygonizer {
 public:
@@ -553,7 +557,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 					// and process generated sub-polygons:
 					vector<geos::Polygon*>* polys = polygonizer.getPolygons();
 					if ( polys ) {
-						cout << polys->size() << " sub-polys obtained\n";
+						if ( verbose )
+							cout << polys->size() << " sub-polys obtained\n";
 						for ( unsigned i = 0; i < polys->size(); i++ ) {
 							processValidPolygon((*polys)[i]);
 						}
@@ -565,7 +570,6 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 					delete noded;
 				}
 			}
-			
 		}
 	}
 	delete geos_poly;
@@ -645,6 +649,10 @@ void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
 // processes a given feature
 //
 void Traverser::process_feature(OGRFeature* feature) {
+	if ( verbose ) {
+		fprintf(stdout, "\n\nFID: %ld", feature->GetFID());
+	}
+	
 	//
 	// get geometry
 	//
@@ -653,15 +661,26 @@ void Traverser::process_feature(OGRFeature* feature) {
 	//
 	// intersect this feature with raster (raster ring)
 	//
-	OGRGeometry* intersection_geometry = feature_geometry->Intersection(&globalInfo.rasterPoly);
+	OGRGeometry* intersection_geometry = 0;
+	
+	try {
+		intersection_geometry = feature_geometry->Intersection(&globalInfo.rasterPoly);
+	}
+	catch(geos::GEOSException* ex) {
+		cerr<< ">>>>> FID: " << feature->GetFID()
+		    << "  GEOSException: " << ex->toString()<< endl;
+		return;
+	}
+
 	if ( !intersection_geometry ) {
+		if ( verbose ) {
+			fprintf(stdout, " NO intersection:\n");
+		}
 		return;
 	}
 
 	if ( verbose ) {
-		fprintf(stdout, 
-			"\n\nFID: %ld  type of intersection: %s\n",
-			feature->GetFID(),
+		fprintf(stdout, " Type of intersection: %s\n",
 			intersection_geometry->getGeometryName()
 		);		
 	}
