@@ -20,8 +20,12 @@ static vector<const char*>* select_fields;
 static const char* output_filename;
 static FILE* output_file;
 static bool new_file = false;
+static bool write_column_headers = false;
 static OGRFeature* currentFeature;
 static Raster* raster;
+static bool RID_already_included = false;
+static OGRLayer* layer;
+	
 
 
 
@@ -44,6 +48,62 @@ static void open_output_file() {
 	}
 }
 
+static void write_column_headers_if_necessary() {
+	if ( write_column_headers ) {
+		write_column_headers = false;
+
+		// Create FID field
+		fprintf(output_file, "FID");
+		
+		// Create fields:
+		if ( select_fields ) {
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				fprintf(output_file, ",%s", *fname);
+				if ( 0 == strcmp(raster_field_name, *fname) ) {
+					RID_already_included = true;
+				}
+			}
+		}
+		else {
+			// all fields from layer definition
+			OGRFeatureDefn* poDefn = layer->GetLayerDefn();
+			int feature_field_count = poDefn->GetFieldCount();
+			
+			for ( int i = 0; i < feature_field_count; i++ ) {
+				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
+				const char* pfield_name = poField->GetNameRef();
+				fprintf(output_file, ",%s", pfield_name);
+			}
+			RID_already_included = true;
+		}
+		
+		if ( ! RID_already_included ) {
+			// add RID field
+			fprintf(output_file, ",%s", raster_field_name);
+		}
+		
+		// Create (col,row) fields, if so indicated
+		if ( !globalOptions.noColRow ) {
+			fprintf(output_file, ",col");
+			fprintf(output_file, ",row");
+		}
+		
+		// Create (x,y) fields, if so indicated
+		if ( !globalOptions.noXY ) {
+			fprintf(output_file, ",x");
+			fprintf(output_file, ",y");
+		}
+		
+		// Create fields for bands
+		GDALDataset* dataset = raster->getDataset();
+		for ( int i = 0; i < dataset->GetRasterCount(); i++ ) {
+			fprintf(output_file, ",Band%d", i+1);
+		}
+		
+		fprintf(output_file, "\n");
+		
+	}
+}
 
 static void processPoint(OGRPoint* point) {
 	double x = point->getX();
@@ -57,7 +117,8 @@ static void processPoint(OGRPoint* point) {
 		return;
 	}
 	
-	bool RID_already_included = false;  // could be factored out
+	
+	write_column_headers_if_necessary();
 	
 	//
 	// Add field values to new record:
@@ -75,10 +136,6 @@ static void processPoint(OGRPoint* point) {
 				exit(1);
 			}
 			
-			if ( raster_field_name == *fname ) {
-				RID_already_included = true;
-			}
-
 			const char* str = currentFeature->GetFieldAsString(i);
 			if ( strchr(str, ',') )
 				fprintf(output_file, ",\"%s\"", str);   // quote string
@@ -96,7 +153,6 @@ static void processPoint(OGRPoint* point) {
 			else
 				fprintf(output_file, ",%s", str);
 		}
-		RID_already_included = true;
 	}
 
 	if ( ! RID_already_included ) {
@@ -163,7 +219,7 @@ static void extract_pixels() {
 
 static void process_feature() {
 	if ( globalOptions.verbose ) {
-		fprintf(stdout, "\n\nFID: %ld", currentFeature->GetFID());
+		fprintf(stdout, "\nFID: %ld", currentFeature->GetFID());
 	}
 	
 	const int i = currentFeature->GetFieldIndex(raster_field_name);
@@ -211,7 +267,7 @@ int starspan_csv_raster_field(
 		;
 		return 1;
 	}
-	OGRLayer* layer = vect.getLayer(0);
+	layer = vect.getLayer(0);
 	if ( !layer ) {
 		cerr<< "Couldn't get layer from " << vect.getName()<< endl;
 		return 1;
@@ -219,6 +275,8 @@ int starspan_csv_raster_field(
 	layer->ResetReading();
 
 	open_output_file();
+	
+	write_column_headers = new_file;
 	
 	//
 	// Was a specific FID given?
