@@ -95,6 +95,7 @@ int starspan_tuct_1(
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		const char* raster_filename = raster_filenames[i];
 		Raster* rast = new Raster(raster_filename);
+		string RID(raster_filename);
 
 		int bands;
 		rast->getSize(NULL, NULL, &bands);
@@ -155,7 +156,7 @@ int starspan_tuct_1(
 				// write record
 				calbase_file 
 					<< FID             <<","
-					<< raster_filename <<","
+					<< RID             <<","
 					<< bandNumber      <<","
 					<< fieldBandValue  <<","
 					<< imageBandValue  << endl

@@ -65,6 +65,14 @@ int starspan_tuct_2(
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		const char* raster_filename = raster_filenames[i];
 		Raster* rast = new Raster(raster_filename);
+		string RID(raster_filename);
+		if ( !globalOptions.RID_as_given ) {
+			// simplify
+			size_t idx = RID.find_last_of("/:\\");
+			if ( idx != RID.npos ) {
+				RID.erase(0, idx+1);
+			}
+		}
 
 		int bands;
 		rast->getSize(NULL, NULL, &bands);
@@ -130,7 +138,7 @@ int starspan_tuct_2(
 						calbase_file 
 							<< FID             <<","
 							<< link_val        <<","
-							<< raster_filename <<","
+							<< RID             <<","
 							<< bandNumber      <<","
 							<< fieldBandValue
 						;

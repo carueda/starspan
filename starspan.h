@@ -15,9 +15,12 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.87beta"
+#define STARSPAN_VERSION "0.88beta"
 
 
+/** Options that might be used by different services.
+  * This comes in handy while the tool gets more stabilized.
+  */
 struct GlobalOptions {
 	bool use_pixpolys;
 	bool skip_invalid_polys;
@@ -39,6 +42,10 @@ struct GlobalOptions {
   	bool noXY;
 
 	bool only_in_feature;
+	
+	/** Make RID exactly as given in command line? 
+	  * If not, the simple filename is set as RID. */
+	bool RID_as_given;
 };
 
 extern GlobalOptions globalOptions;

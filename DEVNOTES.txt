@@ -1,6 +1,12 @@
 starspan devnotes
 $Id$
 
+2004-10-14 (0.88beta)
+	New option -RID_as_given: by default, RIDs are the filenames without
+	any path. With this option RIDs will take the filenames exactly as
+	given in the command line.
+	
+	
 2004-10-12 (0.87beta)
 	Some cleanup and checks for memory leaks:
 		- StatsObserver.computeResults(): vector of values released.

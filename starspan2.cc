@@ -56,10 +56,11 @@ static void usage(const char* msg) {
 		"      -noColRow \n"
 		"      -noXY\n"
 		"      -fid <FID>\n"
-		"      -ppoly \n"
 		"      -skip_invalid_polys \n"
 		"      -progress [value] \n"
+		"      -RID_as_given \n"
 		"      -verbose \n"
+		"      -ppoly \n"
 		"      -in   \n"
 		"      -srs <srs>\n"
 		"\n"
@@ -87,6 +88,7 @@ int main(int argc, char ** argv) {
 	globalOptions.noColRow = false;
 	globalOptions.noXY = false;
 	globalOptions.only_in_feature = false;
+	globalOptions.RID_as_given = false;
 
 
 	bool do_report = false;
@@ -279,6 +281,10 @@ int main(int argc, char ** argv) {
 
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			globalOptions.only_in_feature = true;
+		}
+		
+		else if ( 0==strcmp("-RID_as_given", argv[i]) ) {
+			globalOptions.RID_as_given = true;
 		}
 		
 		else if ( 0==strcmp("-progress", argv[i]) ) {
