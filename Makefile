@@ -28,6 +28,7 @@ INCLUDE += -I/usr/local/include
 
 
 SRCS =	src/starspan_stats.cc \
+		src/starspan_countbyclass.cc \
 		src/starspan_update_csv.cc \
 		src/starspan_csv.cc \
 		src/starspan_csv_raster_field.cc \

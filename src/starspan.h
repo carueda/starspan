@@ -141,6 +141,27 @@ Observer* starspan_getStatsObserver(
 );
 
 
+/**
+  * Gets an observer that computes counts per class from an
+  * integral raster band. Only the first band from the raster
+  * dataset will be processed as long as its type is integral.
+  * The format of the output file is as follows:
+  * <pre>
+  *		FID,class,count
+  * </pre>
+  *
+  * @param tr Data traverser
+  * @param filename output file name
+  *
+  * @return observer to be added to traverser. 
+  */
+Observer* starspan_getCountByClassObserver(
+	Traverser& tr,
+	const char* filename
+);
+
+
+
 
 /** Extraction from rasters specified in vector field.
   * Generates a CSV file with the following columns:

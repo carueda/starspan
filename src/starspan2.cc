@@ -57,6 +57,7 @@ static void usage(const char* msg) {
 		"      --envi <name>\n"
 		"      --envisl <name> \n"
 		"      --stats outfile.csv {avg|mode|stdev|min|max}...\n"
+		"      --count-by-class outfile.csv \n"
 		"      --calbase <link> <filename> [<stats>...]\n"
 		"      --in   \n"
 		"      --mini_rasters <prefix> \n"
@@ -124,6 +125,7 @@ int main(int argc, char ** argv) {
 	const char*  csv_name = NULL;
 	const char*  stats_name = NULL;
 	vector<const char*> select_stats;
+	const char*  count_by_class_name = NULL;
 	const char*  update_csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
@@ -230,6 +232,12 @@ int main(int argc, char ** argv) {
 				usage("--stats: which statistics?");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
+		}
+
+		else if ( 0==strcmp("--count-by-class", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--count-by-class: which output name?");
+			count_by_class_name = argv[i];
 		}
 
 		else if ( 0==strcmp("--mini_raster_strip", argv[i]) ) {
@@ -502,6 +510,12 @@ int main(int argc, char ** argv) {
 		
 		if ( stats_name ) {
 			Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
+			if ( obs )
+				tr.addObserver(obs);
+		}
+		
+		if ( count_by_class_name ) {
+			Observer* obs = starspan_getCountByClassObserver(tr, count_by_class_name);
 			if ( obs )
 				tr.addObserver(obs);
 		}
