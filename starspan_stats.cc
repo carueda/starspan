@@ -199,9 +199,11 @@ public:
 	  * Desired results are reported by finalizePreviousFeatureIfAny.
 	  */
 	void computeResults(void) {
+		vector<double> values;
 		for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-			vector<double>* values = tr.getPixelValuesInBand(j+1, &pixels);
-			stats.compute(values);
+			values.clear();
+			tr.getPixelValuesInBand(j+1, &pixels, values);
+			stats.compute(&values);
 			for ( int i = 0; i < TOT_RESULTS; i++ ) {
 				result_stats[i][j] = stats.result[i]; 
 			}

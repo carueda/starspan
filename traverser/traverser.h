@@ -229,15 +229,16 @@ public:
 	}
 	
 	/**
-	  * Returns a list of values corresponding to a given list of pixel
+	  * Gets the values corresponding to a given list of pixel
 	  * locations from a given band.
 	  * @param band_index Desired band. Note that 1 corresponds to the first band
-	  *              in the first raster.
+	  *              (to keep consistency with GDAL).
 	  * @param colrows Desired locations.
-	  * @return the list of corresponding values. Note that a 0.0 will be
-	  *          put in the list where (col,row) is not valid.
+	  * @param list Where values are to be added.
+	  *             Note that a 0.0 will be added where (col,row) is not valid.
+	  * @return 0 iff OK.
 	  */
-	vector<double>* getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows);
+	int getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
 	
 	/**
 	  * Reads in values from all bands (all given rasters) at pixel in (col,row).

@@ -144,15 +144,15 @@ void* Raster::getBandValuesForPixel(int col, int row) {
 	return bandValues_buffer;
 }
 
-vector<double>* Raster::getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows) {
+int Raster::getPixelValuesInBand(
+	unsigned band_index, 
+	vector<CRPixel>* colrows,
+	vector<double>& list
+) {
 	// Note that GDAL will raise an error if band is invalid,
 	GDALRasterBand* band = (GDALRasterBand*) GDALGetRasterBand(hDataset, band_index);
 	if ( !band )
-		return 0;
-	
-	vector<double>* list = new vector<double>();
-	if ( !list )
-		return 0;
+		return 1;
 	
 	int width, height;
 	getSize(&width, &height, NULL);
@@ -181,9 +181,9 @@ vector<double>* Raster::getPixelValuesInBand(unsigned band_index, vector<CRPixel
 				exit(1);
 			}
 		}
-		list->push_back(value);
+		list.push_back(value);
 	}
-	return list;
+	return 0;
 }
 
 
