@@ -1,0 +1,30 @@
+#
+# Makefile properties template to build the starspan tool.
+# This file is a template for the actual Makefile.props, which
+# should be edited according to the settings on your system
+# before compiling starspan.
+# $Id$
+#
+
+# COMMON_PREFIX: this definition is useful as dependencies are typically 
+# installed under the same prefix (see below)
+COMMON_PREFIX := /usr/local
+
+# GDAL_SRC_DIR: specify the GDAL source directory
+# This is required to get access to some headers that,
+# strangely enough, are not copied to GDAL installation directory.
+GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal-1.2.3
+
+# GDAL_PREFIX: specify where GDAL is installed
+GDAL_PREFIX := $(COMMON_PREFIX)
+
+# GEOS_PREFIX: specify where GEOS is installed
+GEOS_PREFIX := $(COMMON_PREFIX)
+
+# SHAPELIB_PREFIX: specify where SHAPELIB is installed
+SHAPELIB_PREFIX := $(COMMON_PREFIX)
+
+# AGG_PREFIX: specify where AGG is installed
+AGG_PREFIX := $(COMMON_PREFIX)
+
+

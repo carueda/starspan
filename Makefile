@@ -3,23 +3,10 @@
 # $Id$
 #
 
-# common prefix
-PREFIX := /usr/local
+# Use Makefile.props.templ as a template to create Makefile.props
+# according to your system.
 
-# specify the GDAL source directory
-GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal-1.2.3
-
-# specify where GDAL is installed (--prefix)
-GDAL_PREFIX := $(PREFIX)
-
-# specify where GEOS is installed (--prefix)
-GEOS_PREFIX := $(PREFIX)
-
-# specify where SHAPELIB is installed
-SHAPELIB_PREFIX := $(PREFIX)
-
-# specify where AGG is installed
-AGG_PREFIX := $(PREFIX)
+include Makefile.props
 
 #------------------------------------------------------------
 

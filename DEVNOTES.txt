@@ -19,6 +19,10 @@ $Id$
 	before calling the bresenham algorithm. Preliminary tests (via
 	--view_geometries) give now accurate results.
 	
+	Makefile.props.templ:  New scheme for Makefile.
+	This template is to create Makefile.props according to settings
+	in the local system.  Now Makefile includes Makefile.props.
+	
 
 2004-09-28 (0.8beta)
 	StatsObserver: vector<Pixel> pixels (was vector<Pixel*>).
