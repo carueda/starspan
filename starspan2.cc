@@ -41,7 +41,7 @@ static void usage(const char* msg) {
 		"      -csv <name>          Generates a CSV file\n"
 		"      -envi <name>         Generates an ENVI image\n"
 		"      -envisl <name>       Generates an ENVI spectral library\n"
-		"      -stats [avg|stdev|min|max]... file.csv\n"
+		"      -stats outfile.csv [avg|stdev|min|max]...\n"
 		"                           Computes statistics\n"
 		"      -mr <prefix>         Generates mini rasters\n"
 		"      -jtstest <filename>  Generates a JTS test file\n"
