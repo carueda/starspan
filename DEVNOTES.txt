@@ -24,8 +24,8 @@ $Id$
 		                test cases in Makefile.
 						
 	  Currently the validation scheme is based on cmp-ing (binary comparing)
-	  the outputs in _generated with corresponding expected outputs in
-	  pre_generated.
+	  the outputs in generated/ with corresponding expected outputs in
+	  expected/.
 	
 	- new --buffer option. Also included a basic test case.
 	  
