@@ -44,6 +44,9 @@ public:
 	
 	bool releaseStats;
 	
+	// last processed FID
+	long last_FID;
+	
 		
 	/**
 	  * Creates a stats calculator
@@ -355,6 +358,7 @@ public:
 		if ( file ) {
 			// Add FID value:
 			fprintf(file, "%ld", feature->GetFID());
+			last_FID = feature->GetFID();
 	
 			// add attribute fields from source feature to record:
 			if ( select_fields ) {
@@ -446,4 +450,38 @@ double** starspan_getFeatureStats(
 	return result_stats;
 }
 
+
+double** starspan_getFeatureStatsByField(
+	const char* field_name, 
+	const char* field_value, 
+	Vector* vect, Raster* rast,
+	vector<const char*> select_stats,
+	long *FID
+) {
+	Traverser tr;
+	tr.setVector(vect);
+	tr.addRaster(rast);
+	tr.setDesiredFeatureByField(field_name, field_value);
+
+	FILE* file = 0;
+	vector<const char*> select_fields;
+	StatsObserver* statsObs = new StatsObserver(tr, file, select_stats, &select_fields);
+	if ( !statsObs )
+		return 0;
+	
+	// I want to keep the resulting stats arrays for the client
+	statsObs->releaseStats = false;
+	
+	tr.addObserver(statsObs);
+	tr.traverse();
+	
+	// take results:
+	double** result_stats = statsObs->result_stats;
+	if ( FID )
+		*FID = statsObs->last_FID;
+	
+	tr.releaseObservers();
+	
+	return result_stats;
+}
 

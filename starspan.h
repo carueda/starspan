@@ -14,7 +14,7 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.83beta"
+#define STARSPAN_VERSION "0.84beta"
 
 
 // indices into stats arrays:
@@ -47,9 +47,59 @@ double** starspan_getFeatureStats(
 ); 
 
 
+/**
+  * Gets statistics for a feature in a raster.
+  * RESULT[s][b] = statistic s on band b
+  * where:
+  *    MIN <= s <= STDDEV 
+  *    0 <= b < #bands in raster
+  * @param field_name    Field name
+  * @param field_value   Field value
+  * @param vect
+  * @param rast
+  * @param select_stats List of desired statistics (avg, stdev, min, max)
+  * @param FID  Output: If not null, it'll have the corresponding FID.
+  */
+double** starspan_getFeatureStatsByField(
+	const char* field_name, 
+	const char* field_value, 
+	Vector* vect, Raster* rast,
+	vector<const char*> select_stats,
+	long *FID
+); 
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // main operations:
+
+
+/**
+  * Generates a CSV file with the following columns:
+  *     FID, link, RID, BandNumber, FieldBandValue, ImageBandValue
+  * where:
+  *     FID:          (informative.  link is given by next field)
+  *     link:         link field
+  *     RID           raster filename
+  *     BandNumber    1 .. N
+  *     FieldBandValue  value from input speclib
+  *     ImageBandValue  MEAN value for BandNumber in RID
+  *
+  * @param vector_filename Vector datasource
+  * @param raster_filenames rasters
+  * @param speclib_filename spectral library file name
+  * @param link_name Name of field to be used as link vector-speclib
+  * @param calbase_filename output file name
+  *
+  * @return 0 iff OK 
+  */
+int starspan_tuct_2(
+	const char* vector_filename,
+	vector<const char*> raster_filenames,
+	const char* speclib_filename,
+	const char* link_name,
+	const char* calbase_filename
+);
 
 
 /**
@@ -67,7 +117,7 @@ double** starspan_getFeatureStats(
   * @param speclib_filename spectral library file name
   * @param calbase_filename output file name
   *
-  * @return observer to be added to traverser. 
+  * @return 0 iff OK 
   */
 int starspan_tuct_1(
 	const char* vector_filename,

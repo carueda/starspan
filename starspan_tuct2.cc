@@ -1,43 +1,9 @@
 //
 // STARSpan project
 // Carlos A. Rueda
-// starspan_tuct1 - first version of functionality described below.
+// starspan_tuct2 - second version (based on tuct1) according to new scheme
 // $Id$
 //
-//	starspan_tuct1.cc: code for new ''-calbase outfile'' command. 
-//	This command expects inputs -vector V, -raster R1 R2 ..., 
-//	and (new) -speclib F.
-//	starspan create outfile in CSV format with the following scheme:
-//		FID,RID,BandNumber,FieldBandValue,ImageBandValue
-//		
-//	Jonathan wrote:
-//		This seems like a good thing for you (Carlos) to work on as a
-//	predecessor for something TUCT will need -- I sent a draft of that
-//	calibration GIS format, which we will use for now (we can decide to change
-//	it later):
-//	
-//		- Shapefile(s) (point,poly,line) that includes a single field: FID
-//		- a SEPARATE database that contains FID,band1,band2,...,bandN (where N =
-//	number of Hymap bands).
-//	
-//		For now, I would like a database which has the following info:
-//		FID,RID,BandNumber,FieldBandValue,ImageBandValue
-//	
-//		Where FID = the original FID, RID is the raster it came from (use the
-//	file name), BandNumber will be 1 to N, FieldBandValue will be that FID and
-//	Band's value from the field GIS (from the database above), and
-//	ImageBandValue will be the MEAN value from the polygon for that FID for each
-//	band in the image (e.g. You will use starspan libraries to use the shapefile
-//	to extract the polygon values, and pair them up with the corresponding field
-//	data).
-//	
-//		I will use this database to perform the regressions I need to do some
-//	initial calibrations.
-//	
-//	Inputs: shapefile, associated spectral library with FID, raster(s)
-//	Outputs: paired field-image values for each band in the image.
-//	
-//	***
 
 
 #include "starspan.h"           
@@ -50,10 +16,11 @@
 /**
   * implementation
   */
-int starspan_tuct_1(
+int starspan_tuct_2(
 	const char* vector_filename,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
+	const char* link_name,
 	const char* calbase_filename
 ) {
 	// open input file
@@ -85,7 +52,9 @@ int starspan_tuct_1(
 	//
 	// write header:
 	//
-	calbase_file << "FID,RID,BandNumber,FieldBandValue,ImageBandValue" << endl;
+	calbase_file<< 
+	  "FID," <<link_name<< ",RID,BandNumber,FieldBandValue,ImageBandValue" << endl
+	;
 	
 	vector<const char*> select_stats(1, "avg");
 	
@@ -114,9 +83,11 @@ int starspan_tuct_1(
 		}
 		const unsigned num_speclib_fields = csv.getnfield();
 		if ( num_speclib_fields < 2 
-		||   csv.getfield(0) != "FID" ) {
+		||   csv.getfield(0) != link_name ) {
 			speclib_file.close();
 			cerr<< "Unexpected format: " << speclib_filename << endl;
+			cerr<< "There bust be more than one field "
+			    << "and the first one must be named " << link_name << endl;
 			ret = 1;
 			break;
 		}
@@ -136,17 +107,19 @@ int starspan_tuct_1(
 		//
 		cout << "processing features..." << endl;
 		for ( int record = 0; csv.getline(line); record++ ) {
-			string sFID = csv.getfield(0);
-			long FID = atol(sFID.c_str());
-			
-			// progress message
-			cout << "\tFID " << FID << endl;
-			
-			// get stats for FID
-			double** stats = starspan_getFeatureStats(
-				FID, vect, rast, select_stats
-			); 
+			string link_val = csv.getfield(0);
 
+			// progress message
+			cout << "\t" <<link_name<< " = " << link_val << endl;
+			
+			// get stats for link_val
+			long FID;
+			double** stats = starspan_getFeatureStatsByField(
+				link_name, link_val.c_str(), 
+				vect, rast, select_stats,
+				&FID
+			); 
+			
 			for ( int bandNumber = 1; bandNumber <= bands; bandNumber++ ) {
 				double fieldBandValue = atof(csv.getfield(0).c_str());
 				double imageBandValue = stats[AVG][bandNumber-1];
@@ -155,6 +128,7 @@ int starspan_tuct_1(
 				// write record
 				calbase_file 
 					<< FID             <<","
+					<< link_val        <<","
 					<< raster_filename <<","
 					<< bandNumber      <<","
 					<< fieldBandValue  <<","
@@ -170,7 +144,7 @@ int starspan_tuct_1(
 	}
 	delete vect;
 
-	calbase_file.close();
+	calbase_file.close();    
 	speclib_file.close();
 	cout << "finished." << endl;
 	return ret;	

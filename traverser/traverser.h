@@ -14,7 +14,8 @@
 #include <set>
 #include <list>
 #include <vector>
-#include <stdio.h>
+#include <string>
+#include <cstdio>
 
 using namespace std;
 
@@ -181,12 +182,23 @@ public:
 
 	/**
 	  * Only the given FID will be processed.
-	  * Useful for debugging.
 	  *
 	  * @param FID  a FID.
 	  */
 	void setDesiredFID(long FID);
 
+	/**
+	  * Only the feature whose given field is equal to the given value
+	  * FID will be processed.
+	  * This method will have no effect if setDesiredFID(FID) is called with
+	  * a valid FID.
+	  *
+	  * @param field_name
+	  * @param field_value
+	  */
+	void setDesiredFeatureByField(const char* field_name, const char* field_value);
+	
+	
 	/**
 	  * Adds an observer to this traverser.
 	  */
@@ -240,6 +252,8 @@ private:
 
 	double pixelProportion;
 	long desired_FID;
+	string desired_fieldName;
+	string desired_fieldValue;
 	
 	GlobalInfo globalInfo;
 	int width, height;

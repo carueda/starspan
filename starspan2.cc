@@ -101,8 +101,11 @@ int main(int argc, char ** argv) {
 	
 	const char* vector_filename = 0;
 	vector<const char*> raster_filenames;
+	
 	const char* speclib_filename = 0;
+	const char* callink_name = 0;
 	const char* calbase_filename = 0;
+	
 	double pix_prop = -1.0;
 	long FID = -1;
 	const char* dump_geometries_filename = NULL;
@@ -151,6 +154,9 @@ int main(int argc, char ** argv) {
 		// COMMANDS
 		//
 		else if ( 0==strcmp("-calbase", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-calbase: which field to use as link?");
+			callink_name = argv[i];
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-calbase: which output file name?");
 			calbase_filename = argv[i];
@@ -296,18 +302,19 @@ int main(int argc, char ** argv) {
 	//
 	if ( calbase_filename ) {
 		if ( !vector_filename ) {
-			usage("-calbase expects a vector input");
+			usage("-calbase expects a vector input (use -vector)");
 		}
 		if ( raster_filenames.size() == 0 ) {
-			usage("-calbase requires at least a raster input");
+			usage("-calbase requires at least a raster input (use -raster)");
 		}
 		if ( !speclib_filename ) {
-			usage("-calbase expects a speclib input");
+			usage("-calbase expects a speclib input (use -speclib)");
 		}
-		return starspan_tuct_1(
+		return starspan_tuct_2(
 			vector_filename,  
 			raster_filenames,
-			speclib_filename, 
+			speclib_filename,
+			callink_name,
 			calbase_filename
 		);
 	}

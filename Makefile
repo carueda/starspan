@@ -40,7 +40,7 @@ SRCS =	starspan_stats.cc \
 		rasterizers/LineRasterizer.cc \
 		csv/Csv.cc \
 		starspan_dump.cc \
-		starspan_tuct1.cc
+		starspan_tuct2.cc
 
 
 OBJS = $(subst .cc,.o,$(SRCS))

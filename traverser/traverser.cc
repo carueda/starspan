@@ -19,6 +19,8 @@ Traverser::Traverser() {
 	vect = 0;
 	pixelProportion = -1.0;   // disabled
 	desired_FID = -1;
+	desired_fieldName = "";
+	desired_fieldValue = "";
 	
 	// buffer: note that we won't allocate minimumBandBufferSize
 	// bytes, but assume the biggest data type, double.  Se below.
@@ -56,6 +58,11 @@ void Traverser::setDesiredFID(long FID) {
 	desired_FID = FID; 
 }
 
+
+void Traverser::setDesiredFeatureByField(const char* field_name, const char* field_value) {
+	desired_fieldName = field_name;
+	desired_fieldValue = field_value;
+}
 
 
 void Traverser::setVector(Vector* vector) {
@@ -603,10 +610,35 @@ void Traverser::traverse() {
 		process_feature(feature);
 		delete feature;
 	}
+	//
+	// Was a specific field name/value given?
+	//
+	else if ( desired_fieldName.size() > 0 ) {
+		//
+		// search for corresponding feature in vector datasource:
+		//
+		bool finished = false;
+		while( !finished && (feature = layer->GetNextFeature()) != NULL ) {
+			const int i = feature->GetFieldIndex(desired_fieldName.c_str());
+			if ( i < 0 ) {
+				cerr<< "Field `" <<desired_fieldName<< "' not found in feature" << endl;
+				finished = true;
+			}
+			else {
+				const char* str = feature->GetFieldAsString(i);
+				assert(str);
+				if ( desired_fieldValue == str ) {
+					process_feature(feature);
+					finished = true;
+				}
+			}
+			delete feature;
+		}
+	}
+	//
+	// else: process each feature in vector datasource:
+	//
 	else {
-		//
-		// For each feature in vector datasource:
-		//
 		while( (feature = layer->GetNextFeature()) != NULL ) {
 			process_feature(feature);
 			delete feature;
