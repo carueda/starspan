@@ -179,8 +179,7 @@ public:
 				result_stats[i][j] = 0.0;
 		}
 
-		unsigned num_pixels = 0;
-		for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++, num_pixels++ ) {
+		for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
 			// first get buffer with all bands
 			tr.getBandValues((*pixel)->col, (*pixel)->row, bandValues_buffer);
 
@@ -201,7 +200,7 @@ public:
 			}
 
 			// min and max:
-			if ( num_pixels == 0 ) {    
+			if ( pixel == pixels.begin() ) {    
 				// first pixel: just take values
 				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 					result_stats[MIN][j] = bandValues[j]; 
@@ -223,9 +222,9 @@ public:
 		}
 		
 		// average
-		if ( num_pixels > 0 ) {
+		if ( pixels.size() > 0 ) {
 			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-				result_stats[AVG][j] = result_stats[CUM][j] / num_pixels;
+				result_stats[AVG][j] = result_stats[CUM][j] / pixels.size();
 			}
 		}
 		
@@ -235,14 +234,14 @@ public:
 			// standard deviation defined as sqrt of the sample variance.
 			// So we need at least 2 pixels.
 			
-			if ( num_pixels > 1 ) {
+			if ( pixels.size() > 1 ) {
 				// initialize CUM:
 				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 					result_stats[CUM][j] = 0.0;
 				}
 				
 				// take pixels again
-				for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++, num_pixels++ ) {
+				for ( vector<Pixel*>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
 					// first get buffer with all bands
 					tr.getBandValues((*pixel)->col, (*pixel)->row, bandValues_buffer);
 		
@@ -266,7 +265,7 @@ public:
 				
 				// finally take std dev:
 				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-					double sd = sqrt(result_stats[CUM][j] / (num_pixels - 1));
+					double sd = sqrt(result_stats[CUM][j] / (pixels.size() - 1));
 					result_stats[STDEV][j] = sd;
 				}
 			}
