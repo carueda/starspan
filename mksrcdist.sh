@@ -3,20 +3,22 @@
 # $Id$
 #
 if [ -z $1 ]; then
-	echo "USAGE:  mksrcdist.sh <VERSION> [-dotag]"
-	echo "  -dotag:  make cvs -q tag release-<VERSION> before"
+	echo "USAGE:  mksrcdist.sh <VERSION>"
 	exit 1
 fi
 VERSION=$1
-dotag=$2
 if [ "$VERSION" != `cat VERSION` ]; then
 	echo "VERSION parameter must be equal to VERSION file contents"
 	exit 2
 fi
 tag=`echo release-$VERSION | tr -t . _`
+
+echo "Make tag [y/-]?:  cvs -q tag $tag"
+read dotag
+
 cvsroot=":pserver:anonymous@cvs.casil.ucdavis.edu:/cvsroot/starspan"
 
-(test "$dotag" != "-dotag" || cvs -q tag $tag) &&\
+(test "$dotag" != "y" || cvs -q tag $tag) &&\
 mkdir -p DISTDIR &&\
 cd DISTDIR &&\
 cvs -d$cvsroot -q export -r $tag -d starspan-$VERSION starspan &&\

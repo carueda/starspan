@@ -2,9 +2,15 @@ starspan devnotes
 $Id$
 
 
+2005-02-19 (0.952beta)
+	- Making a source distribution. Example:
+		make dist VERSION=0.1
+	  which is the same as:
+	  	./mksrcdist.sh 0.1
+
 2005-02-19 (0.951beta)
 	- new scheme to make source distribution (see mksrcdist.sh)
-	- source restructuring. These dirs were move to src/:
+	- source restructuring. These dirs were moved to src/:
 		csv jts raster rasterizers stats traverser util vector
 	
 2005-02-18 (0.95beta)
