@@ -141,7 +141,7 @@ Traverser::~Traverser() {
 		delete lineRasterizer;
 }
 
-void* Traverser::getBandValues(int col, int row, void* buffer) {
+void* Traverser::getBandValuesForPixel(int col, int row, void* buffer) {
 	char* ptr = (char*) buffer;
 	for ( unsigned i = 0; i < globalInfo.bands.size(); i++ ) {
 		GDALRasterBand* band = globalInfo.bands[i];
@@ -170,9 +170,9 @@ void* Traverser::getBandValues(int col, int row, void* buffer) {
 }
 
 
-void Traverser::getBandValues(int col, int row) {
+void Traverser::getBandValuesForPixel(int col, int row) {
 	assert(bandValues_buffer);
-	getBandValues(col, row, bandValues_buffer);
+	getBandValuesForPixel(col, row, bandValues_buffer);
 }
 
 
@@ -226,7 +226,7 @@ void Traverser::pixelFound(double x, double y) {
 	// if at leat one observer is not simple...
 	if ( notSimpleObserver ) {
 		// get also band values
-		getBandValues(col, row);
+		getBandValuesForPixel(col, row);
 		event.bandValues = bandValues_buffer;
 	}
 	

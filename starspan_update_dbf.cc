@@ -183,7 +183,7 @@ int starspan_update_dbf(
 			
 			//
 			// extract pixel at (col,row) from rast
-			char* ptr = (char*) rast->getBandValues(col, row);
+			char* ptr = (char*) rast->getBandValuesForPixel(col, row);
 			if ( ptr ) {
 				// add these bands to DBF
 				for ( int b = 0; b < bands; b++ ) {

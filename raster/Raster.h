@@ -41,11 +41,11 @@ public:
 	void getPixelSize(double *pix_x_size, double *pix_y_size);
 
 	/**
-	  * Returns a pointer to an internal buffer containing the
-	  * bands values of this raster at the specified location.
+	  * Returns a pointer to an internal buffer containing the values of all
+	  * bands of this raster at the specified location.
 	  * NULL is returned if (col,row) is invalid.
 	  */
-	void* getBandValues(int col, int row);
+	void* getBandValuesForPixel(int col, int row);
 	
 	/**
 	  * (x,y) to (col,row) conversion.

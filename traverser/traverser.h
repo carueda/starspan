@@ -215,14 +215,14 @@ public:
 	}
 	
 	/**
-	  * Reads in band values in (col,row) from all given rasters
+	  * Reads in values from all bands (all given rasters) at pixel in (col,row).
 	  * Values are stored in bandValues_buffer.
 	  *
 	  * @param buffer where values are copied.  
 	  *      Assumed to have at least getBandBufferSize() bytes allocated.
 	  * @return buffer
 	  */
-	void* getBandValues(int col, int row, void* buffer);
+	void* getBandValuesForPixel(int col, int row, void* buffer);
 	
 	/**
 	  * Executes the traversal.
@@ -250,7 +250,7 @@ private:
 	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
 	void notifyObservers(void);
-	void getBandValues(int col, int row);
+	void getBandValuesForPixel(int col, int row);
 	void toColRow(double x, double y, int *col, int *row);
 	void toGridXY(int col, int row, double *x, double *y);
 	void processPoint(OGRPoint*);

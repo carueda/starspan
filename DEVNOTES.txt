@@ -4,6 +4,9 @@ $Id$
 2004-09-28 (0.8beta)
 	StatsObserver: vector<Pixel> pixels (was vector<Pixel*>).
 	
+	getBandValues renamed to getBandValuesForPixel in both Raster and Traveser
+	classes.
+	
 2004-09-27 (0.8beta)
 	-update_{csv,dbf} options: fixed bug: col,row were not made 0-based for
 	proper extraction.

@@ -108,7 +108,7 @@ void Raster::toColRow(double x, double y, int *col, int *row) {
 }
 
 
-void* Raster::getBandValues(int col, int row) {
+void* Raster::getBandValuesForPixel(int col, int row) {
 	assert(bandValues_buffer);
 	
 	int width, height, bands;

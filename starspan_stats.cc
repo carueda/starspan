@@ -183,7 +183,7 @@ public:
 			// first get buffer with all bands
 			assert((pixel)->col < 2919);
 			assert((pixel)->row < 1733);
-			tr.getBandValues((pixel)->col, (pixel)->row, bandValues_buffer);
+			tr.getBandValuesForPixel(pixel->col, pixel->row, bandValues_buffer);
 
 			// now get those values in double format:
 			char* ptr = (char*) bandValues_buffer;
@@ -245,7 +245,7 @@ public:
 				// take pixels again
 				for ( vector<Pixel>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
 					// first get buffer with all bands
-					tr.getBandValues((pixel)->col, (pixel)->row, bandValues_buffer);
+					tr.getBandValuesForPixel(pixel->col, pixel->row, bandValues_buffer);
 		
 					// now get those values in double format:
 					char* ptr = (char*) bandValues_buffer;
