@@ -112,8 +112,8 @@ public:
 
 
 	/**
-	  * returns true. We collect (col,row) locations and then
-	  * ask for band values explicitly.
+	  * returns true. We ask traverser to get values for
+	  * visited pixels in each feature.
 	  */
 	bool isSimple() { 
 		return true; 
