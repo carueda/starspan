@@ -26,14 +26,14 @@ struct JtsTestObserver : public Observer {
 	OGRPolygon* raster_poly;
 	OGRGeometryCollection* pp;
 	double pix_x_size, pix_y_size;
-	bool use_polys;
+	bool use_pixpolys;
 
 	
 	/**
 	  * creates the traversal observer
 	  */
-	JtsTestObserver(const char* jtstest_filename, double pix_x_size_, double pix_y_size_, bool use_polys_)
-	: pix_x_size(pix_x_size_), pix_y_size(pix_y_size_), use_polys(use_polys_) {
+	JtsTestObserver(const char* jtstest_filename, double pix_x_size_, double pix_y_size_, bool use_pixpolys_)
+	: pix_x_size(pix_x_size_), pix_y_size(pix_y_size_), use_pixpolys(use_pixpolys_) {
 		jtstest = new JTS_TestGenerator(jtstest_filename);
 		jtstest_count = 0;
 		raster_poly = NULL;
@@ -78,21 +78,21 @@ struct JtsTestObserver : public Observer {
 		geom->dumpReadable(jtstest->getFile(), "    ");
 		jtstest->case_arg_end("a");
 		// b argument:
-		if ( use_polys )
+		if ( use_pixpolys )
 			pp = new OGRMultiPolygon();
 		else
 			pp = new OGRMultiPoint();
 	}
 	
 	/**
-	  * A geometry is added: a poly if use_polys is true, otherwise
+	  * A geometry is added: a poly if use_pixpolys is true, otherwise
 	  * a point.
 	  */
 	void addPixel(TraversalEvent& ev) { 
 		double x = ev.pixel.x;
 		double y = ev.pixel.y;
 		assert(pp);
-		if ( use_polys ) {
+		if ( use_pixpolys ) {
 			double x0, y0, x1, y1;
 			if ( pix_x_size < 0 ) {
 				x0 = x + pix_x_size;
@@ -182,7 +182,7 @@ struct JtsTestObserver : public Observer {
   */
 Observer* starspan_jtstest(
 	Traverser& tr,
-	bool use_polys,
+	bool use_pixpolys,
 	const char* jtstest_filename
 ) {
 	if ( tr.getNumRasters() > 1 ) {
@@ -193,7 +193,7 @@ Observer* starspan_jtstest(
 
 	double pix_x_size, pix_y_size;
 	rast->getPixelSize(&pix_x_size, &pix_y_size);
-	return new JtsTestObserver(jtstest_filename, pix_x_size, pix_y_size, use_polys);
+	return new JtsTestObserver(jtstest_filename, pix_x_size, pix_y_size, use_pixpolys);
 }
 
 

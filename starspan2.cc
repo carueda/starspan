@@ -75,7 +75,7 @@ int main(int argc, char ** argv) {
 	
 	bool do_report = false;
 	bool only_in_feature = false;
-	bool use_polys = false;
+	bool use_pixpolys = false;
 	const char*  envi_name = NULL;
 	bool envi_image = true;
 	vector<const char*>* select_fields = NULL;
@@ -263,7 +263,7 @@ int main(int argc, char ** argv) {
 		}
 		
 		else if ( 0==strcmp("-ppoly", argv[i]) ) {
-			use_polys = true;
+			use_pixpolys = true;
 		}
 		
 		else if ( 0==strcmp("-fields", argv[i]) ) {
@@ -425,14 +425,14 @@ int main(int argc, char ** argv) {
 			dumpFeature(tr.getVector(), FID, dump_geometries_filename);
 		}
 		else {
-			Observer* obs = starspan_dump(tr, use_polys, dump_geometries_filename);
+			Observer* obs = starspan_dump(tr, use_pixpolys, dump_geometries_filename);
 			if ( obs )
 				tr.addObserver(obs);
 		}
 	}
 
 	if ( jtstest_filename ) {
-		Observer* obs = starspan_jtstest(tr, use_polys, jtstest_filename);
+		Observer* obs = starspan_jtstest(tr, use_pixpolys, jtstest_filename);
 		if ( obs )
 			tr.addObserver(obs);
 	}

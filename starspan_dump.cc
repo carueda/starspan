@@ -102,14 +102,14 @@ public:
 	GlobalInfo* global_info;
 	FILE* file;
 	long pixel_count;
-	bool use_polys;
+	bool use_pixpolys;
 	double pix_x_size, pix_y_size;
 
 	/**
 	  * Creates a dump object
 	  */
-	DumpObserver(OGRLayer* layer, Raster* rast, bool use_polys, FILE* f)
-	: layer(layer), rast(rast), file(f), use_polys(use_polys)
+	DumpObserver(OGRLayer* layer, Raster* rast, bool use_pixpolys, FILE* f)
+	: layer(layer), rast(rast), file(f), use_pixpolys(use_pixpolys)
 	{
 		global_info = 0;
 		pixel_count = 0;
@@ -197,7 +197,7 @@ public:
 	  */
 	void addPixel(TraversalEvent& ev) {
 		fprintf(file, "DataSet: Pixel\n");
-		if ( use_polys ) {
+		if ( use_pixpolys ) {
 			fprintf(file, "%f , %f\n", ev.pixel.x, ev.pixel.y);
 			fprintf(file, "%f , %f\n", ev.pixel.x + pix_x_size, ev.pixel.y);
 			fprintf(file, "%f , %f\n", ev.pixel.x + pix_x_size, ev.pixel.y + pix_y_size);
@@ -214,7 +214,7 @@ public:
 
 Observer* starspan_dump(
 	Traverser& tr,
-	bool use_polys,
+	bool use_pixpolys,
 	const char* filename
 ) {	
 	if ( !tr.getVector() ) {
@@ -239,7 +239,7 @@ Observer* starspan_dump(
 		cerr << "Couldn't create " << filename << endl;
 		return 0;
 	}
-	return new DumpObserver(layer, rast, use_polys, file);
+	return new DumpObserver(layer, rast, use_pixpolys, file);
 }
 
 

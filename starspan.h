@@ -241,13 +241,15 @@ int starspan_update_csv(
   * Creates a ptplot-readable file with geometries and
   * grid
   * @param tr Data traverser
+  * @param use_pixpolys If true, pixels are represented as polygons;
+  *        otherwise as points.
   * @param filename output file name
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_dump(
 	Traverser& tr,
-	bool use_polys,
+	bool use_pixpolys,
 	const char* filename
 );
 
@@ -259,7 +261,7 @@ void dumpFeature(Vector* vector, long FID, const char* filename);
 /**
   * Generate a JTS test.
   * @param tr Data traverser
-  * @param use_polys If true, pixels are represented as polygons;
+  * @param use_pixpolys If true, pixels are represented as polygons;
   *        otherwise as points.
   * @param jtstest_filename output file name
   *
@@ -267,7 +269,7 @@ void dumpFeature(Vector* vector, long FID, const char* filename);
   */
 Observer* starspan_jtstest(
 	Traverser& tr,
-	bool use_polys,
+	bool use_pixpolys,
 	const char* jtstest_filename
 );
 

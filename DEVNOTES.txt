@@ -9,6 +9,8 @@ $Id$
 		  for all intersections types except for polygons.  
 		  pixset is reset on a per feature basis, so potential duplication
 		  of pixels accross features won't be detected.
+		  
+	Option -skip_invalid_polys
 		
 2004-10-11 (0.86beta)
 	Traverser::processPolygon: now catches GEOS exceptions which
