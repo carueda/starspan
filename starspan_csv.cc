@@ -232,11 +232,23 @@ int starspan_csv(
 	vector<const char*>* select_fields,
 	const char* csv_filename
 ) {
-	// create output file
-	FILE* file = fopen(csv_filename, "w");
-	if ( !file ) {
-		fprintf(stderr, "Couldn't create %s\n", csv_filename);
-		return 1;
+	FILE* file;
+	bool new_file = false;
+	
+	// if file exists, append new rows. Otherwise create file.
+	file = fopen(csv_filename, "r+");
+	if ( file ) {
+		if ( globalOptions.verbose )
+			fprintf(stdout, "Appending to existing file %s\n", csv_filename);
+	}
+	else {
+		// create output file
+		file = fopen(csv_filename, "w");
+		if ( !file) {
+			fprintf(stderr, "Cannot create %s\n", csv_filename);
+			return 1;
+		}
+		new_file = true;
 	}
 
 	Vector vect(vector_filename);
@@ -272,7 +284,7 @@ int starspan_csv(
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
 		obs.raster_filename = raster_filenames[i];
-		obs.write_header = i == 0;
+		obs.write_header = new_file && i == 0;
 		tr.removeRasters();
 		tr.addRaster(rasters[i]);
 		
