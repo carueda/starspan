@@ -32,7 +32,7 @@ struct GlobalInfo {
 	/** info about all bands in given rasters */
 	vector<GDALRasterBand*> bands;
 	
-	/** A rectangle polygon covering the raster extension. */
+	/** A rectangle covering the raster extension. */
 	OGRPolygon rasterPoly;
 };
 	
@@ -237,7 +237,19 @@ public:
 	}
 	
 	/**
-	  * Gets the values corresponding to a given list of pixel
+	  * Gets the values in integer type corresponding to a given list of pixel
+	  * locations from a given band.
+	  * @param band_index Desired band. Note that 1 corresponds to the first band
+	  *              (to keep consistency with GDAL).
+	  * @param colrows Desired locations.
+	  * @param list Where values are to be added.
+	  *             Note that a 0 will be added where (col,row) is not valid.
+	  * @return 0 iff OK.
+	  */
+	int getPixelIntegerValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<int>& list);
+	
+	/**
+	  * Gets the values in double type corresponding to a given list of pixel
 	  * locations from a given band.
 	  * @param band_index Desired band. Note that 1 corresponds to the first band
 	  *              (to keep consistency with GDAL).
@@ -246,7 +258,7 @@ public:
 	  *             Note that a 0.0 will be added where (col,row) is not valid.
 	  * @return 0 iff OK.
 	  */
-	int getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
+	int getPixelDoubleValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
 	
 	/**
 	  * Reads in values from all bands (all given rasters) at pixel in (col,row).
@@ -261,7 +273,7 @@ public:
 	/**
 	  * Sets the output to write progress info.
 	  */
-	void Traverser::setProgress(double perc, ostream& out) { 
+	void setProgress(double perc, ostream& out) { 
 		progress_perc = perc;
 		progress_out = &out;
 	}
@@ -269,14 +281,14 @@ public:
 	/**
 	  * Sets verbose flag
 	  */
-	void Traverser::setVerbose(bool v) { 
+	void setVerbose(bool v) { 
 		verbose = v;
 	}
 	
 	/**
 	  * Sets verbose flag
 	  */
-	void Traverser::setLog(ostream& log) { 
+	void setLog(ostream& log) { 
 		logstream = &log;
 	}
 	
@@ -284,7 +296,7 @@ public:
 	  * Sets if invalid polygons should be skipped.
 	  * By default all polygons are processed.
 	  */
-	void Traverser::setSkipInvalidPolygons(bool b) { 
+	void setSkipInvalidPolygons(bool b) { 
 		skip_invalid_polys = b;
 	}
 	

@@ -52,7 +52,12 @@ public:
 	/**
 	  * compute those stats s where include[s] == true.
 	  */
-	void compute(vector<double>* values); 
+	void compute(vector<int>& values); 
+	
+	/**
+	  * compute those stats s where include[s] == true.
+	  */
+	void compute(vector<double>& values); 
 	
 };
 

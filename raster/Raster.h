@@ -68,7 +68,7 @@ public:
 	  *             Note that a 0.0 will be added where (col,row) is not valid.
 	  * @return 0 iff OK.
 	  */
-	int getPixelValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
+	int getPixelDoubleValuesInBand(unsigned band_index, vector<CRPixel>* colrows, vector<double>& list);
 	
 	/**
 	  * (x,y) to (col,row) conversion.

@@ -1,6 +1,17 @@
 starspan devnotes
 $Id$
 
+2004-10-21 (0.89beta)
+	Some cleanup: Raster, Traverser, Stats.
+	To improve performance on computation of integers:
+		Traverser#getPixelIntegerValuesInBand(..)
+		Stats::compute(vector<int>& values)
+		StatsObserver now uses integer extraction if no band is of
+		floating point type. 
+		In particular, calculation of MODE should now be more efficient
+		because a map<int,int> is used.
+	
+	
 2004-10-20
 	More checks for malformed (WKT) geometries.
 	Such a problem generates a GEOS exception but starspan was not

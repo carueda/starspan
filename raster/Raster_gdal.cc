@@ -145,7 +145,7 @@ void* Raster::getBandValuesForPixel(int col, int row) {
 	return bandValues_buffer;
 }
 
-int Raster::getPixelValuesInBand(
+int Raster::getPixelDoubleValuesInBand(
 	unsigned band_index, 
 	vector<CRPixel>* colrows,
 	vector<double>& list

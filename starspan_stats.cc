@@ -30,10 +30,12 @@ public:
 	vector<const char*>* select_fields;
 	// is there a previous feature to be finalized?
 	bool previous;
-	void* bandValues_buffer;
-	double* bandValues;
 	
 	vector<CRPixel> pixels;
+
+	// if all bands are of integral type, then tr.getPixelIntegerValuesInBand
+	// is used; else tr.getPixelDoubleValuesInBand is used.
+	bool get_integer;
 	
 	Stats stats;
 	double* result_stats[TOT_RESULTS];
@@ -54,8 +56,6 @@ public:
 		vect = tr.getVector();
 		global_info = 0;
 		previous = false;
-		bandValues_buffer = 0;
-		bandValues = 0;
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 			result_stats[i] = 0;
 			stats.include[i] = false;
@@ -101,14 +101,6 @@ public:
 			cout<< "Stats: finished" << endl;
 			file = 0;
 		}
-		if ( bandValues_buffer ) {
-			delete[] (double*) bandValues_buffer;
-			bandValues_buffer = 0;
-		}
-		if ( bandValues ) {
-			delete[] bandValues;
-			bandValues = 0;
-		}
 		
 		if ( releaseStats ) {
 			for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
@@ -123,7 +115,7 @@ public:
 
 	/**
 	  * returns true. We collect (col,row) locations and then
-	  * ask for band values explicitely.
+	  * ask for band values explicitly.
 	  */
 	bool isSimple() { 
 		return true; 
@@ -181,16 +173,20 @@ public:
 			fprintf(file, "\n");
 		}
 		
-		// allocate buffer for band values--large enough
-		bandValues_buffer = new double[global_info->bands.size()];
-		
-		// and this is the double array as such
-		bandValues = new double[global_info->bands.size()];
-		
 		// allocate space for all possible results
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 			result_stats[i] = new double[global_info->bands.size()];
 		}
+		
+		// assume integer bands:
+		get_integer = true;
+		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
+			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
+			if ( bandType == GDT_Float64 || bandType == GDT_Float32 ) {
+				get_integer = false;
+				break;
+			}
+		}		
 	}
 	
 
@@ -199,13 +195,26 @@ public:
 	  * Desired results are reported by finalizePreviousFeatureIfAny.
 	  */
 	void computeResults(void) {
-		vector<double> values;
-		for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-			values.clear();
-			tr.getPixelValuesInBand(j+1, &pixels, values);
-			stats.compute(&values);
-			for ( int i = 0; i < TOT_RESULTS; i++ ) {
-				result_stats[i][j] = stats.result[i]; 
+		if ( get_integer ) {
+			vector<int> values;
+			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+				values.clear();
+				tr.getPixelIntegerValuesInBand(j+1, &pixels, values);
+				stats.compute(values);
+				for ( int i = 0; i < TOT_RESULTS; i++ ) {
+					result_stats[i][j] = stats.result[i]; 
+				}
+			}
+		}
+		else {
+			vector<double> values;
+			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+				values.clear();
+				tr.getPixelDoubleValuesInBand(j+1, &pixels, values);
+				stats.compute(values);
+				for ( int i = 0; i < TOT_RESULTS; i++ ) {
+					result_stats[i][j] = stats.result[i]; 
+				}
 			}
 		}
 	}

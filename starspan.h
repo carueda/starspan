@@ -15,7 +15,7 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.88beta"
+#define STARSPAN_VERSION "0.89beta"
 
 
 /** Options that might be used by different services.
