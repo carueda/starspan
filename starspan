@@ -10,8 +10,11 @@
 
 BINDIR=`dirname $0`
 JTSJARS=$BINDIR/jts.jars/
+STARSPAN2=$BINDIR/starspan2
+
 if [ "`uname -n`" == "pavo" ]; then
 	export LD_LIBRARY_PATH=/net/scratch_ceres/PAVO/lib:/usr/local/lib:$LD_LIBRARY_PATH
+	STARSPAN2=$BINDIR/starspan2-pavo
 else
 	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
 fi
@@ -57,6 +60,6 @@ elif [ "$1" == "--jts" ]; then
 
 else
 	# call starspan2
-	$BINDIR/starspan2 $*
+	$STARSPAN2 $*
 fi
 
