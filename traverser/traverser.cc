@@ -357,8 +357,6 @@ inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, do
 	return poly;
 }
 
-
-
 //
 // process a polygon intersection.
 // The area of intersections are used to determine if a pixel is to be
@@ -442,6 +440,16 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 
 
 
+//
+// process a multi-polygon intersection.
+//
+void Traverser::processMultiPolygon(OGRMultiPolygon* mpoly) {
+	for ( int i = 0; i < mpoly->getNumGeometries(); i++ ) {
+		OGRPolygon* poly = (OGRPolygon*) mpoly->getGeometryRef(i);
+		processPolygon(poly);
+	}
+}
+
 
 //
 // processes a given feature
@@ -508,6 +516,11 @@ void Traverser::process_feature(OGRFeature* feature) {
 		case wkbPolygon:
 		case wkbPolygon25D:
 			processPolygon((OGRPolygon*) intersection_geometry);
+			break;
+			
+		case wkbMultiPolygon:
+		case wkbMultiPolygon25D:
+			processMultiPolygon((OGRMultiPolygon*) intersection_geometry);
 			break;
 			
 		default:
