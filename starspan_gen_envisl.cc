@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <list>
+#include <list.h>   // should be <list> but this is not working on cstars machines (?)
 #include <assert.h>
 
 // used to write the number of extracted pixels in header since this is
