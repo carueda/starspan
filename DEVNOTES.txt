@@ -2,7 +2,7 @@ starspan devnotes
 $Id$
 
 2004-09-16
-	starspan2.cc: collect args before creating maing objects.
+	starspan2.cc: collect args before creating main objects.
 	(arg processing might be based on getopt or similar in a future version.)
 	
 	New module csv to read CSV files--adapted from TPOP source code
@@ -12,6 +12,12 @@ $Id$
 	New operation starspan_update_dbf
 	
 	(I started to use GDAL 1.2.2 which was just realeased today.)
+	
+	-envisl:  name for spectra: FID:col:row:x:y
+	
+	New options:
+		-noColRow: do not include col,row fields in -csv, -dbf
+		-noXY:     do not include x,y fields in -csv, -dbf
 	
 2004-09-13
 	General refactoring to allow the processing of multiple input rasters.
