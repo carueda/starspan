@@ -585,6 +585,7 @@ void Traverser::traverse() {
 		fprintf(stderr, "Couldn't get layer from %s\n", vect->getName());
 		return;
 	}
+	layer->ResetReading();
 
 	
 	// assuming biggest data type we assign enough memory:
@@ -618,22 +619,24 @@ void Traverser::traverse() {
 		// search for corresponding feature in vector datasource:
 		//
 		bool finished = false;
+		bool found = false;
 		while( !finished && (feature = layer->GetNextFeature()) != NULL ) {
 			const int i = feature->GetFieldIndex(desired_fieldName.c_str());
 			if ( i < 0 ) {
-				cerr<< "Field `" <<desired_fieldName<< "' not found in feature" << endl;
 				finished = true;
 			}
 			else {
 				const char* str = feature->GetFieldAsString(i);
 				assert(str);
-				if ( desired_fieldValue == str ) {
+				if ( desired_fieldValue == string(str) ) {
 					process_feature(feature);
 					finished = true;
+					found = true;
 				}
 			}
 			delete feature;
 		}
+		// cout<< "   found=" <<found << endl;
 	}
 	//
 	// else: process each feature in vector datasource:

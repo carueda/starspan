@@ -86,8 +86,8 @@ int starspan_tuct_2(
 		||   csv.getfield(0) != link_name ) {
 			speclib_file.close();
 			cerr<< "Unexpected format: " << speclib_filename << endl;
-			cerr<< "There bust be more than one field "
-			    << "and the first one must be named " << link_name << endl;
+			cerr<< "There bust be more than one field and the "
+			    << "first one is expected to be named " << link_name << endl;
 			ret = 1;
 			break;
 		}
@@ -110,7 +110,7 @@ int starspan_tuct_2(
 			string link_val = csv.getfield(0);
 
 			// progress message
-			cout << "\t" <<link_name<< " = " << link_val << endl;
+			cout << "\n\t processing " <<link_name<< ": " << link_val << endl;
 			
 			// get stats for link_val
 			long FID;
@@ -119,26 +119,32 @@ int starspan_tuct_2(
 				vect, rast, select_stats,
 				&FID
 			); 
-			
-			for ( int bandNumber = 1; bandNumber <= bands; bandNumber++ ) {
-				double fieldBandValue = atof(csv.getfield(0).c_str());
-				double imageBandValue = stats[AVG][bandNumber-1];
+			if ( stats ) {
+				if ( FID >= 0 ) {
+					for ( int bandNumber = 1; bandNumber <= bands; bandNumber++ ) {
+						double fieldBandValue = atof(csv.getfield(bandNumber).c_str());
+						double imageBandValue = stats[AVG][bandNumber-1];
 
-
-				// write record
-				calbase_file 
-					<< FID             <<","
-					<< link_val        <<","
-					<< raster_filename <<","
-					<< bandNumber      <<","
-					<< fieldBandValue  <<","
-					<< imageBandValue  << endl
-				;
-
+						// normalize whatever is necessary:
+						// ... PENDING
+		
+		
+						// write record
+						calbase_file 
+							<< FID             <<","
+							<< link_val        <<","
+							<< raster_filename <<","
+							<< bandNumber      <<","
+							<< fieldBandValue  <<","
+							<< imageBandValue  << endl
+						;
+					}
+	
+				}
+				// release stats:
+				for ( unsigned i = 0; i < TOT_RESULTS; i++ )
+					delete[] stats[i];
 			}
-			// release stats:
-			for ( unsigned i = 0; i < TOT_RESULTS; i++ )
-				delete[] stats[i];
 		}
 		delete rast;
 	}

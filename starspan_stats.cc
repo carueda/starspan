@@ -67,6 +67,8 @@ public:
 		// by default, result_stats arrays (to be allocated in init())
 		// get released in end():
 		releaseStats = true;
+
+		last_FID = -1;
 		
 		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 			if ( 0 == strcmp(*stat, "avg") )
@@ -351,6 +353,9 @@ public:
 	void intersectionFound(OGRFeature* feature) {
 		finalizePreviousFeatureIfAny();
 		
+		// keep track of last FID processed:
+		last_FID = feature->GetFID();
+
 		//
 		// start info for new feature:
 		//
@@ -358,7 +363,6 @@ public:
 		if ( file ) {
 			// Add FID value:
 			fprintf(file, "%ld", feature->GetFID());
-			last_FID = feature->GetFID();
 	
 			// add attribute fields from source feature to record:
 			if ( select_fields ) {
@@ -464,7 +468,7 @@ double** starspan_getFeatureStatsByField(
 	tr.setDesiredFeatureByField(field_name, field_value);
 
 	FILE* file = 0;
-	vector<const char*> select_fields;
+	vector<const char*> select_fields; // empty means don't select any fields.
 	StatsObserver* statsObs = new StatsObserver(tr, file, select_stats, &select_fields);
 	if ( !statsObs )
 		return 0;
