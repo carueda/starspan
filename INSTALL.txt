@@ -93,5 +93,3 @@ This option has been tested with version 5.1p2.
 		Acme.jar
 Which can be downloaded from http://www.vividsolutions.com/jts/jtshome.htm
 This option has been tested with JTS 1.4.
-
-
