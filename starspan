@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# STARSpan project
+# Carlos A. Rueda
+# starspan - launcher script
+# $Id$
+#
+
+if [ "$1" == "--jts" ]; then
+	shift
+	/home/carueda/bin/jts $*
+else
+	export LD_LIBRARY_PATH=~carueda/lib:/usr/local/lib:$LD_LIBRARY_PATH
+	/home/carueda/bin/starspan2 $*
+fi
