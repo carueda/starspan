@@ -3,12 +3,18 @@
 # STARSpan project
 # Carlos A. Rueda
 # starspan - launcher script
+# NOTE: Adjust as necessary for your environment
+# 2004-09-07: adjustment for pavo machine 
 # $Id$
 #
 
 BINDIR=`dirname $0`
 JTSJARS=$BINDIR/jts.jars/
-export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
+if [ "`uname -n`" == "pavo" ]; then
+	export LD_LIBRARY_PATH=/net/scratch_ceres/PAVO/lib:/usr/local/lib:$LD_LIBRARY_PATH
+else
+	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
+fi
 
 function usage() {
 	cat << EOF
