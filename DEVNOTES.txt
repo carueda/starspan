@@ -1,6 +1,11 @@
 starspan devnotes
 $Id$
 
+2004-11-12 (0.9beta)
+	starspan_csv: simplified scheme: each raster processed independently.
+	Output scheme:
+		FID, {vect-attrs}, RID, [col,row,] [x,y,] {rast-bands}
+	
 2004-11-10 (0.9beta)
 	Quote fields in CSV if necessary.
 	

@@ -90,9 +90,9 @@ int main(int argc, char ** argv) {
 	globalOptions.noXY = false;
 	globalOptions.only_in_feature = false;
 	globalOptions.RID_as_given = false;
-
-
-	bool report_summary = true;
+	globalOptions.report_summary = true;
+	
+	
 	bool report_elapsed_time = true;
 	bool do_report = false;
 	const char*  envi_name = NULL;
@@ -323,11 +323,26 @@ int main(int argc, char ** argv) {
 	Raster::init();
 	Vector::init();
 
+	int res = 0;
 	
 	//
 	// dispatch commands that don't follow traverser pattern:
 	//
-	if ( calbase_filename ) {
+	if ( csv_name ) { 
+		if ( !vector_filename ) {
+			usage("-csv expects a vector input (use -vector)");
+		}
+		if ( raster_filenames.size() == 0 ) {
+			usage("-csv expects at least a raster input (use -raster)");
+		}
+		res = starspan_csv(
+			vector_filename,  
+			raster_filenames,
+			select_fields, 
+			csv_name
+		);
+	}
+	else if ( calbase_filename ) {
 		if ( !vector_filename ) {
 			usage("-calbase expects a vector input (use -vector)");
 		}
@@ -337,7 +352,7 @@ int main(int argc, char ** argv) {
 		if ( !speclib_filename ) {
 			usage("-calbase expects a speclib input (use -speclib)");
 		}
-		return starspan_tuct_2(
+		res = starspan_tuct_2(
 			vector_filename,  
 			raster_filenames,
 			speclib_filename,
@@ -356,7 +371,7 @@ int main(int argc, char ** argv) {
 		if ( raster_filenames.size() == 0 ) {
 			usage("-update-csv requires at least a raster input");
 		}
-		return starspan_update_csv(update_csv_name, raster_filenames, csv_name);
+		res = starspan_update_csv(update_csv_name, raster_filenames, csv_name);
 	}
 	else if ( update_dbf_name ) {
 		if ( !dbf_name ) {
@@ -368,140 +383,110 @@ int main(int argc, char ** argv) {
 		if ( raster_filenames.size() == 0 ) {
 			usage("-update-dbf requires at least a raster input");
 		}
-		return starspan_update_dbf(update_dbf_name, raster_filenames, dbf_name);
+		res = starspan_update_dbf(update_dbf_name, raster_filenames, dbf_name);
 	}
+	else {
+		//
+		// traverser-based commands
+		//
+		
+		// the traverser object	
+		Traverser tr;
 	
-	//
-	// traverser-based commands
-	//
+		if ( globalOptions.pix_prop >= 0.0 )
+			tr.setPixelProportion(globalOptions.pix_prop);
 	
-	// the traverser object	
-	Traverser tr;
-
-	if ( globalOptions.pix_prop >= 0.0 )
-		tr.setPixelProportion(globalOptions.pix_prop);
-
-	if ( globalOptions.FID >= 0 )
-		tr.setDesiredFID(globalOptions.FID);
+		if ( globalOptions.FID >= 0 )
+			tr.setDesiredFID(globalOptions.FID);
+		
+		tr.setVerbose(globalOptions.verbose);
+		if ( globalOptions.progress )
+			tr.setProgress(globalOptions.progress_perc, cout);
 	
-	tr.setVerbose(globalOptions.verbose);
-	if ( globalOptions.progress )
-		tr.setProgress(globalOptions.progress_perc, cout);
-
-	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
-
-	if ( vector_filename )
-		tr.setVector(new Vector(vector_filename));
+		tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
-	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {    
-		tr.addRaster(new Raster(raster_filenames[i]));
-	}
-
-
-	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
-		if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
-			usage("Specified output option requires both a raster and a vector to proceed\n");
+		if ( vector_filename )
+			tr.setVector(new Vector(vector_filename));
+		
+		for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {    
+			tr.addRaster(new Raster(raster_filenames[i]));
 		}
-	}
-
-
-	//	
-	// COMMANDS
-	//
 	
-	if ( stats_name ) {
-		Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
-		if ( obs )
-			tr.addObserver(obs);
-	}
 	
-	if ( csv_name ) { 
-		Observer* obs = starspan_csv(tr, select_fields, csv_name);
-		if ( obs )
-			tr.addObserver(obs);
-	}
-	
-	if ( dbf_name ) { 
-		Observer* obs = starspan_db(tr, select_fields, dbf_name);
-		if ( obs )
-			tr.addObserver(obs);
-	}
-	
-	if ( envi_name ) {
-		Observer* obs = starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
-		if ( obs )
-			tr.addObserver(obs);
-	}
-	
-	if ( dump_geometries_filename ) {
-		if ( tr.getNumRasters() == 0 && tr.getVector() && globalOptions.FID >= 0 ) {
-			dumpFeature(tr.getVector(), globalOptions.FID, dump_geometries_filename);
+		if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
+			if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
+				usage("Specified output option requires both a raster and a vector to proceed\n");
+			}
 		}
-		else {
-			Observer* obs = starspan_dump(tr, dump_geometries_filename);
+	
+	
+		//	
+		// COMMANDS
+		//
+		
+		if ( stats_name ) {
+			Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
 			if ( obs )
 				tr.addObserver(obs);
 		}
-	}
-
-	if ( jtstest_filename ) {
-		Observer* obs = starspan_jtstest(tr, jtstest_filename);
-		if ( obs )
-			tr.addObserver(obs);
-	}
-
-
-	// report and minirasters don't use Observer scheme;  
-	// just call corresponding functions:	
-	if ( do_report ) {
-		if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
-			usage("-report: Please give at least one input file to report\n");
-		}
-		starspan_report(tr);
-	}
-	if ( mini_prefix ) {
-		starspan_minirasters(tr, mini_prefix, mini_srs);
-	}
-	
-	//
-	// now observer-based processing:
-	//
-	
-	if ( tr.getNumObservers() > 0 ) {
-		// let's get to work!	
-		tr.traverse();
-
-		if ( report_summary ) {
-			cout<< "Summary:" <<endl;
-			cout<< "  Intersecting features: " << tr.summary.num_intersecting_features<< endl;
-			if ( tr.summary.num_point_features )
-				cout<< "      Points: " <<tr.summary.num_point_features<< endl;
-			if ( tr.summary.num_multipoint_features )
-				cout<< "      MultiPoints: " <<tr.summary.num_multipoint_features<< endl;
-			if ( tr.summary.num_linestring_features )
-				cout<< "      LineStrings: " <<tr.summary.num_linestring_features<< endl;
-			if ( tr.summary.num_multilinestring_features )
-				cout<< "      MultiLineStrings: " <<tr.summary.num_multilinestring_features<< endl;
-			if ( tr.summary.num_polygon_features )
-				cout<< "      Polygons: " <<tr.summary.num_polygon_features<< endl;
-			if ( tr.summary.num_invalid_polys )
-				cout<< "          invalid: " <<tr.summary.num_invalid_polys<< endl;
-			if ( tr.summary.num_polys_with_internal_ring )
-				cout<< "          with internalring: " <<tr.summary.num_polys_with_internal_ring<< endl;
-			if ( tr.summary.num_polys_exploded )
-				cout<< "          exploded: " <<tr.summary.num_polys_exploded<< endl;
-			if ( tr.summary.num_sub_polys )
-				cout<< "          sub polys: " <<tr.summary.num_sub_polys<< endl;
-			if ( tr.summary.num_multipolygon_features )
-				cout<< "      MultiPolygons: " <<tr.summary.num_multipolygon_features<< endl;
-			if ( tr.summary.num_geometrycollection_features )
-				cout<< "      GeometryCollections: " <<tr.summary.num_geometrycollection_features<< endl;
-			cout<< endl;
-			cout<< "  Processed pixels: " <<tr.summary.num_processed_pixels<< endl;
+		
+		if ( dbf_name ) { 
+			Observer* obs = starspan_db(tr, select_fields, dbf_name);
+			if ( obs )
+				tr.addObserver(obs);
 		}
 		
-		// release observers:
-		tr.releaseObservers();
+		if ( envi_name ) {
+			Observer* obs = starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
+			if ( obs )
+				tr.addObserver(obs);
+		}
+		
+		if ( dump_geometries_filename ) {
+			if ( tr.getNumRasters() == 0 && tr.getVector() && globalOptions.FID >= 0 ) {
+				dumpFeature(tr.getVector(), globalOptions.FID, dump_geometries_filename);
+			}
+			else {
+				Observer* obs = starspan_dump(tr, dump_geometries_filename);
+				if ( obs )
+					tr.addObserver(obs);
+			}
+		}
+	
+		if ( jtstest_filename ) {
+			Observer* obs = starspan_jtstest(tr, jtstest_filename);
+			if ( obs )
+				tr.addObserver(obs);
+		}
+	
+	
+		// report and minirasters don't use Observer scheme;  
+		// just call corresponding functions:	
+		if ( do_report ) {
+			if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
+				usage("-report: Please give at least one input file to report\n");
+			}
+			starspan_report(tr);
+		}
+		if ( mini_prefix ) {
+			starspan_minirasters(tr, mini_prefix, mini_srs);
+		}
+		
+		//
+		// now observer-based processing:
+		//
+		
+		if ( tr.getNumObservers() > 0 ) {
+			// let's get to work!	
+			tr.traverse();
+	
+			if ( globalOptions.report_summary ) {
+				tr.reportSummary();
+			}
+			
+			// release observers:
+			tr.releaseObservers();
+		}
 	}
 	
 	Vector::end();
@@ -532,6 +517,6 @@ int main(int argc, char ** argv) {
 		}
 	}
 
-	return 0;
+	return res;
 }
 

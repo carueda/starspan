@@ -1,7 +1,7 @@
 //
 // STARSpan project
 // Carlos A. Rueda
-// starspan_csv - generate a CSV file
+// starspan_csv - generate a CSV file from multiple rasters
 // $Id$
 //
 
@@ -49,21 +49,22 @@ static char* extract_value(GDALDataType bandType, char* sign) {
 
 
 /**
-  * Creates fields and populates the table.
+  * This observer extracts from ONE raster
   */
 class CSVObserver : public Observer {
 public:
 	GlobalInfo* global_info;
 	Vector* vect;
-	FILE* file;
 	OGRFeature* currentFeature;
 	vector<const char*>* select_fields;
+	bool write_header;
+	FILE* file;
 	
 	/**
 	  * Creates a csv creator
 	  */
-	CSVObserver(Traverser& tr, FILE* f, vector<const char*>* select_fields)
-	: file(f), select_fields(select_fields)
+	CSVObserver(Traverser& tr, vector<const char*>* select_fields, bool write_header, FILE* f)
+	: select_fields(select_fields), write_header(write_header), file(f)
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -71,7 +72,7 @@ public:
 	
 	/**
 	  * Creates first line with column headers:
-	  *    FID, [col,row,] [x,y,] fields-from-feature, bands-from-raster
+	  *    FID, [col,row,] [x,y,] fields-from-feature, RID, bands-from-raster
 	  */
 	void init(GlobalInfo& info) {
 		global_info = &info;
@@ -82,49 +83,54 @@ public:
 			exit(1);
 		}
 
-		//		
-		// write column headers:
-		//
-
-		// Create FID field
-		fprintf(file, "FID");
-		
-		// Create (col,row) fields, if so indicated
-		if ( !globalOptions.noColRow ) {
-			fprintf(file, ",col");
-			fprintf(file, ",row");
-		}
-		
-		// Create (x,y) fields, if so indicated
-		if ( !globalOptions.noXY ) {
-			fprintf(file, ",x");
-			fprintf(file, ",y");
-		}
-		
-		// Create fields:
-		if ( select_fields ) {
-			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
-				fprintf(file, ",%s", *fname);
-			}
-		}
-		else {
-			// all fields from layer definition
-			OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
-			int feature_field_count = poDefn->GetFieldCount();
+		if ( write_header ) {
+			//		
+			// write column headers:
+			//
+	
+			// Create FID field
+			fprintf(file, "FID");
 			
-			for ( int i = 0; i < feature_field_count; i++ ) {
-				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
-				const char* pfield_name = poField->GetNameRef();
-				fprintf(file, ",%s", pfield_name);
+			// Create fields:
+			if ( select_fields ) {
+				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+					fprintf(file, ",%s", *fname);
+				}
 			}
+			else {
+				// all fields from layer definition
+				OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
+				int feature_field_count = poDefn->GetFieldCount();
+				
+				for ( int i = 0; i < feature_field_count; i++ ) {
+					OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
+					const char* pfield_name = poField->GetNameRef();
+					fprintf(file, ",%s", pfield_name);
+				}
+			}
+			
+			// RID field header
+			fprintf(file, ",RID");
+			
+			// Create (col,row) fields, if so indicated
+			if ( !globalOptions.noColRow ) {
+				fprintf(file, ",col");
+				fprintf(file, ",row");
+			}
+			
+			// Create (x,y) fields, if so indicated
+			if ( !globalOptions.noXY ) {
+				fprintf(file, ",x");
+				fprintf(file, ",y");
+			}
+			
+			// Create fields for bands
+			for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
+				fprintf(file, ",Band%d", i+1);
+			}
+			
+			fprintf(file, "\n");
 		}
-		
-		// Create fields for bands
-		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
-			fprintf(file, ",Band%d", i+1);
-		}
-		
-		fprintf(file, "\n");
 		
 		currentFeature = NULL;
 	}
@@ -153,16 +159,6 @@ public:
 		// Add FID value:
 		fprintf(file, "%ld", currentFeature->GetFID());
 		
-		// add (col,row) fields
-		if ( !globalOptions.noColRow ) {
-			fprintf(file, ",%d,%d", col, row);
-		}
-		
-		// add (x,y) fields
-		if ( !globalOptions.noXY ) {
-			fprintf(file, ",%.3f,%.3f", ev.pixel.x, ev.pixel.y);
-		}
-		
 		// add attribute fields from source currentFeature to record:
 		if ( select_fields ) {
 			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
@@ -189,7 +185,21 @@ public:
 					fprintf(file, ",%s", str);
 			}
 		}
-		 
+
+		// add RID field
+		fprintf(file, ",<<RID-PENDING>>");
+		
+		
+		// add (col,row) fields
+		if ( !globalOptions.noColRow ) {
+			fprintf(file, ",%d,%d", col, row);
+		}
+		
+		// add (x,y) fields
+		if ( !globalOptions.noXY ) {
+			fprintf(file, ",%.3f,%.3f", ev.pixel.x, ev.pixel.y);
+		}
+		
 		// add band values to record:
 		char* sign = (char*) band_values;
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
@@ -217,23 +227,54 @@ public:
 
 
 
-/**
-  * implementation
-  */
-Observer* starspan_csv(
-	Traverser& tr,
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Each raster is processed independently
+//
+int starspan_csv(
+	const char* vector_filename,
+	vector<const char*> raster_filenames,
 	vector<const char*>* select_fields,
-	const char* filename
+	const char* csv_filename
 ) {
 	// create output file
-	FILE* file = fopen(filename, "w");
+	FILE* file = fopen(csv_filename, "w");
 	if ( !file ) {
-		fprintf(stderr, "Couldn't create %s\n", filename);
-		return 0;
+		fprintf(stderr, "Couldn't create %s\n", csv_filename);
+		return 1;
 	}
 
-	return new CSVObserver(tr, file, select_fields);	
-}
+	Vector vect(vector_filename);
+	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		Raster raster(raster_filenames[i]);
+		bool write_header = i == 0;
+		Traverser tr;
+		tr.addRaster(&raster);
+		if ( globalOptions.pix_prop >= 0.0 )
+			tr.setPixelProportion(globalOptions.pix_prop);
+		if ( globalOptions.FID >= 0 )
+			tr.setDesiredFID(globalOptions.FID);
+		tr.setVerbose(globalOptions.verbose);
+		if ( globalOptions.progress )
+			tr.setProgress(globalOptions.progress_perc, cout);
+		tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
+		tr.setVector(&vect);
 		
+		Observer* obs = new CSVObserver(tr, select_fields, write_header, file);
+		tr.addObserver(obs);
+		
+		tr.traverse();
 
+		if ( globalOptions.report_summary ) {
+			tr.reportSummary();
+		}
+		tr.releaseObservers();
+	}
+	
+	fclose(file);
+	
+	return 0;
+}
 

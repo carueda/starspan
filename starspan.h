@@ -46,6 +46,8 @@ struct GlobalOptions {
 	/** Make RID exactly as given in command line? 
 	  * If not, the simple filename is set as RID. */
 	bool RID_as_given;
+	
+	bool report_summary;
 };
 
 extern GlobalOptions globalOptions;
@@ -176,27 +178,30 @@ Observer* starspan_getStatsObserver(
 
 
 
-/**
+/** Extraction from multiple rasters.
   * Generates a CSV file with the following columns:
-  *     FID, col,row {vect-attrs}, {bands-from-raster}
+  *     FID, {vect-attrs}, RID, [col,row,] [x,y,] {rast-bands}
   * where:
   *     FID:          feature ID as given by OGRFeature#GetFID()
-  *     col,row:      pixel location relative to (0,0) in raster
   *     {vect-attrs}: attributes from vector
-  *     {rast-bands}: bands from raster at corresponding location
+  *     RID:          Name of raster from which band values are extracted
+  *     col,row:      pixel location relative to [0,0] in raster
+  *     x,y:          pixel location in geographic coordinates
+  *     {rast-bands}: bands from raster RID at corresponding location
   *
-  * @param tr Data traverser
-  * @param select_fields desired fields
+  * @param vector_filename Vector datasource
+  * @param raster_filenames rasters
+  * @param select_fields desired fields from vector
   * @param csv_filename output file name
   *
-  * @return observer to be added to traverser. 
+  * @return 0 iff OK 
   */
-Observer* starspan_csv(
-	Traverser& tr, 
+int starspan_csv(
+	const char* vector_filename,
+	vector<const char*> raster_filenames,
 	vector<const char*>* select_fields,
 	const char* csv_filename
 );
-
 
 
 /**

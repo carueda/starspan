@@ -51,7 +51,7 @@ void Traverser::releaseObservers(void) {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		delete *obs;
 	
-	observers.empty();
+	observers.clear();
 	notSimpleObserver = false;
 }
 
@@ -910,3 +910,31 @@ void Traverser::traverse() {
 }
 
 
+void Traverser::reportSummary() {
+	cout<< "Summary:" <<endl;
+	cout<< "  Intersecting features: " << summary.num_intersecting_features<< endl;
+	if ( summary.num_point_features )
+		cout<< "      Points: " <<summary.num_point_features<< endl;
+	if ( summary.num_multipoint_features )
+		cout<< "      MultiPoints: " <<summary.num_multipoint_features<< endl;
+	if ( summary.num_linestring_features )
+		cout<< "      LineStrings: " <<summary.num_linestring_features<< endl;
+	if ( summary.num_multilinestring_features )
+		cout<< "      MultiLineStrings: " <<summary.num_multilinestring_features<< endl;
+	if ( summary.num_polygon_features )
+		cout<< "      Polygons: " <<summary.num_polygon_features<< endl;
+	if ( summary.num_invalid_polys )
+		cout<< "          invalid: " <<summary.num_invalid_polys<< endl;
+	if ( summary.num_polys_with_internal_ring )
+		cout<< "          with internalring: " <<summary.num_polys_with_internal_ring<< endl;
+	if ( summary.num_polys_exploded )
+		cout<< "          exploded: " <<summary.num_polys_exploded<< endl;
+	if ( summary.num_sub_polys )
+		cout<< "          sub polys: " <<summary.num_sub_polys<< endl;
+	if ( summary.num_multipolygon_features )
+		cout<< "      MultiPolygons: " <<summary.num_multipolygon_features<< endl;
+	if ( summary.num_geometrycollection_features )
+		cout<< "      GeometryCollections: " <<summary.num_geometrycollection_features<< endl;
+	cout<< endl;
+	cout<< "  Processed pixels: " <<summary.num_processed_pixels<< endl;
+}

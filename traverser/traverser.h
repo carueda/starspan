@@ -376,6 +376,8 @@ public:
 		
 	} summary;
 	
+	void reportSummary(void);
+	
 private:
 	Vector* vect;
 	vector<Raster*> rasts;
