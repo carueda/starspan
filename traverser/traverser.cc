@@ -202,6 +202,12 @@ void Traverser::pixelFound(double x, double y) {
 	int col, row;
 	toColRow(x, y, &col, &row);
 	
+	assert(0 <= col);
+	assert(col < width);
+	assert(0 <= row);
+	assert(row < height);
+	
+	
 	if ( pixset ) {
 		// check this location has not been processed
 		EPixel colrow(col, row);
