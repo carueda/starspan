@@ -46,7 +46,6 @@ public:
 	string prefix;
 	const char* pszOutputSRS;
 	GDALDatasetH hOutDS;
-	long pixel_count;
 
 	// to help in determination of extrema col,row coordinates
 	bool first;
@@ -63,7 +62,6 @@ public:
 	: tr(tr), layer(layer), rast(*rast), prefix(aprefix), pszOutputSRS(pszOutputSRS)
 	{
 		global_info = 0;
-		pixel_count = 0;
 		hOutDS = 0;
 		mrbi_list = 0;
 	}
