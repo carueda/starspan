@@ -1,6 +1,14 @@
 starspan devnotes
 $Id$
 
+2004-09-05
+	rasterizers/ New module for rasterizations.
+	Now with a LineRasterizer, whose implementation is based on a
+	Bresenham interpolator with sub-pixel accuracy thanks to the
+	Anti-Grain Geometry engine, http://www.antigrain.com/.
+	Note that all that is needed for this dependency is to
+	#include agg_dda_line.h (no AGG library is required).
+	
 2004-08-31
 	-db now includes the fields, in the given order:
 		- (x,y)  location of signature
