@@ -12,9 +12,11 @@ $Id$
 	is fixed to 21.  This fulfills request #200066
 	
 	--mini_raster_parity {even | odd | @<field>}  
-	Implemented
+	Implemented. This fulfills request #200069
 	
 	--mr renamed to --mini_rasters
+	
+	Tests pending for --buffer and --mini_raster_parity.
 	
 2005-02-19 (0.952beta)
 	- Making a source distribution. Example:
