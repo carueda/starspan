@@ -357,6 +357,13 @@ void Traverser::processPolygon_point(OGRPolygon* poly) {
 	OGREnvelope intersection_env;
 	poly->getEnvelope(&intersection_env);
 	
+	// extend envelope 1 pixel in all directions so we can deal with
+	// boundary cases more safely:
+	intersection_env.MinX -= pix_x_size;
+	intersection_env.MaxX += pix_x_size;
+	intersection_env.MinY -= pix_y_size;
+	intersection_env.MaxY += pix_y_size;
+	
 	// extern void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env);
 	// starspan_print_envelope(stdout, "poly envolppe: ", intersection_env);
 	
