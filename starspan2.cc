@@ -48,7 +48,7 @@ static void usage(const char* msg) {
 		"      -jtstest <filename>\n"
 		"\n"
 		"   options:\n"
-		"      -fields field1,...,fieldn\n"
+		"      -fields field1 field2 ... fieldn\n"
 		"      -pixprop <minimum-pixel-proportion>\n"
 		"      -noColRow \n"
 		"      -noXY\n"
