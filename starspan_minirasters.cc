@@ -8,6 +8,7 @@
 #include "starspan.h"           
 #include "traverser.h"       
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 #include <vector>
 
@@ -130,12 +131,12 @@ public:
 	/** aux to create image filename */
 	static string create_filename(string prefix, long FID) {
 		ostringstream ostr;
-		ostr << prefix << FID << ".img";
+		ostr << prefix << setfill('0') << setw(4) << FID << ".img";
 		return ostr.str();
 	}
 	static string create_filename_hdr(string prefix, long FID) {
 		ostringstream ostr;
-		ostr << prefix << FID << ".hdr";
+		ostr << prefix << setfill('0') << setw(4) << FID << ".hdr";
 		return ostr.str();
 	}
 

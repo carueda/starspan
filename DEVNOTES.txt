@@ -19,6 +19,10 @@ $Id$
 		Added test case in tests/Makefile with comparison of data files.
 		For some reason .hdr  files are created with mapinfo repeated several 
 		times (gdal bug?)
+		
+	- Fixed a minor formatting in creation of filenames for minirasters to 
+	  keep compatibility with the way this used to be done with standard C: 
+		Now: ... << setfill('0') << setw(4) << FID ...
 		  
 	
 	
