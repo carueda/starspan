@@ -8,6 +8,7 @@
 
 #include "jts.h"           
 #include "unistd.h"   // unlink           
+#include "stdlib.h"   // exit -- on some systems           
 
 
 JTS_TestGenerator::JTS_TestGenerator(const char* filename_) {
