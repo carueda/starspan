@@ -61,6 +61,13 @@ struct TraversalEvent {
 	  * Only assigned if observer#isSimple() is false.
 	  */
 	void* bandValues;
+	
+	TraversalEvent(int col, int row, double x, double y) {
+		pixel.col = col;
+		pixel.row = row;
+		pixel.x = x;
+		pixel.y = y;
+	}
 };
 
 /**
@@ -307,6 +314,7 @@ private:
 	void processMultiPoint(OGRMultiPoint*);
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
+	void pixelFoundInPolygon(double x, double y);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
 	void processGeometryCollection(OGRGeometryCollection* coll);
@@ -334,7 +342,7 @@ private:
 				return false;
 		}
 	};
-	set<EPixel>* pixset;
+	set<EPixel> pixset;
 
 	ostream* progress_out;
 	double progress_perc;

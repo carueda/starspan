@@ -5,7 +5,10 @@ $Id$
 	Some cleanup and checks for memory leaks:
 		- StatsObserver.computeResults(): vector of values released.
 		- Traverser::processPolygon: geos_poly released.
-		- Traverser: pixset : changing scheme for better control...
+		- Traverser: pixset : Duplication of pixel is always checked
+		  for all intersections types except for polygons.  
+		  pixset is reset on a per feature basis, so potential duplication
+		  of pixels accross features won't be detected.
 		
 2004-10-11 (0.86beta)
 	Traverser::processPolygon: now catches GEOS exceptions which

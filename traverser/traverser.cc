@@ -31,7 +31,6 @@ Traverser::Traverser() {
 	notSimpleObserver = false;
 	
 	lineRasterizer = 0;
-	pixset = 0;
 	progress_out = 0;
 	verbose = false;
 	logstream = 0;
@@ -240,9 +239,8 @@ inline void Traverser::toGridXY(int col, int row, double *x, double *y) {
 }
 
 //
-// implementation as a LineRasterizerObserver, but also called directly, 
-// see processPoint, processMultiPoint, processPolygon.
-// If pixset is not null, it checks for duplicate pixel.
+// Implementation as a LineRasterizerObserver, but also called directly. 
+// Checks for duplicate pixel.
 //
 void Traverser::pixelFound(double x, double y) {
 	// get pixel location:
@@ -254,24 +252,18 @@ void Traverser::pixelFound(double x, double y) {
 		return;
 	}
 	
-	if ( pixset ) {
-		// check this location has not been processed
-		EPixel colrow(col, row);
-		if ( pixset->find(colrow) != pixset->end() ) {
-			return;
-		}
-		pixset->insert(colrow);
+	// check this location has not been processed
+	EPixel colrow(col, row);
+	if ( pixset.find(colrow) != pixset.end() ) {
+		return;
 	}
+	pixset.insert(colrow);
 	
 	toGridXY(col, row, &x, &y);
 	
-	TraversalEvent event;
-	event.pixel.col = col;
-	event.pixel.row = row;
-	event.pixel.x = x;
-	event.pixel.y = y;
+	TraversalEvent event(col, row, x, y);
 	
-	// if at leat one observer is not simple...
+	// if at least one observer is not simple...
 	if ( notSimpleObserver ) {
 		// get also band values
 		getBandValuesForPixel(col, row);
@@ -340,8 +332,40 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 
 
 
-//
+///////////////////////////////////////////////////////////////////////////////
 // for processPolygon:
+
+//
+// Does NOT check for pixel duplication.
+//
+void Traverser::pixelFoundInPolygon(double x, double y) {
+	// get pixel location:
+	int col, row;
+	toColRow(x, y, &col, &row);
+	
+	if ( col < 0 || col >= width 
+	||   row < 0 || row >= height ) {
+		return;
+	}
+	
+	toGridXY(col, row, &x, &y);
+	
+	TraversalEvent event(col, row, x, y);
+	
+	// if at least one observer is not simple...
+	if ( notSimpleObserver ) {
+		// get also band values
+		getBandValuesForPixel(col, row);
+		event.bandValues = bandValues_buffer;
+	}
+	
+	// notify observers:
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->addPixel(event);
+}
+
+
+//
 // To avoid some OGR overhead, I use GEOS directly.
 //
 static geos::GeometryFactory* global_factory = new geos::GeometryFactory();
@@ -451,7 +475,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				//cout " area=" << area << endl;
 				if ( area >= pixelProportion * pix_area ) { 
 					num_pixels_in_poly++;
-					pixelFound(x, y);
+					pixelFoundInPolygon(x, y);
 				}
 				delete pix_inters;
 			}
@@ -496,9 +520,6 @@ void Traverser::processGeometryCollection(OGRGeometryCollection* coll) {
 // get intersection type and process accordingly
 //
 void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
-	// Note that pixset is created where duplicate pixel control is required.
-	assert(!pixset);
-	
 	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
 	switch ( intersection_type ) {
 		case wkbPoint:
@@ -508,22 +529,16 @@ void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
 	
 		case wkbMultiPoint:
 		case wkbMultiPoint25D:
-			if ( !pixset )
-				pixset = new set<EPixel>();
 			processMultiPoint((OGRMultiPoint*) intersection_geometry);
 			break;
 	
 		case wkbLineString:
 		case wkbLineString25D:
-			if ( !pixset )
-				pixset = new set<EPixel>();
 			processLineString((OGRLineString*) intersection_geometry);
 			break;
 	
 		case wkbMultiLineString:
 		case wkbMultiLineString25D:
-			if ( !pixset )
-				pixset = new set<EPixel>();
 			processMultiLineString((OGRMultiLineString*) intersection_geometry);
 			break;
 			
@@ -546,10 +561,6 @@ void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
 			throw (string(OGRGeometryTypeToName(intersection_type))
 			    + ": intersection type not considered."
 			);
-	}
-	if ( pixset ) {
-		delete pixset;
-		pixset = 0;
 	}
 }
 
@@ -585,7 +596,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->intersectionFound(feature);
 
-	// Note that pixset is created where duplicate pixel control is required.
+	pixset.clear();
 	try {
 		processGeometry(intersection_geometry);
 	}
