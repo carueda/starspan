@@ -3,6 +3,18 @@ $Id$
 
 
 2005-02-15 (0.94beta)
+	- mini raster strip command: implementation restarted based on
+	MiniRasterObserver. A subclass MiniRasterStripObserver uses a
+	list of basic info about each generated miniraster (mrbi_list)
+	to merge the minirasters into the final strip.
+	The basic functionality is now working (tested visually in envi).
+	Next: 
+		- create the accompanying .fid and .glt rasters.
+		- delete temporary minirasters
+		
+	(Note: starspan_miniraster_strip.cc no longer used; all this is
+	implemented in starspan_minirasters.cc)
+	
 	- Comments about --O and --outformat proposed variations in: 
 	http://casil.ucdavis.edu/tracker/?func=detail&aid=200072&group_id=48&atid=350112
 	

@@ -31,7 +31,6 @@ SRCS =	starspan_stats.cc \
 		starspan_csv.cc \
 		starspan_csv_raster_field.cc \
 		starspan_gen_envisl.cc \
-		starspan_miniraster_strip.cc \
 		starspan_minirasters.cc \
 		starspan_jtstest.cc \
 		starspan_util.cc \
