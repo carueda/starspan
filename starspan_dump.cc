@@ -113,7 +113,7 @@ public:
 	}
 
 	void processPoint(OGRPoint* point) {
-		fprintf(file, "DataSet:\n");
+		fprintf(file, "DataSet: Point\n");
 		fprintf(file, "%10.3f , %10.3f\n", point->getX(), point->getY());
 	}
 	void processMultiPoint(OGRMultiPoint* pp) {
@@ -123,7 +123,7 @@ public:
 		}
 	}
 	void processLineString(OGRLineString* linstr) {
-		fprintf(file, "DataSet:\n");
+		fprintf(file, "DataSet: LineString\n");
 		int num_points = linstr->getNumPoints();
 		for ( int i = 0; i < num_points; i++ ) {
 			OGRPoint point;
@@ -196,7 +196,7 @@ public:
 	  * writes out the point in the given event.
 	  */
 	void addPixel(TraversalEvent& ev) {
-		fprintf(file, "DataSet:\n");
+		fprintf(file, "DataSet: Pixel\n");
 		if ( use_polys ) {
 			fprintf(file, "%f , %f\n", ev.pixel.x, ev.pixel.y);
 			fprintf(file, "%f , %f\n", ev.pixel.x + pix_x_size, ev.pixel.y);
