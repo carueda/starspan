@@ -13,15 +13,22 @@ BINDIR=`dirname $0`
 STARSPAN2=$BINDIR/starspan2
 
 # $JARS: the following jars should be present under this directory:
+#
 # Required by the --view_geometries option:
 #      plotapplication.jar
+# Can be download from http://ptolemy.eecs.berkeley.edu/java/ptplot
+# Currently the version 5.1p2 is used.
+#
 # Required by the --test and --jts options:
 #      xerces.jar
 #      jts-1.4.0.jar
 #      jdom.jar
 #      JTS_Test.jar
 #      Acme.jar
-JARS=$BINDIR/jars/
+# These can be downloaded from http://www.vividsolutions.com/jts/jtshome.htm 
+# Currently JTS 1.4 is used.
+#
+JARS=$BINDIR/starspan.jars/
 
 if [ "`uname -n`" == "px" ]; then
 	# my machine :-)

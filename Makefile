@@ -65,7 +65,7 @@ starspan2: starspan2.o $(SRCS)
 	    $(LIBPATH) -o starspan2 starspan2.o $(SRCS) $(LDFLAGS)
 
 install:
-	cp starspan2 ~/bin/ 
+	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/ 
 
 starspan1: starspan1.o $(SRCS)
 	g++ $(LIBPATH) -o starspan1 starspan1.o $(SRCS) $(LDFLAGS)

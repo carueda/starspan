@@ -22,6 +22,11 @@ $Id$
 	Makefile.props.templ:  New scheme for Makefile.
 	This template is to create Makefile.props according to settings
 	in the local system.  Now Makefile includes Makefile.props.
+	A new property STARSPAN_PREFIX specifies where the starspan tool
+	will be installed.
+	
+	starspan shell script updated with better documentation about
+	Java archive dependencies (extended usage).
 	
 
 2004-09-28 (0.8beta)
