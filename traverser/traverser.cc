@@ -534,23 +534,17 @@ class MyPolygonizer : public geos::Polygonizer {
 public:
 	MyPolygonizer() : geos::Polygonizer() {}
 	
+/***
 	~MyPolygonizer() {
-		for ( unsigned i = 0; i < polyList->size(); i++ ) {
-			delete (*polyList)[i];
-		}
-		delete polyList;
-
 		for ( unsigned i = 0; i < holeList->size(); i++ ) {
 			delete (*holeList)[i];
 		}
-		delete holeList;
 		
 		for ( unsigned i = 0; i < shellList->size(); i++ ) {
 			delete (*shellList)[i];
 		}
-		delete shellList;
 	}
-	
+***/	
 };
 
 //
