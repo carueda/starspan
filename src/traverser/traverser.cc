@@ -751,16 +751,15 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	if ( !intersection_geometry ) {
 		if ( verbose ) {
-			fprintf(stdout, " NO intersection:\n");
+			cout<< " NO INTERSECTION:\n";
 		}
 		goto done;
 	}
 	summary.num_intersecting_features++;
 
 	if ( verbose ) {
-		fprintf(stdout, " Type of intersection: %s\n",
-			intersection_geometry->getGeometryName()
-		);		
+		cout<< " Type of intersection: ",
+		    << intersection_geometry->getGeometryName()<< endl;
 	}
 	
 	//
