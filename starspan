@@ -35,12 +35,14 @@ if [ "$1" == "-xhelp" ]; then
 	exit
 
 elif [ "$1" == "--test" ]; then
+	echo "[Launching JTS TopologyTestApp...]"
 	shift
 	CP=$CLASSPATH
 	for i in $JTSJARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp $CP com.vividsolutions.jtstest.testrunner.TopologyTestApp $*
 
 elif [ "$1" == "--jts" ]; then
+	echo "[Launching JTSTestBuilder...]"
 	shift
 	CP=$CLASSPATH
 	for i in $JTSJARS/*.jar; do CP=$i:$CP; done
