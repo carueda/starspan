@@ -159,6 +159,21 @@ public:
 	void init(GlobalInfo& info) {
 		GDALDataType bandType = info.bands[0]->GetRasterDataType();
 		typeSize = GDALGetDataTypeSize(bandType) >> 3;
+		
+		// check ALL bands are the same type
+		for ( unsigned i = 1; i < info.bands.size(); i++ ) {
+			GDALDataType _bandType = info.bands[i]->GetRasterDataType();
+			if ( _bandType != bandType ) {
+				fprintf(stderr, 
+					"Different band types\n"
+					"Band %d has type %s\n"
+					"Band %d has type %s\n"
+						, 0+1, GDALGetDataTypeName(bandType)
+						, i+1, GDALGetDataTypeName(_bandType)
+				);
+			}
+			
+		}
 	}
 	
 

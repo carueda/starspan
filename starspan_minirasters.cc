@@ -13,13 +13,19 @@
 #include <assert.h>
 
 int starspan_minirasters(
-	Raster& rast, 
-	Vector& vect, 
+	Traverser& tr,
 	const char* prefix,
 	bool only_in_feature,
 	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
 ) {
+	if ( tr.getNumRasters() > 1 ) {
+		fprintf(stderr, "Only one input raster is expected in this version\n");
+		return 1;
+	}
+	Raster& rast = *tr.getRaster(0);
+	Vector& vect = *tr.getVector();
+
 	OGRLayer* layer = vect.getLayer(0);
 	if ( !layer ) {
 		fprintf(stderr, "Couldn't get layer 0 from %s\n", vect.getName());

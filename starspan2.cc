@@ -228,13 +228,7 @@ int main(int argc, char ** argv) {
 		return starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
 	}
 	else if ( mini_prefix ) {
-		if ( tr.getNumRasters() > 1 ) {
-			fprintf(stderr, "Sorry, -mr currently accepts only one input raster\n");
-			return 1;
-		}
-		Raster* rast = tr.getRaster(0);
-		Vector* vect = tr.getVector();
-		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
+		return starspan_minirasters(tr, mini_prefix, only_in_feature, mini_srs);
 	}
 	else if ( jtstest_filename ) {
 		starspan_jtstest(tr, use_polys, jtstest_filename);

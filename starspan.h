@@ -84,18 +84,20 @@ int starspan_gen_envisl(
   * @param use_polys If true, pixels are represented as polygons;
   *        otherwise as points.
   * @param jtstest_filename output file name
+  * @return 0 iff OK.
   */
-void starspan_jtstest(
+int starspan_jtstest(
 	Traverser& tr,
 	bool use_polys,
 	const char* jtstest_filename
 );
 
-/** Generate mini rasters
-    returns 0 iff OK. */
+/** 
+  * Generate mini rasters
+  * @return 0 iff OK.
+  */
 int starspan_minirasters(
-	Raster& rast, 
-	Vector& vect, 
+	Traverser& tr,
 	const char* prefix,
 	bool only_in_feature,
 	const char* pszOutputSRS  // see gdal_translate option -a_srs 

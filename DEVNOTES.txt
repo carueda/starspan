@@ -2,16 +2,19 @@ starspan devnotes
 $Id$
 
 2004-09-13
-	Main operations now receive a data traverser instead of direct
-	input objects.
-	
-	Some refactoring to start processing multiple input rasters.
+	General refactoring to allow the processing of multiple input rasters.
 	Traverser has now methods to specify data input objects; all object
 	interfaces updated.
 	
-	Functionality for ONE raster is working as before under the new scheme,
-	but is still pending to complement traverser interface (because of 
-	multiple raster processing), and its corresponding implementation.
+	All output formats updated for multi raster processing:
+		-envi, -envisl: A check is done to verify that all bands are
+		                the same type.
+		
+		-jtstest: checks only one raster is specified.
+		
+		-mr: checks only one raster is specified; should be fixed for
+		multiple rasters but this is NOT going to be done for now.
+		    
 	
 	starspan_gen_envisl: 
 		Data file is basename.img for Envi image, and basename.sld for

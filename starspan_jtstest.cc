@@ -168,19 +168,24 @@ struct JtsTestObserver : public Observer {
 /**
   * implementation
   */
-void starspan_jtstest(
+int starspan_jtstest(
 	Traverser& tr,
 	bool use_polys,
 	const char* jtstest_filename
 ) {
+	if ( tr.getNumRasters() > 1 ) {
+		fprintf(stderr, "Only one input raster is expected\n");
+		return 1;
+	}
 	Raster* rast = tr.getRaster(0);
-	//Vector* vect = tr.getVector();
 
 	double pix_x_size, pix_y_size;
 	rast->getPixelSize(&pix_x_size, &pix_y_size);
 	JtsTestObserver observer(jtstest_filename, pix_x_size, pix_y_size, use_polys);
 	tr.setObserver(&observer);
 	tr.traverse();
+	
+	return 0;
 }
 
 
