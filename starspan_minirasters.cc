@@ -102,6 +102,12 @@ int starspan_minirasters(
 				pszOutputSRS
 			);
 			
+			if ( globalOptions.verbose ) {
+				cout<< " mini_x0=" <<mini_x0<< ", mini_y0=" <<mini_y0<< endl 
+					<< " mini_width=" <<mini_width<< ", mini_height=" <<mini_height<< endl
+				;
+			}
+			
 			if ( globalOptions.only_in_feature ) {
 				fprintf(stdout, "nullifying pixels not contained in feature..\n");
 				
