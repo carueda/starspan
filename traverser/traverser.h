@@ -238,6 +238,18 @@ public:
 	  */
 	void setDesiredFeatureByField(const char* field_name, const char* field_value);
 	
+	/**
+	  * Sets parameters to apply the buffer operation on geometry features
+	  * before computing the intersection.
+	  * By default, no buffer will be applied.
+	  * (Parameter descriptions from OGR.)
+	  *
+	  * @param distance          buffer distance to be applied.
+	  * @param quadrantSegments  number of segments to use to approximate a 
+	  *                          quadrant of a circle.
+	  */
+	void setBufferParameters(double distance, int quadrantSegments);
+	
 	
 	/**
 	  * Adds an observer to this traverser.
@@ -423,6 +435,13 @@ private:
 	bool skip_invalid_polys;
 	
 	geos::WKTWriter wktWriter;
+
+	// buffer information
+	struct {
+		bool doit;
+		double distance;
+		int quadrantSegments;
+	} buffer;
 };
 
 

@@ -37,7 +37,17 @@ Traverser::Traverser() {
 	logstream = 0;
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
 	skip_invalid_polys = false;
+
+	buffer.doit = false;
 }
+
+
+void Traverser::setBufferParameters(double distance, int quadrantSegments) {
+	buffer.distance = distance;
+	buffer.quadrantSegments = quadrantSegments;
+	buffer.doit = true;
+}
+
 
 void Traverser::addObserver(Observer* aObserver) { 
 	observers.push_back(aObserver);
@@ -672,6 +682,33 @@ void Traverser::process_feature(OGRFeature* feature) {
 	OGRGeometry* feature_geometry = feature->GetGeometryRef();
 
 	//
+	// apply buffer operation if so indicated:
+	//
+	if ( buffer.doit ) {
+		OGRGeometry* buffered_geometry = 0;
+		try {
+			buffered_geometry = feature_geometry->Buffer(
+				buffer.distance, buffer.quadrantSegments
+			);
+		}
+		catch(geos::GEOSException* ex) {
+			cerr<< ">>>>> FID: " << feature->GetFID()
+				<< "  GEOSException: " << ex->toString()<< endl;
+			return;
+		}
+		if ( !buffered_geometry ) {
+			cout<< ">>>>> FID: " << feature->GetFID()
+				<< "  null buffered result!" << endl;
+			return;
+		}
+		
+		feature_geometry = buffered_geometry;
+		// NOTE that this feature_geometry must be deleted
+		// since it's a new created object. See below for destruction
+	}
+	
+	
+	//
 	// intersect this feature with raster (raster ring)
 	//
 	OGRGeometry* intersection_geometry = 0;
@@ -682,14 +719,14 @@ void Traverser::process_feature(OGRFeature* feature) {
 	catch(geos::GEOSException* ex) {
 		cerr<< ">>>>> FID: " << feature->GetFID()
 		    << "  GEOSException: " << ex->toString()<< endl;
-		return;
+		goto done;
 	}
 
 	if ( !intersection_geometry ) {
 		if ( verbose ) {
 			fprintf(stdout, " NO intersection:\n");
 		}
-		return;
+		goto done;
 	}
 	summary.num_intersecting_features++;
 
@@ -721,8 +758,11 @@ void Traverser::process_feature(OGRFeature* feature) {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
 		(*obs)->intersectionEnd(feature);
 
-
+done:
 	delete intersection_geometry;
+	if ( buffer.doit ) {
+		delete feature_geometry;
+	}
 }
 
 
