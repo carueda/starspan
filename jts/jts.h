@@ -49,6 +49,11 @@ public:
 	void case_end(void);
 	
 	/**
+	  * cancels a case.
+	  */
+	void case_cancel(void);
+	
+	/**
 	 * completes and closes the file containing the test suit.
 	 * If no cases were added, the file is removed.
 	 * Returns the number of completed cases.
@@ -59,6 +64,7 @@ private:
 	const char* filename;
 	FILE* file;
 	int no_cases;
+	long case_pos;
 };
 
 

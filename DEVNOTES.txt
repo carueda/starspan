@@ -7,6 +7,9 @@ $Id$
 	Basic scheme implemented but should be adjusted for better 
 	efficiency.
 	
+	JTS_TestGenerator: now a case can be cancelled, useful when empty
+	arguments are found.
+	
 2004-09-07
 	Complete build process revised and reported in
 	http://starspan.casil.ucdavis.edu/?Build

@@ -22,6 +22,7 @@ JTS_TestGenerator::JTS_TestGenerator(const char* filename_) {
 	fprintf(file, "  <desc>testset created by starspan</desc>\n");
 	fprintf(file, "  <precisionModel type=\"FLOATING\" />\n");
 	no_cases = 0;
+	case_pos = ftell(file);
 }
 
 JTS_TestGenerator::~JTS_TestGenerator() {
@@ -30,6 +31,7 @@ JTS_TestGenerator::~JTS_TestGenerator() {
 
 void JTS_TestGenerator::case_init(const char* description) {
 	if ( file ) {
+		case_pos = ftell(file);
 		fprintf(file, "  <case>\n");
 		fprintf(file, "    <desc>%s</desc>\n", description);
 	}
@@ -46,6 +48,7 @@ void JTS_TestGenerator::case_arg_end(const char* argname) {
 		fprintf(file, "    </%s>\n", argname);
 	}
 }
+
 void JTS_TestGenerator::case_end() {
 	if ( file ) {
 		fprintf(file, "    <test>\n");
@@ -53,6 +56,13 @@ void JTS_TestGenerator::case_end() {
 		fprintf(file, "    </test>\n");
 		fprintf(file, "  </case>\n");
 		no_cases++;
+	}
+}
+
+void JTS_TestGenerator::case_cancel() {
+	if ( file ) {
+		fseek(file, case_pos, SEEK_SET);
+		ftruncate(fileno(file), case_pos);
 	}
 }
 
