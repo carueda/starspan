@@ -422,7 +422,20 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			}
 			catch(geos::TopologyException* ex) {
 				cerr<< "TopologyException: " << ex->toString()<< endl;
-				return;
+				if ( true ) {
+					geos::WKTWriter wktWriter;
+					cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
+					cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
+				}
+			}
+			catch(geos::GEOSException* ex) {
+				geos::WKTWriter wktWriter;
+				cerr<< "geos::GEOSException: " << ex->toString()<< endl;
+				if ( true ) {
+					geos::WKTWriter wktWriter;
+					cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
+					cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
+				}
 			}
 			if ( pix_inters ) {
 				double area = pix_inters->getArea();
