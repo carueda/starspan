@@ -2,6 +2,10 @@ starspan devnotes
 $Id$
                                     
 
+2005-04-04
+	New BUILD.windows.txt with notes about compiling the while
+	system in windows
+
 2005-03-23 (0.963beta)
 	Makefile.props.templ: GDAL_SRC_DIR removed: we don't
 	need this any more as GDAL (from 1.2.6) already installs

@@ -1,0 +1,21 @@
+BUILD on windows
+$Id$
+
+2005-04-04
+	
+	Attempting to build on windows/cygwin again:
+	
+		GEOS 2.1.1: I only needed to specify 
+		extern "C" { #include <ieeefp.h> }
+		in geos/platform.h and compilation goes fine.
+		
+		GDAL 1.2.6: ... problems at linking stage: it cannot
+		find some geos::WKT... stuff  :-(
+		Then I tried with mingw as indicated in gdal.org.faq.html
+		and it compiled fine.
+		
+		starspan 0.962beta: Compiles but fails with many unresolved 
+		link symbols. I guess it's because of the mixing of library
+		modes... I'd need to check this again later when I have more
+		time.
+
