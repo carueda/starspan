@@ -511,10 +511,10 @@ void Traverser::process_feature(OGRFeature* feature) {
 			break;
 			
 		default:
-			cerr<< "traverser: "
+			cerr<< "starspan: "
 			    << OGRGeometryTypeToName(intersection_type)
 			    << ": intersection type not considered.\n"
-			    << "           Base feature FID= " <<feature->GetFID()<< " is " 
+			    << "           Base feature FID=" <<feature->GetFID()<< " is " 
 				<< OGRGeometryTypeToName(feature_geometry->getGeometryType()) << endl;
 			;
 	}
@@ -629,7 +629,7 @@ void Traverser::traverse() {
 			if ( psize > 0 )
 				progress = new Progress(psize, 3, *progress_out);
 			else
-				progress = new Progress(psize, 0, *progress_out);
+				progress = new Progress(150, *progress_out);
 		}
 		while( (feature = layer->GetNextFeature()) != NULL ) {
 			process_feature(feature);

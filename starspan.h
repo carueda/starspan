@@ -251,6 +251,8 @@ Observer* starspan_dump(
 	const char* filename
 );
 
+void dumpFeature(Vector* vector, long FID, const char* filename);
+
 
 
 /**

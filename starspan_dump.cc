@@ -18,6 +18,78 @@
 
 using namespace std;
 
+static void processPoint(OGRPoint* point, FILE* file) {
+	fprintf(file, "DataSet: Point\n");
+	fprintf(file, "%10.3f , %10.3f\n", point->getX(), point->getY());
+}
+static void processMultiPoint(OGRMultiPoint* pp, FILE* file) {
+	for ( int i = 0; i < pp->getNumGeometries(); i++ ) {
+		OGRPoint* point = (OGRPoint*) pp->getGeometryRef(i);
+		processPoint(point, file);
+	}
+}
+static void processLineString(OGRLineString* linstr, FILE* file) {
+	fprintf(file, "DataSet: LineString\n");
+	int num_points = linstr->getNumPoints();
+	for ( int i = 0; i < num_points; i++ ) {
+		OGRPoint point;
+		linstr->getPoint(i, &point);
+		fprintf(file, "%10.3f , %10.3f\n", point.getX(), point.getY());
+	}
+}
+static void processMultiLineString(OGRMultiLineString* coll, FILE* file) {
+	for ( int i = 0; i < coll->getNumGeometries(); i++ ) {
+		OGRLineString* linstr = (OGRLineString*) coll->getGeometryRef(i);
+		processLineString(linstr, file);
+	}
+}
+static void processPolygon(OGRPolygon* poly, FILE* file) {
+	OGRLinearRing* ring = poly->getExteriorRing();
+	processLineString(ring, file);
+}
+
+
+static void dumpFeature(OGRFeature* feature, FILE* file) {
+	fprintf(file, "DataSet: FID=%ld\n", feature->GetFID());
+
+	OGRGeometry* geometry = feature->GetGeometryRef();
+	OGRwkbGeometryType type = geometry->getGeometryType();
+	switch ( type ) {
+		case wkbPoint:
+		case wkbPoint25D:
+			processPoint((OGRPoint*) geometry, file);
+			break;
+	
+		case wkbMultiPoint:
+		case wkbMultiPoint25D:
+			processMultiPoint((OGRMultiPoint*) geometry, file);
+			break;
+	
+		case wkbLineString:
+		case wkbLineString25D:
+			processLineString((OGRLineString*) geometry, file);
+			break;
+	
+		case wkbMultiLineString:
+		case wkbMultiLineString25D:
+			processMultiLineString((OGRMultiLineString*) geometry, file);
+			break;
+			
+		case wkbPolygon:
+		case wkbPolygon25D:
+			processPolygon((OGRPolygon*) geometry, file);
+			break;
+			
+		default:
+			cerr<< "dump: " 
+				<< OGRGeometryTypeToName(type)
+				<< ": intersection type not considered\n"
+			;
+	}
+}
+
+
+
 
 
 /**
@@ -112,85 +184,12 @@ public:
 		fprintf(file, "%f , %f\n", x0, y0);
 	}
 
-	void processPoint(OGRPoint* point) {
-		fprintf(file, "DataSet: Point\n");
-		fprintf(file, "%10.3f , %10.3f\n", point->getX(), point->getY());
-	}
-	void processMultiPoint(OGRMultiPoint* pp) {
-		for ( int i = 0; i < pp->getNumGeometries(); i++ ) {
-			OGRPoint* point = (OGRPoint*) pp->getGeometryRef(i);
-			processPoint(point);
-		}
-	}
-	void processLineString(OGRLineString* linstr) {
-		fprintf(file, "DataSet: LineString\n");
-		int num_points = linstr->getNumPoints();
-		for ( int i = 0; i < num_points; i++ ) {
-			OGRPoint point;
-			linstr->getPoint(i, &point);
-			fprintf(file, "%10.3f , %10.3f\n", point.getX(), point.getY());
-		}
-	}
-	void processMultiLineString(OGRMultiLineString* coll) {
-		for ( int i = 0; i < coll->getNumGeometries(); i++ ) {
-			OGRLineString* linstr = (OGRLineString*) coll->getGeometryRef(i);
-			processLineString(linstr);
-		}
-	}
-	void processPolygon(OGRPolygon* poly) {
-		OGRLinearRing* ring = poly->getExteriorRing();
-		processLineString(ring);
-	}
 
-
-	/**
-	  * 
-	  */
-	void writeFeature(OGRFeature* feature) {
-		fprintf(file, "DataSet: FID=%ld\n", feature->GetFID());
-
-		OGRGeometry* geometry = feature->GetGeometryRef();
-		OGRwkbGeometryType type = geometry->getGeometryType();
-		switch ( type ) {
-			case wkbPoint:
-			case wkbPoint25D:
-				processPoint((OGRPoint*) geometry);
-				break;
-		
-			case wkbMultiPoint:
-			case wkbMultiPoint25D:
-				processMultiPoint((OGRMultiPoint*) geometry);
-				break;
-		
-			case wkbLineString:
-			case wkbLineString25D:
-				processLineString((OGRLineString*) geometry);
-				break;
-		
-			case wkbMultiLineString:
-			case wkbMultiLineString25D:
-				processMultiLineString((OGRMultiLineString*) geometry);
-				break;
-				
-			case wkbPolygon:
-			case wkbPolygon25D:
-				processPolygon((OGRPolygon*) geometry);
-				break;
-				
-			default:
-				cerr<< "dump: " 
-				    << OGRGeometryTypeToName(type)
-				    << ": intersection type not considered\n"
-				;
-		}
-	}
-	
-	
 	/**
 	  * Inits creation of datasets corresponding to new feature
 	  */
 	void intersectionFound(OGRFeature* feature) {
-		writeFeature(feature);
+		dumpFeature(feature, file);
 	}
 
 	/**
@@ -243,4 +242,25 @@ Observer* starspan_dump(
 	return new DumpObserver(layer, rast, use_polys, file);
 }
 
+
+void dumpFeature(Vector* vector, long FID, const char* filename) {
+	OGRLayer* layer = vector->getLayer(0);
+	if ( !layer ) {
+		cerr<< "warning: No layer 0 found\n";
+		return;
+	}
+	OGRFeature* feature = layer->GetFeature(FID);
+	if ( !feature ) {
+		cerr<< " feature FID= " <<FID<< " not found\n";
+		return;
+	}
+	FILE* file = fopen(filename, "w");
+	if (!file) {
+		cerr<< "cannot create " << filename<< endl;
+		return;
+	}
+	
+	dumpFeature(feature, file);
+	fclose(file);
+}
 

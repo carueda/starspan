@@ -416,9 +416,14 @@ int main(int argc, char ** argv) {
 	}
 	
 	if ( dump_geometries_filename ) {
-		Observer* obs = starspan_dump(tr, use_polys, dump_geometries_filename);
-		if ( obs )
-			tr.addObserver(obs);
+		if ( tr.getNumRasters() == 0 && tr.getVector() && FID >= 0 ) {
+			dumpFeature(tr.getVector(), FID, dump_geometries_filename);
+		}
+		else {
+			Observer* obs = starspan_dump(tr, use_polys, dump_geometries_filename);
+			if ( obs )
+				tr.addObserver(obs);
+		}
 	}
 
 	if ( jtstest_filename ) {
