@@ -214,15 +214,9 @@ public:
 	}
 
 	/**
-	  * closes the file
+	  * does nothing
 	  */
-	void end() {
-		if ( file ) {
-			fclose(file);
-			fprintf(stdout, "csv: finished.\n");
-			file = 0;
-		}
-	}
+  void end() {}
 };
 
 
