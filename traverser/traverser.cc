@@ -68,10 +68,8 @@ void Traverser::traverse() {
 	
     OGRPoint* point = new OGRPoint();
 
-    int feature_id = 0;
     OGRFeature* feature;
 	while( (feature = layer->GetNextFeature()) != NULL ) {
-		feature_id++;
 		OGRGeometry* feature_geometry = feature->GetGeometryRef();
 		OGREnvelope feature_env;
 		feature_geometry->getEnvelope(&feature_env);
@@ -89,7 +87,7 @@ void Traverser::traverse() {
 			assert(intersection_env.MinX >= min_x);
 			assert(intersection_env.MinY >= min_y);
 			
-			observer->intersection(feature_id, intersection_env);
+			observer->intersection(feature, intersection_env);
 
 
 

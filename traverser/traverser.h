@@ -22,7 +22,7 @@ public:
 	virtual ~Observer() {}
 	
 	/** A new intersection has been found */
-	virtual void intersection(int feature_id, OGREnvelope intersection_env) {}
+	virtual void intersection(OGRFeature* feature, OGREnvelope intersection_env) {}
 	
 	/** A new signature has been extracted */
 	virtual void addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize) {}
