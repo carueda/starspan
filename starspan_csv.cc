@@ -58,14 +58,14 @@ public:
 	FILE* file;
 	bool noColRow, noXY;
 	OGRFeature* currentFeature;
-	const char* select_fields;
+	vector<const char*>* select_fields;
 	
 	/**
 	  * Creates a csv creator
 	  */
-	CSVObserver(Traverser& tr, FILE* f, const char* select_fields_,
+	CSVObserver(Traverser& tr, FILE* f, vector<const char*>* select_fields,
 		bool noColRow, bool noXY)
-	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields_)
+	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields)
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -105,10 +105,8 @@ public:
 		
 		// Create fields:
 		if ( select_fields ) {
-			char buff[strlen(select_fields) + 1];
-			strcpy(buff, select_fields);
-			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
-				fprintf(file, ",%s", fname);
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				fprintf(file, ",%s", *fname);
 			}
 		}
 		else {
@@ -169,12 +167,10 @@ public:
 		
 		// add attribute fields from source currentFeature to record:
 		if ( select_fields ) {
-			char buff[strlen(select_fields) + 1];
-			strcpy(buff, select_fields);
-			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
-				const int i = currentFeature->GetFieldIndex(fname);
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				const int i = currentFeature->GetFieldIndex(*fname);
 				if ( i < 0 ) {
-					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					fprintf(stderr, "\n\tField `%s' not found\n", *fname);
 					exit(1);
 				}
 				const char* str = currentFeature->GetFieldAsString(i);
@@ -222,7 +218,7 @@ public:
   */
 Observer* starspan_csv(
 	Traverser& tr,
-	const char* select_fields,
+	vector<const char*>* select_fields,
 	const char* filename,
 	bool noColRow,
 	bool noXY

@@ -23,7 +23,7 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	FILE* file;
-	vector<const char*> desired;
+	vector<const char*> select_stats;
 	long currentFeatureID;
 	void* bandValues_buffer;
 	double* bandValues;
@@ -52,8 +52,8 @@ public:
 	/**
 	  * Creates a stats calculator
 	  */
-	StatsObserver(Traverser& tr, FILE* f, vector<const char*> desired)
-	: tr(tr), file(f), desired(desired)
+	StatsObserver(Traverser& tr, FILE* f, vector<const char*> select_stats)
+	: tr(tr), file(f), select_stats(select_stats)
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -65,7 +65,7 @@ public:
 			compute[i] = false;
 		}
 		
-		for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
+		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 			if ( 0 == strcmp(*stat, "avg") )
 				compute[AVG] = true;
 			else if ( 0 == strcmp(*stat, "stdev") )
@@ -148,7 +148,7 @@ public:
 		fprintf(file, ",numPixels");
 		
 		// Create fields for bands
-		for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
+		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 			for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 				fprintf(file, ",%s_Band%d", *stat, i+1);
 			}
@@ -287,7 +287,7 @@ public:
 	 
 			// report desired results:
 			// (desired list is traversed to keep order according to column headers)
-			for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
+			for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 				if ( 0 == strcmp(*stat, "avg") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 						fprintf(file, ",%f", result_stats[AVG][j]);
@@ -346,8 +346,9 @@ public:
   */
 Observer* starspan_getStatsObserver(
 	Traverser& tr,
-	const char* filename,
-	vector<const char*> desired
+	vector<const char*> select_stats,
+	vector<const char*>* select_fields,
+	const char* filename
 ) {
 	// create output file
 	FILE* file = fopen(filename, "w");
@@ -356,7 +357,7 @@ Observer* starspan_getStatsObserver(
 		return 0;
 	}
 
-	return new StatsObserver(tr, file, desired);	
+	return new StatsObserver(tr, file, select_stats);	
 }
 		
 

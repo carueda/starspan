@@ -5,6 +5,8 @@ $Id$
 	starspan_stats: bug fixed: I was calling pixels.empty() instead
 	of pixels.clear()!
 	
+	select_fields is now a pointer to a vector.
+	
 2004-09-29 (0.81beta)
 
 	-dump_geometries: new testing operation (implemented in

@@ -48,7 +48,8 @@ static void usage(const char* msg) {
 		"      -jtstest <filename>  Generate a JTS test file\n"
 		"\n"
 		"   options:\n"
-		"      -fields field1,...,fieldn    Only these fields from vector\n"
+		"      -fields field1,...,fieldn\n"
+		"                   Only these fields from vector.  - for none\n"
 		"      -pixprop <minimum-pixel-proportion>\n"
 		"      -noColRow    do not include (col,row) fields\n"
 		"      -noXY        do not include (x,y) fields\n"
@@ -81,12 +82,12 @@ int main(int argc, char ** argv) {
 	bool use_polys = false;
 	const char*  envi_name = NULL;
 	bool envi_image = true;
-	const char*  select_fields = NULL;
+	vector<const char*>* select_fields = NULL;
 	const char*  dbf_name = NULL;
 	const char*  update_dbf_name = NULL;
 	const char*  csv_name = NULL;
 	const char*  stats_name = NULL;
-	vector<const char*> stats_which;
+	vector<const char*> select_stats;
 	const char*  update_csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
@@ -163,9 +164,9 @@ int main(int argc, char ** argv) {
 				usage("-stats: which output name?");
 			stats_name = argv[i];
 			while ( ++i < argc && argv[i][0] != '-' ) {
-				stats_which.push_back(argv[i]);
+				select_stats.push_back(argv[i]);
 			}
-			if ( stats_which.size() == 0 )
+			if ( select_stats.size() == 0 )
 				usage("-stats: which statistics?");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
@@ -240,9 +241,13 @@ int main(int argc, char ** argv) {
 		}
 		
 		else if ( 0==strcmp("-fields", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-fields: which fields to select?");
-			select_fields = argv[i];
+			if ( !select_fields )
+				select_fields = new vector<const char*>();
+			while ( ++i < argc && argv[i][0] != '-' ) {
+				select_fields->push_back(argv[i]);
+			}
+			if ( i < argc && argv[i][0] == '-' ) 
+				--i;
 		}
 
 		else if ( 0==strcmp("-in", argv[i]) ) {
@@ -334,7 +339,7 @@ int main(int argc, char ** argv) {
 	
 	// stats calculation:	
 	if ( stats_name ) {
-		Observer* obs = starspan_getStatsObserver(tr, stats_name, stats_which);
+		Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
 		if ( obs )
 			tr.addObserver(obs);
 	}

@@ -24,7 +24,7 @@ struct Field {
 	char name[1024];
 	FILE* file;
 	
-	Field(char* n) {
+	Field(const char* n) {
 		strcpy(name, n);
 	}
 	
@@ -297,7 +297,7 @@ public:
   */
 Observer* starspan_gen_envisl(
 	Traverser& tr,
-	const char* select_fields,
+	vector<const char*>* select_fields,
 	const char* envisl_name,
 	bool envi_image
 ) {
@@ -330,12 +330,10 @@ Observer* starspan_gen_envisl(
 	list<Field*>* fields = NULL;
 	if ( select_fields ) {
 		fields = new list<Field*>();
-		char buff[strlen(select_fields) + 1];
-		strcpy(buff, select_fields);
-		for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
-			Field* field = new Field(fname);
+		for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+			Field* field = new Field(*fname);
 			char filename[1024];
-			sprintf(filename, "%s_%s.ser", envisl_name, fname);
+			sprintf(filename, "%s_%s.ser", envisl_name, *fname);
 			field->file = fopen(filename, "w");
 			if ( !field->file ) {
 				fclose(header_file);

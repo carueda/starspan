@@ -45,15 +45,15 @@ public:
 	bool noColRow, noXY;
 	OGRFeature* currentFeature;
 	int next_record_index;
-	const char* select_fields;	
+	vector<const char*>* select_fields;	
 
 	
 	/**
 	  * Creates a dbf creator
 	  */
-	DBObserver(Traverser& tr, DBFHandle f, const char* select_fields_,
+	DBObserver(Traverser& tr, DBFHandle f, vector<const char*>* select_fields,
 		bool noColRow, bool noXY)
-	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields_) 
+	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields) 
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -128,20 +128,18 @@ public:
 		// Create fields from layer definition 
 		OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
 		if ( select_fields ) {
-			char buff[strlen(select_fields) + 1];
-			strcpy(buff, select_fields);
-			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
-				const int i = poDefn->GetFieldIndex(fname);
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				const int i = poDefn->GetFieldIndex(*fname);
 				if ( i < 0 ) {
-					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					fprintf(stderr, "\n\tField `%s' not found\n", *fname);
 					exit(1);
 				}
 				OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
 				field_type = fieldtype_2_dbftype(poField->GetType());
 				field_width = poField->GetWidth();
 				field_precision = poField->GetPrecision();
-				fprintf(stdout, "Creating field: %s\n", fname);
-				DBFAddField(file, fname, field_type, field_width, field_precision);
+				fprintf(stdout, "Creating field: %s\n", *fname);
+				DBFAddField(file, *fname, field_type, field_width, field_precision);
 				next_field_index++;
 			}
 		}
@@ -284,12 +282,10 @@ public:
 		
 		// add attribute fields from source currentFeature to record:
 		if ( select_fields ) {
-			char buff[strlen(select_fields) + 1];
-			strcpy(buff, select_fields);
-			for ( char* fname = strtok(buff, ","); fname; fname = strtok(NULL, ",") ) {
-				const int i = currentFeature->GetFieldIndex(fname);
+			for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+				const int i = currentFeature->GetFieldIndex(*fname);
 				if ( i < 0 ) {
-					fprintf(stderr, "\n\tField `%s' not found\n", fname);
+					fprintf(stderr, "\n\tField `%s' not found\n", *fname);
 					exit(1);
 				}
 				write_field(i, next_field_index++);
@@ -355,7 +351,7 @@ public:
   */
 Observer* starspan_db(
 	Traverser& tr,
-	const char* select_fields,
+	vector<const char*>* select_fields,
 	const char* filename,
 	bool noColRow,
 	bool noXY

@@ -23,18 +23,19 @@
 
 /**
   * Gets an observer that computes statistics for each FID.
-  * INCOMPLETE
   *
   * @param tr Data traverser
+  * @param select_stats List of desired statistics (avg, stdev, min, max)
+  * @param select_fields desired fields
   * @param filename output file name
-  * @param stats List of desired statistics (avg, stdev, min, max)
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_getStatsObserver(
 	Traverser& tr,
-	const char* filename,
-	vector<const char*> stats_which
+	vector<const char*> select_stats,
+	vector<const char*>* select_fields,
+	const char* filename
 );
 
 
@@ -49,7 +50,7 @@ Observer* starspan_getStatsObserver(
   *     {rast-bands}: bands from raster at corresponding location
   *
   * @param tr Data traverser
-  * @param select_fields comma-separated field names
+  * @param select_fields desired fields
   * @param csv_filename output file name
   * @param noColRow if true, no col,row fields will be included
   * @param noXY if true, no x,y fields will be included
@@ -58,7 +59,7 @@ Observer* starspan_getStatsObserver(
   */
 Observer* starspan_csv(
 	Traverser& tr, 
-	const char* select_fields,
+	vector<const char*>* select_fields,
 	const char* csv_filename,
 	bool noColRow,
 	bool noXY
@@ -76,7 +77,7 @@ Observer* starspan_csv(
   *     {rast-bands}: bands from raster at corresponding location
   *
   * @param tr Data traverser
-  * @param select_fields comma-separated field names
+  * @param select_fields desired fields
   * @param db_filename output file name
   * @param noColRow if true, no col,row fields will be included
   * @param noXY if true, no x,y fields will be included
@@ -85,7 +86,7 @@ Observer* starspan_csv(
   */
 Observer* starspan_db(
 	Traverser& tr,
-	const char* select_fields,
+	vector<const char*>* select_fields,
 	const char* db_filename,
 	bool noColRow,
 	bool noXY
@@ -95,7 +96,7 @@ Observer* starspan_db(
 
 /** Generates ENVI output
   * @param tr Data traverser
-  * @param select_fields comma-separated field names
+  * @param select_fields desired fields
   * @param envisl_filename output file name
   * @param envi_image  true for image, false for spectral library
   *
@@ -103,7 +104,7 @@ Observer* starspan_db(
   */
 Observer* starspan_gen_envisl(
 	Traverser& tr,
-	const char* select_fields,
+	vector<const char*>* select_fields,
 	const char* envisl_name,
 	bool envi_image
 );
