@@ -6,7 +6,7 @@
 //
 
 #include "starspan.h"           
-#include "vrt/vrtdataset.h"
+#include "vrtdataset.h"
 #include "jts.h"       
 #include <geos/io.h>
 
