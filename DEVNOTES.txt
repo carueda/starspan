@@ -4,6 +4,9 @@ $Id$
 
 2005-02-11 (0.93beta)
 	- starting 0.93beta.
+	- New Makefile.props.fink (jgrn307)
+	- added INCLUDE += -I$(GDAL_SRC_DIR) in Makefile (jgrn307)
+	- More documentation in Makefile
 
 
 2005-02-10 (0.92beta)

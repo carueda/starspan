@@ -3,9 +3,16 @@
 # $Id$
 #
 
-# Use Makefile.props.templ as a template to create Makefile.props
-# according to your system.
+# NOTE: This file is not intended to be changed by users.
+# Instead, create and edit a text file Makefile.props to define 
+# the required properties before building and installing STARSPAN. 
+# You can rename or copy the provided template Makefile.props.templ 
+# as Makefile.props and make the necessary changes. 
+# MacOS X users may want to use Makefile.props.fink as the template. 
 
+
+# Makefile.props must define the required build properties.
+# See Makefile.props.templ for a template.  
 include Makefile.props
 
 #------------------------------------------------------------
@@ -14,6 +21,7 @@ INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iuti
 
 INCLUDE += -I$(GDAL_PREFIX)/include
 INCLUDE += -I$(GDAL_SRC_DIR)/frmts
+INCLUDE += -I$(GDAL_SRC_DIR)
 
 INCLUDE += -I/usr/local/include
 
