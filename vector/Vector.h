@@ -29,6 +29,9 @@ public:
 	// gets the name of this object
 	const char* getName();
 	
+	// gets the number of layers
+	int getLayerCount(void) { return poDS->GetLayerCount(); } 
+	
 	// gets a layer
 	OGRLayer* getLayer(int layer_num); 
 	
