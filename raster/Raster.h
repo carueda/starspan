@@ -6,6 +6,7 @@
 #define Raster_h
 
 #include "gdal.h"           
+#include "gdal_priv.h"
 #include "ogr_srs_api.h"
 
 #include <stdio.h>  // FILE
@@ -20,24 +21,29 @@ public:
 	// finishes this module
 	static int end(void);
 	
-	// Creates a raster.
+	// Creates a raster object representing an existing file.
 	Raster(const char* filename);
 	
-	// gets raster size in pixels
-	void getSize(int *width, int *height);
+	// Creates a raster object representing a new raster file.
+	Raster(const char* filename, int width, int height, int bands);
+	
+	
+	GDALDataset* getDataset(void) { return hDataset; }
+	
+	// gets raster size in pixels and number of bands
+	void getSize(int *width, int *height, int *bands);
 	
 	// gets raster coordinates
 	void getCoordinates(double *x0, double *y0, double *x1, double *y1);
 	
-	// destroys this raster.
+	// closes this raster.
 	~Raster();
 	
 	// for debugging
 	void report(FILE* file);
 	
 private:
-	GDALDatasetH hDataset;
-	GDALDriverH hDriver;
+	GDALDataset* hDataset;
     const char* pszProjection;
     double adfGeoTransform[6];
 	bool geoTransfOK;

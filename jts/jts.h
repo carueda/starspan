@@ -10,26 +10,29 @@
 #include <stdio.h>
 
 
-/////////////////////////////////////////////////////////////
-// test generation routines
+/**
+  * Test generator.
+  */
+class JTS_TestGenerator {
+public:
+	JTS_TestGenerator(const char* filename);
+	~JTS_TestGenerator();
+	
+	const char* getFilename(void) { return filename; }
+	FILE* getFile(void) { return file; }
+	
+	void case_init(const char* description);
+	void case_arg_init(const char* argname);
+	void case_arg_end(const char* argname);
+	void case_end(void);
+	void end();
+	
+private:
+	const char* filename;
+	FILE* file;
+};
 
-/** starts the contents of the test file */
-void jts_test_init(FILE* jts_test_file);
 
-/** starts a case */
-void jts_test_case_init(FILE* jts_test_file);
-
-/** starts an arg */
-void jts_test_case_arg_init(FILE* jts_test_file, char* argname);
-
-/** ends an arg */
-void jts_test_case_arg_end(FILE* jts_test_file, char* argname);
-
-/** ends a case */
-void jts_test_case_end(FILE* jts_test_file);
-
-/** ends the test */
-void jts_test_end(FILE* jts_test_file);
 
 #endif
 

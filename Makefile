@@ -4,7 +4,10 @@
 #
 #
 
-INCLUDE=-Ivector -Iraster -Ijts -I/usr/local/include  -I/usr/local/include/libshp
+INCLUDE= -Ivector -Iraster -Ijts \
+         -I/usr/local/include  \
+         -I/home/carueda/cstars/GDAL/gdal/frmts  \
+		 -I/usr/local/include/libshp
 
 SRCS = starspan_minirasters.cc \
        starspan_jtstest.cc \

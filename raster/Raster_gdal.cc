@@ -7,6 +7,7 @@
 #include "Raster.h"
 
 
+
 int Raster::init() {
     GDALAllRegister();
 	return 0;
@@ -17,8 +18,37 @@ int Raster::end() {
 }
 
 
+Raster::Raster(const char* filename, int width, int height, int bands) {
+	const char *pszFormat = "ENVI";
+    GDALDriver* hDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
+	if( hDriver == NULL ) {
+		fprintf(stderr, "Couldn't get driver %s\n", pszFormat);
+        exit(1);
+	}
+	
+    char **papszOptions = NULL;
 
+	hDataset = hDriver->Create(
+		filename, 
+		width, height, bands, 
+		GDT_Byte, 
+        papszOptions 
+	);
+	
+	if( hDataset == NULL ) {
+		fprintf(stderr, "Couldn't create dataset: %s\n", CPLGetLastErrorMsg());
+        exit(1);
+	}
 
+	
+	
+	geoTransfOK = GDALGetGeoTransform(hDataset, adfGeoTransform) == CE_None; 
+    if( geoTransfOK ) {
+        pszProjection = GDALGetProjectionRef(hDataset);
+    }
+}
+
+	
 static void geo_corner(double adfGeoTransform[6], int ix, int iy, double *x, double *y) {
 	*x = adfGeoTransform[0] + adfGeoTransform[1] * ix + adfGeoTransform[2] * iy;
 	*y = adfGeoTransform[3] + adfGeoTransform[4] * ix + adfGeoTransform[5] * iy;
@@ -26,7 +56,7 @@ static void geo_corner(double adfGeoTransform[6], int ix, int iy, double *x, dou
 
 
 Raster::Raster(const char* rastfilename) {
-	hDataset = GDALOpen(rastfilename, GA_ReadOnly);
+	hDataset = (GDALDataset*) GDALOpen(rastfilename, GA_ReadOnly);
     
     if( hDataset == NULL ) {
         fprintf(stderr, "GDALOpen failed: %s\n", CPLGetLastErrorMsg());
@@ -40,29 +70,31 @@ Raster::Raster(const char* rastfilename) {
 }
 
 
-void Raster::getSize(int *width, int *height) {
-	*width = GDALGetRasterXSize(hDataset);
-	*height = GDALGetRasterYSize(hDataset);
+void Raster::getSize(int *width, int *height, int *bands) {
+	if ( width )  *width = GDALGetRasterXSize(hDataset);
+	if ( height ) *height = GDALGetRasterYSize(hDataset);
+	if ( bands )  *bands = GDALGetRasterCount(hDataset);
 }
+
 
 void Raster::getCoordinates(double *x0, double *y0, double *x1, double *y1) {
     if( !geoTransfOK )
 		return;
 	int width, height;
-	getSize(&width, &height);
+	getSize(&width, &height, NULL);
 	geo_corner(adfGeoTransform,0, 0, x0, y0);
 	geo_corner(adfGeoTransform, width, height, x1, y1);
 }
 
 void Raster::report(FILE* file) {
-    GDALDriverH hDriver = GDALGetDatasetDriver(hDataset);
+    GDALDriver* hDriver = hDataset->GetDriver();
     fprintf(file, "Driver: %s/%s\n",
 		GDALGetDriverShortName(hDriver),
 		GDALGetDriverLongName(hDriver) 
 	);
-	int width, height;
-	getSize(&width, &height);
-    fprintf(file, "Size is %d, %d\n", width, height);
+	int width, height, bands;
+	getSize(&width, &height, &bands);
+    fprintf(file, "Size is %d, %d;  bands = %d\n", width, height, bands);
     fprintf(file, "Corner Coordinates:\n");
     report_corner(file, "Upper Left", 0, 0);
     report_corner(file, "Lower Left", 0, height);
@@ -135,6 +167,6 @@ void Raster::report_corner(FILE* file, const char* corner_name, int ix, int iy) 
 
 
 Raster::~Raster() {
-	GDALClose(hDataset);
+	delete hDataset;
 }
 

@@ -44,7 +44,11 @@ static void usage(const char* msg) {
 		"\n"
 		"   Options:\n"
 		"      -report              shows info about given input files\n"
-		"      -mr                  generates a mini rasters for each intersecting feature\n"
+		"                           similar to gdalinfo and ogrinfo.\n"
+		"      -mr <prefix> <srs>   generates a mini raster for each intersecting feature\n"
+		"                           <prefix> : used for created raster names\n"
+		"                           <srs>    : See gdal_translate option -a_srs\n"
+		"                                      use - to take projection from input raster\n"
 		"      -jtstest <filename>  generates a JTS test file with given name\n"
 		"                           -xhelp explains what to do next.\n"
 		"\n"
@@ -64,7 +68,8 @@ int main(int argc, char ** argv) {
 	const char* raster_filename = NULL;
 	const char* vector_filename = NULL;
 	bool do_report = false;
-	bool do_mini_rasters = false;
+	const char*  mini_prefix = NULL;
+	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
 	
 	for ( int i = 1; i < argc; i++ ) {
@@ -83,7 +88,13 @@ int main(int argc, char ** argv) {
 			usage(NULL);
 		}
 		else if ( 0==strcmp("-mr", argv[i]) ) {
-			do_mini_rasters = true;
+			if ( ++i == argc )
+				usage("-mr: which prefix?");
+			mini_prefix = argv[i];
+			if ( ++i == argc )
+				usage("-mr: which srs?");
+			if ( strcmp("-", argv[i]) )
+				mini_srs = argv[i];
 		}
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
 			if ( ++i == argc )
@@ -114,21 +125,15 @@ int main(int argc, char ** argv) {
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
-	if ( do_mini_rasters ) {
+	if ( mini_prefix ) {
 		// this option takes precedence.
 		if ( !rast && !vect ) {
-			usage("-mr: Please give both a raster and a vector file to process\n");
+			usage("-mr option requires both a raster and a vector file to process\n");
 		}
-		return starspan_minirasters(*rast, *vect);
+		return starspan_minirasters(*rast, *vect, mini_prefix, mini_srs);
 	}
 	else if ( jtstest_filename ) {
-		FILE* jtstest_file = fopen(jtstest_filename, "w");
-		if ( !jtstest_file ) {
-			fprintf(stderr, "Could not create %s\n", jtstest_filename);
-			return 1;
-		}
-		starspan_jtstest(*rast, *vect, jtstest_file);
-		fclose(jtstest_file);
+		starspan_jtstest(*rast, *vect, jtstest_filename);
 	}
 	else if ( do_report ) {
 		if ( !rast && !vect ) {
