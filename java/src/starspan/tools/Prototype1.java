@@ -28,20 +28,20 @@ import java.net.URL;
 public class Prototype1 {
 	/** Main entry for this prototype. */
     public static void main(String[] args) throws Exception {
-		if ( args.length != 2 ) {
+		if ( args.length != 1 ) {
 			System.out.println(
 				"starspan - prototype 1\n" +
-				"USAGE:  starspan <shpfile>  <raster-header>"
+				"USAGE:  starspan <shpfile>  [<raster-header>]"
 			);
 			return;
 		}
 		String shp_filename = args[0];
-		String hdr_filename = args[1];
-		
 		read_shape(shp_filename);
-		read_header(hdr_filename);
-		
-		return;
+
+		if ( args.length > 1 ) {
+			String hdr_filename = args[1];
+			read_header(hdr_filename);
+		}
 	}
 	
 	private static void read_shape(String shp_filename) throws Exception {
@@ -53,7 +53,7 @@ public class Prototype1 {
 		FeatureSource source = store.getFeatureSource(name);
 		FeatureResults fsShape = source.getFeatures();
 
-		if ( false ) {
+		if ( true ) {
             // print out a feature type header
             FeatureType ft = source.getSchema();
             System.out.println("FID\t");
@@ -78,23 +78,26 @@ public class Prototype1 {
 
             System.out.println();
 
-            // now print out the feature contents (every non geometric attribute)
-            FeatureReader reader = fsShape.reader();
+			FeatureReader reader = fsShape.reader();
 
-            while (reader.hasNext()) {
-                Feature feature = reader.next();
-                System.out.print(feature.getID() + "\t");
-
-                for (int i = 0; i < feature.getNumberOfAttributes(); i++) {
-                    Object attribute = feature.getAttribute(i);
-
-                    if (!(attribute instanceof Geometry)) {
-                        System.out.print(attribute + "\t");
-                    }
-                }
-
-                System.out.println();
-            }
+			if ( false ) {
+				// now print out the feature contents (every non geometric attribute)
+	
+				while (reader.hasNext()) {
+					Feature feature = reader.next();
+					System.out.print(feature.getID() + "\t");
+	
+					for (int i = 0; i < feature.getNumberOfAttributes(); i++) {
+						Object attribute = feature.getAttribute(i);
+	
+						if (!(attribute instanceof Geometry)) {
+							System.out.print(attribute + "\t");
+						}
+					}
+	
+					System.out.println();
+				}
+			}
 
             reader.close();
 
