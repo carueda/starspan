@@ -3,8 +3,8 @@ $Id$
                                     
 
 2005-02-26 (0.961beta)                  
-	Added option --mini_raster_separation <num-pixels> to include a
-	separation between minirasters in strip. Feature request #200074.
+	Added option --separation <num-pixels> to include a	separation
+	between minirasters in strip. Feature request #200074.
 	
 	starspan_miniraster.cc: Since ENVI complains about "Unknown" projections
 	(which us the map info created by GDAL by default),	I decided to set

@@ -46,7 +46,7 @@ static void usage(const char* msg) {
 		"      --mini_rasters <prefix> \n"
 		"      --mini_raster_strip <filename> \n"
 		"      --mini_raster_parity {even | odd | @<field>} \n"
-		"      --mini_raster_separation <num-pixels> \n"
+		"      --separation <num-pixels> \n"
 		"      --jtstest <filename>\n"
 		"\n"
 		"      --fields <field1> <field2> ... <fieldn>\n"
@@ -280,12 +280,12 @@ int main(int argc, char ** argv) {
 			globalOptions.mini_raster_parity = argv[i];
 		}
 		
-		else if ( 0==strcmp("--mini_raster_separation", argv[i]) ) {
+		else if ( 0==strcmp("--separation", argv[i]) ) {
 			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
-				usage("--mini_raster_separation: number of pixels?");
+				usage("--separation: number of pixels?");
 			globalOptions.mini_raster_separation = atoi(argv[i]);
 			if ( globalOptions.mini_raster_separation < 0 )
-				usage("--mini_raster_separation: invalid number of pixels");
+				usage("--separation: invalid number of pixels");
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {
