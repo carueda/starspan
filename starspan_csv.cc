@@ -195,7 +195,8 @@ public:
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
 			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-			fprintf(file, ",%s", extract_value(bandType, sign));
+			//fprintf(file, ",%s", extract_value(bandType, sign));
+			fprintf(file, ",%g", starspan_extract_double_value(bandType, sign));
 			
 			// move to next piece of data in buffer:
 			sign += typeSize;
