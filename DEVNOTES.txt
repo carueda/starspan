@@ -7,6 +7,7 @@ $Id$
 	- New Makefile.props.fink (jgrn307)
 	- added INCLUDE += -I$(GDAL_SRC_DIR) in Makefile (jgrn307)
 	- More documentation in Makefile
+	- copyright.txt added
 
 
 2005-02-10 (0.92beta)

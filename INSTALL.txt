@@ -56,6 +56,7 @@ The starspan tool can be installed as follows.
     Also see below for extended usage dependencies.
 
     * make
+    * make test
     * make install    # perhaps as root depending on install directory
 
 That's it
