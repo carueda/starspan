@@ -26,6 +26,9 @@ public:
 	// destroys this vector.
 	~Vector();
 	
+	// gets the name of this object
+	const char* getName();
+	
 	// gets a layer
 	OGRLayer* getLayer(int layer_num); 
 	

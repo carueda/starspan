@@ -88,6 +88,10 @@ Vector::~Vector() {
     delete poDS;
 }
 
+const char* Vector::getName() {
+	return poDS->GetName();
+}
+
 OGRLayer* Vector::getLayer(int layer_num) {
 	OGRLayer* layer = poDS->GetLayer(layer_num);
 	if( layer == NULL ) {

@@ -63,11 +63,22 @@ void Raster::report(FILE* file) {
 	int width, height;
 	getSize(&width, &height);
     fprintf(file, "Size is %d, %d\n", width, height);
-    fprintf(file, "Corner Coordinates:\n" );
+    fprintf(file, "Corner Coordinates:\n");
     report_corner(file, "Upper Left", 0, 0);
     report_corner(file, "Lower Left", 0, height);
     report_corner(file, "Upper Right", width, 0);
     report_corner(file, "Lower Right", width, height);
+	
+	fprintf(file, "Metadata:\n");
+	char** md = GDALGetMetadata(hDataset, NULL);
+	if ( md ) {
+		for ( int i = 0; md[i] != NULL; i++ ) {
+			fprintf(file, "md[%d] = [%s]\n", i, md[i]);
+		}
+	}
+	else {
+		fprintf(file, "\tNo metadata is given by the driver.\n");
+	}
 }
 
 void Raster::report_corner(FILE* file, const char* corner_name, int ix, int iy) {

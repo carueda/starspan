@@ -4,33 +4,39 @@
 #
 #
 
-VECTOR_INCLUDE=-Ivector -I/usr/local/include  -I/usr/local/include/libshp
-RASTER_INCLUDE=-Iraster -I/usr/local/include
+INCLUDE=-Ivector -Iraster -Ijts -I/usr/local/include  -I/usr/local/include/libshp
 
-OBJS = jts.o raster/Raster_gdal.o vector/Vector_ogr.o
+SRCS = starspan_minirasters.cc \
+       starspan_jtstest.cc \
+       starspan_util.cc \
+	   jts/jts.cc \
+	   raster/Raster_gdal.cc \
+	   vector/Vector_ogr.cc
 
 CXXFLAGS = -g -Wall \
-		   $(VECTOR_INCLUDE) \
-		   $(RASTER_INCLUDE)
+		   $(INCLUDE)
 
 LIBPATH = -L/usr/local/lib
 
 LDFLAGS = -lshp -lgdal -lgeos
 
-.PHONY= all install
+.PHONY= all install clean
 
 all: starspan2
 
-starspan2: starspan2.o $(OBJS)
-	g++ $(LIBPATH) -o starspan2 starspan2.o $(OBJS) $(LDFLAGS)
+starspan2: starspan2.o $(SRCS)
+	g++ $(CXXFLAGS) $(OBJ_OPT) \
+	    $(LIBPATH) -o starspan2 starspan2.o $(SRCS) $(LDFLAGS)
 
 install:
 	cp starspan2 ~/bin/ 
 
-starspan1: starspan1.o $(OBJS)
-	g++ $(LIBPATH) -o starspan1 starspan1.o $(OBJS) $(LDFLAGS)
+starspan1: starspan1.o $(SRCS)
+	g++ $(LIBPATH) -o starspan1 starspan1.o $(SRCS) $(LDFLAGS)
 
 
 .cc.o:
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
+clean:
+	rm -f *.o starspan1 starspan2
