@@ -469,7 +469,6 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 			fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
 		}
 	}
-	delete geos_poly;
 	
 	if ( verbose ) {
 		fprintf(stdout, "\n"); 
