@@ -1,6 +1,9 @@
 starspan readme
 $Id$
 
+See INSTALL.txt for installation instructions.
+
+
 Contents
 
 traverser/    Observer-based processing mechanism.

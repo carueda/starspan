@@ -1,0 +1,96 @@
+STARSPAN Installation instructions
+$Id$
+
+Software prerequisites
+The following dependencies must be properly installed on your system:
+
+    * GEOS 2.1.1 or newer
+    * GDAL 1.2.5 or newer
+
+These dependencies can be installed as follows.
+Notes:
+
+    * You will need to manually download and install the versions indicated
+    above; in particular, the versions through the Debian packaging mechanism
+    are older than the required ones.
+	
+    * No --prefix option is used in the corresponding ./configure commands. See
+    below for details.
+	
+    * See also a note on LFS - Large File Support that may be important for your
+    system if you are going to process large raster files.
+
+GEOS - Geometry Engine - Open Source, version 2.1.1
+This library is required to support geometry operations via OGR/GDAL.
+
+    * Go to http://geos.refractions.net/  and download geos-2.1.1.tar.bz2 (or newer)
+    * bunzip2 geos-2.1.1.tar.bz2
+    * tar xf geos-2.1.1.tar
+    * cd geos-2.1.1
+    * ./configure
+    * make
+    * sudo make install
+
+GDAL - Geospatial Data Abstraction Library
+
+    * Go to http://gdal.org/dl/ and download gdal-1.2.5.tar.gz or newer.
+    * tar zxf gdal-1.2.5.tar.gz
+    * cd gdal-1.2.5
+    * ./configure  --with-geos=/usr/local/bin/geos-config
+    * make
+    * sudo make install
+
+starspan code
+The starspan tool can be installed as follows.
+
+    * Go to http://casil.ucdavis.edu/project/showfiles.php?group_id=48 and
+    download starspan-XXXX.tar.gz where XXXX is the most recent release number.
+	
+    * tar zxf starspan-XXXX.tar.gz
+    * cd starspan
+    * cp Makefile.props.templ Makefile.props
+
+    * # Edit Makefile.props for necessary adjustments according to your local
+    system (e.g. to put the right values if required libraries are installed in
+    non-standard locations, and to specify where starspan will be installed).
+    Also see below for extended usage dependencies.
+
+    * make
+    * make install    # as root depending on install directory
+
+That's it
+
+The executables starspan and starspan2 are now installed in your system. Note
+that the entry point for end users is the shell script starspan.
+
+Extended usage dependencies
+
+Certain testing options require a JRE (Java Runtime Environment) and a number of
+Java archives as explained below.
+
+Note: If you don't plan to run these extended functionalities, just ignore the
+rest of this section.
+
+The required Java archives must be copied manually in
+$(STARSPAN_PREFIX)/bin/starspan.jars/
+
+The extended usage options are:
+
+--view_geometries option:
+This option requires:
+     plotapplication.jar
+Which can be downloaded from http://ptolemy.eecs.berkeley.edu/java/ptplot
+This option has been tested with version 5.1p2.
+
+--test
+--jts options:
+	These options require:
+		xerces.jar
+		jts-1.4.0.jar
+		jdom.jar
+		JTS_Test.jar
+		Acme.jar
+Which can be downloaded from http://www.vividsolutions.com/jts/jtshome.htm
+This option has been tested with JTS 1.4.
+
+

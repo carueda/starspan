@@ -2,6 +2,9 @@ starspan devnotes
 $Id$
 
 
+2005-02-07 (0.92beta)
+	- INSTALL.txt created (based on http://starspan.casil.ucdavis.edu/?Build)
+	
 2005-02-04 (0.92beta)
 	- setting up a test scheme: new directory tests/ and 
 	  tests/Makefile to apply tests. 
