@@ -74,12 +74,6 @@ public:
 	  * but raster info is given only if isSimple() returns false.
 	  */
 	virtual void addPixel(TraversalEvent& ev) {}
-
-	/**
-	  * A new signature has been extracted. 
-	  * This is called only if isSimple() returns false.
-	  */
-	virtual void addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize) {}
 };
 
 /**
