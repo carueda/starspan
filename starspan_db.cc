@@ -76,60 +76,63 @@ public:
 	Raster* rast; 
 	Vector* vect;
 	DBFHandle file;
-	int attrFieldIndexOffset;   // first index for attribute fields
-	int bandFieldIndexOffset;   // first index for band fields
+	bool includePixelLocation;
 	int numBands;
 	OGRFeature* currentFeature;
-	int no_records;	
+	int next_record_index;	
+
 	
 	/**
-	  *
+	  * Creates fields: FID, col, row, fields-from-feature, bands-from-raster
 	  */
 	DBObserver(Raster* r, Vector* v, DBFHandle f) {
 		rast = r;
 		vect = v;
 		file = f;
 		
+		// PENDING maybe read this from a parameter
+		includePixelLocation = true;
+		
 		OGRLayer* poLayer = vect->getLayer(0);
 		if ( !poLayer ) {
 			fprintf(stderr, "Couldn't fetch layer 0\n");
 			exit(1);
 		}
-		
+
+		//		
 		// Create desired fields:
+		//
+		int next_field_index = 0;
 		
+		char field_name[64];
+		DBFFieldType field_type;
+		int field_width;
+		int field_precision;
+
+
+		// Create FID field
+		field_type = FTInteger;
+		field_width = 6;
+		field_precision = 0;
+		sprintf(field_name, "FID");
+		fprintf(stdout, "Creating field: %s\n", field_name);
+		DBFAddField(file, field_name, field_type, field_width, field_precision);
+		next_field_index++;
 		
-		// Create (x,y) fields, if so indicated?
-		// PENDING
-		if ( true ) {
-			char field_name[64];
-			const DBFFieldType field_type = FTDouble;
-			const int field_width = 18;
-			const int field_precision = 3;
-			
-			sprintf(field_name, "x");
+		// Create (col,row) fields, if so indicated
+		if ( includePixelLocation ) {
+			field_type = FTInteger;
+			field_width = 6;
+			field_precision = 0;
+			sprintf(field_name, "col");
 			fprintf(stdout, "Creating field: %s\n", field_name);
-			DBFAddField(
-				file,
-				field_name,
-				field_type,
-				field_width,
-				field_precision
-			);
+			DBFAddField(file, field_name, field_type, field_width, field_precision);
+			next_field_index++;
 	
-			sprintf(field_name, "y");
+			sprintf(field_name, "row");
 			fprintf(stdout, "Creating field: %s\n", field_name);
-			DBFAddField(
-				file,
-				field_name,
-				field_type,
-				field_width,
-				field_precision
-			);
-			attrFieldIndexOffset = 2;
-		}
-		else {
-			attrFieldIndexOffset = 0;
+			DBFAddField(file, field_name, field_type, field_width, field_precision);
+			next_field_index++;
 		}
 		
 		// Create fields from layer definition 
@@ -138,49 +141,36 @@ public:
 		
 		for ( int i = 0; i < field_count; i++ ) {
 			OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
-			const char* field_name = poField->GetNameRef();
+			const char* pfield_name = poField->GetNameRef();
 			
 			// is this field to be included?  
 			// FIXME: now all fields are included.
 			if ( true ) {
-				const DBFFieldType field_type = fieldtype_2_dbftype(poField->GetType());
-				const int field_width = poField->GetWidth();
-				const int field_precision = poField->GetPrecision();
-				fprintf(stdout, "Creating field: %s\n", field_name);
-				
-				DBFAddField(
-					file,
-					field_name,
-					field_type,
-					field_width,
-					field_precision
-				);
+				field_type = fieldtype_2_dbftype(poField->GetType());
+				field_width = poField->GetWidth();
+				field_precision = poField->GetPrecision();
+				fprintf(stdout, "Creating field: %s\n", pfield_name);
+				DBFAddField(file, pfield_name, field_type, field_width, field_precision);
+				next_field_index++;
 			}
 		}
 		
 		// Create fields for bands
-		bandFieldIndexOffset = attrFieldIndexOffset + field_count;
 		rast->getSize(NULL, NULL, &numBands);
 		for ( int i = 0; i < numBands; i++ ) {
-			char field_name[64];
-			const DBFFieldType field_type = FTDouble;
-			const int field_width = 18;
-			const int field_precision = 3;
-			
+			field_type = FTDouble;
+			field_width = 18;
+			field_precision = 3;
 			sprintf(field_name, "Band%d", i);
-			
 			fprintf(stdout, "Creating field: %s\n", field_name);
-			DBFAddField(
-				file,
-				field_name,
-				field_type,
-				field_width,
-				field_precision
-			);
+			DBFAddField(file, field_name, field_type, field_width, field_precision);
+			next_field_index++;
 		}
 		
-		no_records = 0;
+		next_record_index = 0;
 		currentFeature = NULL;
+		
+		fprintf(stdout, "   %d fields created\n", next_field_index);
 	}
 	
 	/**
@@ -192,30 +182,43 @@ public:
 	
 	
 	/**
-	  *
+	  * Adds a record to the output file.
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		double x = ev.pixelLocation.x;
-		double y = ev.pixelLocation.y;
+		int col = ev.pixelLocation.col;
+		int row = ev.pixelLocation.row;
 		void* signature = ev.signature;
 		GDALDataType rasterType = ev.rasterType;
 		int typeSize = ev.typeSize;
 		
-		//	fprintf(stdout, "signature %d\n", no_records);
-	
-		// add (x,y) fields
-		if ( 2 == attrFieldIndexOffset ) {
-			DBFWriteDoubleAttribute(
+		//	fprintf(stdout, "signature %d\n", next_record_index);
+		
+		//
+		// Add field values to new record:
+		//
+		int next_field_index = 0;
+
+		// Add FID value:
+		DBFWriteIntegerAttribute(
+			file,
+			next_record_index,            // int iShape -- record number
+			next_field_index++,           // int iField,
+			currentFeature->GetFID()
+		);
+		
+		// add (col,row) fields
+		if ( includePixelLocation ) {
+			DBFWriteIntegerAttribute(
 				file,
-				no_records,                   // int iShape -- record number
-				0,                            // int iField,
-				x
+				next_record_index,            // int iShape -- record number
+				next_field_index++,           // int iField,
+				col
 			);
-			DBFWriteDoubleAttribute(
+			DBFWriteIntegerAttribute(
 				file,
-				no_records,                   // int iShape -- record number
-				1,                            // int iField,
-				y
+				next_record_index,            // int iShape -- record number
+				next_field_index++,           // int iField,
+				row
 			);
 		}
 		
@@ -229,8 +232,8 @@ public:
 					const char* str = currentFeature->GetFieldAsString(i);
 					DBFWriteStringAttribute(
 						file,
-						no_records,                   // int iShape -- record number
-						attrFieldIndexOffset + i,     // int iField,
+						next_record_index,            // int iShape -- record number
+						next_field_index++,           // int iField,
 						str 
 					);
 					break;
@@ -239,8 +242,8 @@ public:
 					int val = currentFeature->GetFieldAsInteger(i);
 					DBFWriteIntegerAttribute(
 						file,
-						no_records,                   // int iShape -- record number
-						attrFieldIndexOffset + i,     // int iField,
+						next_record_index,            // int iShape -- record number
+						next_field_index++,           // int iField,
 						val
 					);
 					break;
@@ -249,8 +252,8 @@ public:
 					double val = currentFeature->GetFieldAsDouble(i);
 					DBFWriteDoubleAttribute(
 						file,
-						no_records,                   // int iShape -- record number
-						attrFieldIndexOffset + i,     // int iField,
+						next_record_index,            // int iShape -- record number
+						next_field_index++,           // int iField,
 						val
 					);
 					break;
@@ -272,8 +275,8 @@ public:
 			
 			int ok = DBFWriteDoubleAttribute(
 				file,
-				no_records,                   // int iShape -- record number
-				bandFieldIndexOffset + i,     // int iField,
+				next_record_index,            // int iShape -- record number
+				next_field_index++,           // int iField,
 				val 
 			);
 			
@@ -284,12 +287,12 @@ public:
 				char field_name[64];
 				sprintf(field_name, "Band%d", i);
 				fprintf(stderr, "DBFWriteDoubleAttribute returned %d\nfield name %s, record %d\n", 
-					ok, field_name, no_records+1
+					ok, field_name, next_record_index
 				);
 				exit(1);
 			}
 		}
-		no_records++;
+		next_record_index++;
 	}
 };
 
