@@ -10,7 +10,7 @@ include Makefile.props
 
 #------------------------------------------------------------
 
-INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats		 
+INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv -Istats -Iutil		 
 
 # starspan_db.cc
 INCLUDE += -I${SHAPELIB_PREFIX}/include/libshp
@@ -40,6 +40,7 @@ SRCS =	starspan_stats.cc \
 		rasterizers/LineRasterizer.cc \
 		csv/Csv.cc \
 		stats/Stats.cc \
+		util/Progress.cc \
 		starspan_dump.cc \
 		starspan_tuct2.cc
 
