@@ -4,8 +4,8 @@
 // $Id$
 //
 
-#ifndef traverse_h
-#define traverse_h
+#ifndef traverser_h
+#define traverser_h
 
 #include "Raster.h"
 #include "Vector.h"

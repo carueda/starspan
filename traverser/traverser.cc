@@ -3,7 +3,7 @@
 // Traverse
 // Carlos A. Rueda
 // $Id$
-// See traverse.h for public documentation
+// See traverser.h for public documentation
 //
 
 #include "traverser.h"           
