@@ -13,7 +13,7 @@
 
 // used to write the number of lines in header since this is
 // done in two passes: the first one in which the number of
-// lines is known, and a sencond one to update it.
+// lines is unknown, and a sencond one to update it.
 #define LINES_WIDTH 8
 
 
