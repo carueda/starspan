@@ -529,6 +529,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				for ( unsigned i = 0; i < polys->size(); i++ ) {
 					processValidPolygon((*polys)[i]);
 				}
+				
+				delete noded;
 			}
 			
 		}
