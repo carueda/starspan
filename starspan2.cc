@@ -8,7 +8,8 @@
 #include "starspan.h"           
 #include "traverser.h"           
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <ctime>
 
 
 //static char rcsid[] = "$Id$";
@@ -91,6 +92,8 @@ int main(int argc, char ** argv) {
 	globalOptions.RID_as_given = false;
 
 
+	bool report_summary = true;
+	bool report_elapsed_time = true;
 	bool do_report = false;
 	const char*  envi_name = NULL;
 	bool envi_image = true;
@@ -314,6 +317,8 @@ int main(int argc, char ** argv) {
 	
 	CPLPushErrorHandler(starspan_myErrorHandler);
 
+	time_t time_start = time(NULL);
+	
 	// module initialization
 	Raster::init();
 	Vector::init();
@@ -466,14 +471,34 @@ int main(int argc, char ** argv) {
 		// let's get to work!	
 		tr.traverse();
 
-		// show a summary of traversal:
-		cout<< "Traversal summary:\n"
-			<< "\tnum_poly_features: " <<tr.summary.num_poly_features<< endl
-			<< "\tnum_invalid_polys: " <<tr.summary.num_invalid_polys<< endl
-			<< "\tnum_polys_with_internal_ring: " <<tr.summary.num_polys_with_internal_ring<< endl
-			<< "\tnum_polys_exploded: " <<tr.summary.num_polys_exploded<< endl
-			<< "\tnum_sub_polys: " <<tr.summary.num_sub_polys<< endl
-		;
+		if ( report_summary ) {
+			cout<< "Summary:" <<endl;
+			cout<< "  Intersecting features: " << tr.summary.num_intersecting_features<< endl;
+			if ( tr.summary.num_point_features )
+				cout<< "      Points: " <<tr.summary.num_point_features<< endl;
+			if ( tr.summary.num_multipoint_features )
+				cout<< "      MultiPoints: " <<tr.summary.num_multipoint_features<< endl;
+			if ( tr.summary.num_linestring_features )
+				cout<< "      LineStrings: " <<tr.summary.num_linestring_features<< endl;
+			if ( tr.summary.num_multilinestring_features )
+				cout<< "      MultiLineStrings: " <<tr.summary.num_multilinestring_features<< endl;
+			if ( tr.summary.num_polygon_features )
+				cout<< "      Polygons: " <<tr.summary.num_polygon_features<< endl;
+			if ( tr.summary.num_invalid_polys )
+				cout<< "          invalid: " <<tr.summary.num_invalid_polys<< endl;
+			if ( tr.summary.num_polys_with_internal_ring )
+				cout<< "          with internalring: " <<tr.summary.num_polys_with_internal_ring<< endl;
+			if ( tr.summary.num_polys_exploded )
+				cout<< "          exploded: " <<tr.summary.num_polys_exploded<< endl;
+			if ( tr.summary.num_sub_polys )
+				cout<< "          sub polys: " <<tr.summary.num_sub_polys<< endl;
+			if ( tr.summary.num_multipolygon_features )
+				cout<< "      MultiPolygons: " <<tr.summary.num_multipolygon_features<< endl;
+			if ( tr.summary.num_geometrycollection_features )
+				cout<< "      GeometryCollections: " <<tr.summary.num_geometrycollection_features<< endl;
+			cout<< endl;
+			cout<< "  Processed pixels: " <<tr.summary.num_processed_pixels<< endl;
+		}
 		
 		// release observers:
 		tr.releaseObservers();
@@ -481,6 +506,32 @@ int main(int argc, char ** argv) {
 	
 	Vector::end();
 	Raster::end();
+	
+	if ( report_elapsed_time ) {
+		cout<< "Elapsed time: ";
+		// report elapsed time:
+		time_t secs = time(NULL) - time_start;
+		if ( secs < 60 )
+			cout<< secs << "s\n";
+		else {
+			time_t mins = secs / 60; 
+			secs = secs % 60; 
+			if ( mins < 60 ) 
+				cout<< mins << "m:" << secs << "s\n";
+			else {
+				time_t hours = mins / 60; 
+				mins = mins % 60; 
+				if ( hours < 24 ) 
+					cout<< hours << "h:" << mins << "m:" << secs << "s\n";
+				else {
+					time_t days = hours / 24; 
+					hours = hours % 24; 
+					cout<< days << "d:" <<hours << "h:" << mins << "m:" << secs << "s\n";
+				}
+			}
+		}
+	}
+
 	return 0;
 }
 

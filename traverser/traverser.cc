@@ -307,8 +307,9 @@ void Traverser::pixelFound(double x, double y) {
 	pixset.insert(colrow);
 	
 	toGridXY(col, row, &x, &y);
-	
+
 	TraversalEvent event(col, row, x, y);
+	summary.num_processed_pixels++;
 	
 	// if at least one observer is not simple...
 	if ( notSimpleObserver ) {
@@ -558,8 +559,6 @@ public:
 // included.  
 //
 void Traverser::processPolygon(OGRPolygon* poly) {
-	summary.num_poly_features++;
-	
 	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
 	if ( geos_poly->isValid() ) {
 		processValidPolygon(geos_poly);
@@ -574,9 +573,9 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			}
 		}
 		else {
-			// try to split this poly into smaller ones:
+			// try to explode this poly into smaller ones:
 			if ( geos_poly->getNumInteriorRing() > 0 ) {
-				//cerr<< "--Invalid polygon has interior rings: cannot fix it--" << endl;
+				//cerr<< "--Invalid polygon has interior rings: cannot explode it--" << endl;
 				summary.num_polys_with_internal_ring++;
 			} 
 			else {
@@ -617,7 +616,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 						}
 					}
 					else {
-						cerr << "could not generate sub-polys\n";
+						cerr << "could not explode polygon\n";
 					}
 					
 					delete noded;
@@ -645,48 +644,62 @@ void Traverser::processMultiPolygon(OGRMultiPolygon* mpoly) {
 void Traverser::processGeometryCollection(OGRGeometryCollection* coll) {
 	for ( int i = 0; i < coll->getNumGeometries(); i++ ) {
 		OGRGeometry* geo = (OGRGeometry*) coll->getGeometryRef(i);
-		processGeometry(geo);
+		processGeometry(geo, false);
 	}
 }
 
 //
 // get intersection type and process accordingly
 //
-void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
+void Traverser::processGeometry(OGRGeometry* intersection_geometry, bool count) {
 	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
 	switch ( intersection_type ) {
 		case wkbPoint:
 		case wkbPoint25D:
+			if ( count ) 
+				summary.num_point_features++;
 			processPoint((OGRPoint*) intersection_geometry);
 			break;
 	
 		case wkbMultiPoint:
 		case wkbMultiPoint25D:
+			if ( count ) 
+				summary.num_multipoint_features++;
 			processMultiPoint((OGRMultiPoint*) intersection_geometry);
 			break;
 	
 		case wkbLineString:
 		case wkbLineString25D:
+			if ( count ) 
+				summary.num_linestring_features++;
 			processLineString((OGRLineString*) intersection_geometry);
 			break;
 	
 		case wkbMultiLineString:
 		case wkbMultiLineString25D:
+			if ( count ) 
+				summary.num_multilinestring_features++;
 			processMultiLineString((OGRMultiLineString*) intersection_geometry);
 			break;
 			
 		case wkbPolygon:
 		case wkbPolygon25D:
+			if ( count ) 
+				summary.num_polygon_features++;
 			processPolygon((OGRPolygon*) intersection_geometry);
 			break;
 			
 		case wkbMultiPolygon:
 		case wkbMultiPolygon25D:
+			if ( count ) 
+				summary.num_multipolygon_features++;
 			processMultiPolygon((OGRMultiPolygon*) intersection_geometry);
 			break;
 			
 		case wkbGeometryCollection:
 		case wkbGeometryCollection25D:
+			if ( count ) 
+				summary.num_geometrycollection_features++;
 			processGeometryCollection((OGRGeometryCollection*) intersection_geometry);
 			break;
 			
@@ -731,6 +744,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 		}
 		return;
 	}
+	summary.num_intersecting_features++;
 
 	if ( verbose ) {
 		fprintf(stdout, " Type of intersection: %s\n",
@@ -746,7 +760,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	pixset.clear();
 	try {
-		processGeometry(intersection_geometry);
+		processGeometry(intersection_geometry, true);
 	}
 	catch(string err) {
 		cerr<< "starspan: FID=" <<feature->GetFID()

@@ -310,11 +310,19 @@ public:
 	
 	/** summary results for each traversal */
 	struct {
-		int num_poly_features;
+		int num_intersecting_features;
+		int num_point_features;
+		int num_multipoint_features;
+		int num_linestring_features;
+		int num_multilinestring_features;
+		int num_polygon_features;
+		int num_multipolygon_features;
+		int num_geometrycollection_features;
 		int num_invalid_polys;
 		int num_polys_with_internal_ring;
 		int num_polys_exploded;
 		int num_sub_polys;
+		long num_processed_pixels;
 		
 	} summary;
 	
@@ -350,7 +358,7 @@ private:
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
 	void processGeometryCollection(OGRGeometryCollection* coll);
-	void processGeometry(OGRGeometry* intersection_geometry);
+	void processGeometry(OGRGeometry* intersection_geometry, bool count);
 
 	void process_feature(OGRFeature* feature);
 	
