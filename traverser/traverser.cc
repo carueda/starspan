@@ -35,6 +35,14 @@ void Traverser::addObserver(Observer* aObserver) {
 }
 
 
+void Traverser::releaseObservers(void) { 
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		delete *obs;
+	
+	observers.empty();
+}
+
+
 void Traverser::setPixelProportion(double pixprop) {
 	pixelProportion = pixprop; 
 }

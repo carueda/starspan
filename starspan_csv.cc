@@ -202,6 +202,17 @@ public:
 		}
 		fprintf(file, "\n");
 	}
+
+	/**
+	  * closes the file
+	  */
+	void end() {
+		if ( file ) {
+			fclose(file);
+			fprintf(stdout, "csv: finished.\n");
+			file = 0;
+		}
+	}
 };
 
 
@@ -209,7 +220,7 @@ public:
 /**
   * implementation
   */
-int starspan_csv(
+Observer* starspan_csv(
 	Traverser& tr,
 	const char* select_fields,
 	const char* filename,
@@ -220,17 +231,10 @@ int starspan_csv(
 	FILE* file = fopen(filename, "w");
 	if ( !file ) {
 		fprintf(stderr, "Couldn't create %s\n", filename);
-		return 1;
+		return 0;
 	}
 
-	CSVObserver obs(tr, file, select_fields, noColRow, noXY);	
-	tr.addObserver(&obs);
-	tr.traverse();
-	
-	fclose(file);
-	fprintf(stdout, "finished.\n");
-
-	return 0;
+	return new CSVObserver(tr, file, select_fields, noColRow, noXY);	
 }
 		
 

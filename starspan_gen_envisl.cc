@@ -261,7 +261,7 @@ public:
 	/**
 	  * Finishes the header file
 	  */
-	void _end() {
+	void _endHeader() {
 		if ( !envi_image ) {    // spectral library
 			// close spectra names section:
 			fprintf(header_file, "\n}\n");
@@ -270,13 +270,32 @@ public:
 		fseek(header_file, update_offset, SEEK_SET);
 		fprintf(header_file, "%*d", LINES_WIDTH, numSpectra);
 	}
+
+
+	/**
+	  * Finishes the header file and closes files
+	  */
+	void end() {
+		_endHeader();
+		
+		fclose(header_file);
+		fclose(data_file);
+		if ( fields ) {
+			list<Field*>::const_iterator it = fields->begin();
+			for ( ; it != fields->end(); it++ )
+				delete *it;
+			delete fields;
+		}
+		fprintf(stdout, "numSpectra = %d\n", numSpectra);
+		fprintf(stdout, "envisl finished.\n");
+	}
 };
 
 
 /**
   * implementation
   */
-int starspan_gen_envisl(
+Observer* starspan_gen_envisl(
 	Traverser& tr,
 	const char* select_fields,
 	const char* envisl_name,
@@ -298,14 +317,14 @@ int starspan_gen_envisl(
 	FILE* data_file = fopen(data_filename, "w");
 	if ( !data_file ) {
 		fprintf(stderr, "Couldn't create %s\n", data_filename);
-		return 1;
+		return 0;
 	}
 
 	FILE* header_file = fopen(header_filename, "w");
 	if ( !header_file ) {
 		fclose(data_file);
 		fprintf(stderr, "Couldn't create %s\n", header_filename);
-		return 1;
+		return 0;
 	}
 	
 	list<Field*>* fields = NULL;
@@ -322,36 +341,15 @@ int starspan_gen_envisl(
 				fclose(header_file);
 				fclose(data_file);
 				fprintf(stderr, "Couldn't create %s\n", filename);
-				return 1;
+				return 0;
 			}
 			fields->push_back(field);
 		}
 	}
 
-
-	
-	
 	int bands;
 	rast->getSize(NULL, NULL, &bands);
-	EnviSlObserver obs(envi_image, bands, data_file, header_file, fields);	
-	tr.addObserver(&obs);
-	
-	tr.traverse();
-	
-	obs._end();
-	
-	fclose(header_file);
-	fclose(data_file);
-	if ( fields ) {
-		list<Field*>::const_iterator it = fields->begin();
-		for ( ; it != fields->end(); it++ )
-			delete *it;
-		delete fields;
-	}
-	fprintf(stdout, "numSpectra = %d\n", obs.numSpectra);
-	fprintf(stdout, "envisl finished.\n");
-
-	return 0;
+	return new EnviSlObserver(envi_image, bands, data_file, header_file, fields);	
 }
 		
 

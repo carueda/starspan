@@ -191,6 +191,16 @@ public:
 	  */
 	void addObserver(Observer* aObserver);
 
+	/**
+	  * Gets the number of observers associated to this traverser.
+	  */
+	unsigned getNumObservers(void) { return observers.size(); } 
+
+	/**
+	  * convenience method to delete the observers associated to this traverser.
+	  */
+	void releaseObservers(void);
+
 	
 	/**
 	  * Executes the traversal.

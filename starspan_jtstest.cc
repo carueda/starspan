@@ -41,13 +41,10 @@ struct JtsTestObserver : public Observer {
 	}
 
 	/**
-	  *
+	  * calls end()
 	  */
 	~JtsTestObserver() {
-		if ( pp ) {
-			finish_case();
-		}
-		delete jtstest;
+		end();
 	}
 
 	/**
@@ -161,6 +158,19 @@ struct JtsTestObserver : public Observer {
 	bool isSimple() { 
 		return true; 
 	}
+
+
+	/**
+	  * finishes  pending case and closes test file
+	  */
+	void end() {
+		if ( pp ) {
+			finish_case();
+		}
+		jtstest->end();
+		delete jtstest;
+		jtstest = 0;
+	}
 };
 
 
@@ -168,24 +178,20 @@ struct JtsTestObserver : public Observer {
 /**
   * implementation
   */
-int starspan_jtstest(
+Observer* starspan_jtstest(
 	Traverser& tr,
 	bool use_polys,
 	const char* jtstest_filename
 ) {
 	if ( tr.getNumRasters() > 1 ) {
 		fprintf(stderr, "Only one input raster is expected\n");
-		return 1;
+		return 0;
 	}
 	Raster* rast = tr.getRaster(0);
 
 	double pix_x_size, pix_y_size;
 	rast->getPixelSize(&pix_x_size, &pix_y_size);
-	JtsTestObserver observer(jtstest_filename, pix_x_size, pix_y_size, use_polys);
-	tr.addObserver(&observer);
-	tr.traverse();
-	
-	return 0;
+	return new JtsTestObserver(jtstest_filename, pix_x_size, pix_y_size, use_polys);
 }
 
 

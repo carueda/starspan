@@ -22,7 +22,13 @@
 
 
 /**
-  * Gets an observer that computes statistics for each FID
+  * Gets an observer that computes statistics for each FID.
+  * INCOMPLETE
+  *
+  * @param tr Data traverser
+  * @param filename output file name
+  *
+  * @return observer to be added to traverser. 
   */
 Observer* starspan_getStatsObserver(
 	Traverser& tr,
@@ -30,6 +36,31 @@ Observer* starspan_getStatsObserver(
 );
 
 
+
+/**
+  * Generates a CSV file with the following columns:
+  *     FID, col,row {vect-attrs}, {bands-from-raster}
+  * where:
+  *     FID:          feature ID as given by OGRFeature#GetFID()
+  *     col,row:      pixel location relative to (0,0) in raster
+  *     {vect-attrs}: attributes from vector
+  *     {rast-bands}: bands from raster at corresponding location
+  *
+  * @param tr Data traverser
+  * @param select_fields comma-separated field names
+  * @param csv_filename output file name
+  * @param noColRow if true, no col,row fields will be included
+  * @param noXY if true, no x,y fields will be included
+  *
+  * @return observer to be added to traverser. 
+  */
+Observer* starspan_csv(
+	Traverser& tr, 
+	const char* select_fields,
+	const char* csv_filename,
+	bool noColRow,
+	bool noXY
+);
 
 
 
@@ -48,41 +79,17 @@ Observer* starspan_getStatsObserver(
   * @param noColRow if true, no col,row fields will be included
   * @param noXY if true, no x,y fields will be included
   *
-  * @return 0 iff OK. 
+  * @return observer to be added to traverser. 
   */
-int starspan_db(
+Observer* starspan_db(
 	Traverser& tr,
-	const char* select_fields,     // comma-separated field names
+	const char* select_fields,
 	const char* db_filename,
 	bool noColRow,
 	bool noXY
 );
 
 
-/**
-  * Generates a CSV file with the following columns:
-  *     FID, col,row {vect-attrs}, {bands-from-raster}
-  * where:
-  *     FID:          feature ID as given by OGRFeature#GetFID()
-  *     col,row:      pixel location relative to (0,0) in raster
-  *     {vect-attrs}: attributes from vector
-  *     {rast-bands}: bands from raster at corresponding location
-  *
-  * @param tr Data traverser
-  * @param select_fields comma-separated field names
-  * @param csv_filename output file name
-  * @param noColRow if true, no col,row fields will be included
-  * @param noXY if true, no x,y fields will be included
-  *
-  * @return 0 iff OK. 
-  */
-int starspan_csv(
-	Traverser& tr, 
-	const char* select_fields,     // comma-separated field names
-	const char* csv_filename,
-	bool noColRow,
-	bool noXY
-);
 
 /** Generates ENVI output
   * @param tr Data traverser
@@ -90,8 +97,9 @@ int starspan_csv(
   * @param envisl_filename output file name
   * @param envi_image  true for image, false for spectral library
   *
-    returns 0 iff OK. */
-int starspan_gen_envisl(
+  * @return observer to be added to traverser. 
+  */
+Observer* starspan_gen_envisl(
 	Traverser& tr,
 	const char* select_fields,
 	const char* envisl_name,
@@ -130,9 +138,10 @@ int starspan_update_csv(
   * @param use_polys If true, pixels are represented as polygons;
   *        otherwise as points.
   * @param jtstest_filename output file name
-  * @return 0 iff OK.
+  *
+  * @return observer to be added to traverser. 
   */
-int starspan_jtstest(
+Observer* starspan_jtstest(
 	Traverser& tr,
 	bool use_polys,
 	const char* jtstest_filename

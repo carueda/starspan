@@ -41,6 +41,7 @@ static void usage(const char* msg) {
 		"      -csv <name>          Generates a CSV file\n"
 		"      -envi <name>         Generates an ENVI image\n"
 		"      -envisl <name>       Generates an ENVI spectral library\n"
+		"      -stats <filename.csv>    Computes statistics (still incomplete)\n"
 		"      -mr <prefix>         Generates mini rasters\n"
 		"      -jtstest <filename>  Generates a JTS test file\n"
 		"\n"
@@ -49,7 +50,6 @@ static void usage(const char* msg) {
 		"      -pixprop <pixel-proportion-value>\n"
 		"      -noColRow\n"
 		"      -noXY\n"
-		"      -stats <filename.cdv>\n"
 		"      -fid <FID>\n"
 		"      -ppoly\n"
 		"      -in\n"
@@ -149,6 +149,12 @@ int main(int argc, char ** argv) {
 			an_output_given = true;
 			csv_name = argv[i];
 		}
+		else if ( 0==strcmp("-stats", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-stats: which name?");
+			stats_name = argv[i];
+		}
+
 		else if ( 0==strcmp("-mr", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-mr: which prefix?");
@@ -187,12 +193,6 @@ int main(int argc, char ** argv) {
 				usage("invalid pixel proportion");
 		}
 		
-		else if ( 0==strcmp("-stats", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("-stats: which name?");
-			stats_name = argv[i];
-		}
-
 		else if ( 0==strcmp("-fid", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-fid: desired FID?");
@@ -247,6 +247,7 @@ int main(int argc, char ** argv) {
 	
 	//
 	// dispatch -update* commands
+	// Note: update commands don't follow traverser pattern
 	//
 	if ( update_csv_name ) {
 		if ( !csv_name ) {
@@ -273,6 +274,9 @@ int main(int argc, char ** argv) {
 		return starspan_update_dbf(update_dbf_name, raster_filenames, dbf_name);
 	}
 	
+	//
+	// traverser-based commands
+	//
 	
 	// the traverser object	
 	Traverser tr;
@@ -297,42 +301,67 @@ int main(int argc, char ** argv) {
 		}
 	}
 
+
+	//	
+	// COMMANDS
+	//
 	
-	Observer* stats_obs = 0;
 	// stats calculation:	
 	if ( stats_name ) {
-		stats_obs = starspan_getStatsObserver(tr, stats_name);
-		tr.addObserver(stats_obs);
+		Observer* obs = starspan_getStatsObserver(tr, stats_name);
+		if ( obs )
+			tr.addObserver(obs);
 	}
 	
-	// COMMANDS
 	if ( csv_name ) { 
-		return starspan_csv(tr, select_fields, csv_name, noColRow, noXY);
+		Observer* obs = starspan_csv(tr, select_fields, csv_name, noColRow, noXY);
+		if ( obs )
+			tr.addObserver(obs);
 	}
-	else if ( dbf_name ) { 
-		return starspan_db(tr, select_fields, dbf_name, noColRow, noXY);
+	
+	if ( dbf_name ) { 
+		Observer* obs = starspan_db(tr, select_fields, dbf_name, noColRow, noXY);
+		if ( obs )
+			tr.addObserver(obs);
 	}
-	else if ( envi_name ) {
-		return starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
+	
+	if ( envi_name ) {
+		Observer* obs = starspan_gen_envisl(tr, select_fields, envi_name, envi_image);
+		if ( obs )
+			tr.addObserver(obs);
 	}
-	else if ( mini_prefix ) {
-		return starspan_minirasters(tr, mini_prefix, only_in_feature, mini_srs);
+	
+	if ( jtstest_filename ) {
+		Observer* obs = starspan_jtstest(tr, use_polys, jtstest_filename);
+		if ( obs )
+			tr.addObserver(obs);
 	}
-	else if ( jtstest_filename ) {
-		starspan_jtstest(tr, use_polys, jtstest_filename);
-	}
-	else if ( do_report ) {
+
+	// report and minirasters don't use Observer scheme;  
+	// just call corresponding functions:	
+	if ( do_report ) {
 		if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
 			usage("-report: Please give at least one input file to report\n");
 		}
 		starspan_report(tr);
 	}
-	else {
-		usage("what should I do?\n");
+	if ( mini_prefix ) {
+		starspan_minirasters(tr, mini_prefix, only_in_feature, mini_srs);
 	}
 	
-	if ( stats_obs )
-		delete stats_obs;
+	//
+	// now observer-based processing:
+	//
+	
+	if ( tr.getNumObservers() == 0 && !do_report && !mini_prefix ) {
+		usage("please specify a command\n");
+	}
+
+	// let's get to work!	
+	tr.traverse();
+	
+	// release observers:
+	tr.releaseObservers();
 	
 	return 0;
 }

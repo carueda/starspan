@@ -335,6 +335,17 @@ public:
 		}
 		next_record_index++;
 	}
+
+	/**
+	  * closes the file
+	  */
+	void end() {
+		if ( file ) {
+			DBFClose(file);
+			fprintf(stdout, "dbf: finished.\n");
+			file = 0;
+		}
+	}
 };
 
 
@@ -342,7 +353,7 @@ public:
 /**
   * implementation
   */
-int starspan_db(
+Observer* starspan_db(
 	Traverser& tr,
 	const char* select_fields,
 	const char* filename,
@@ -353,17 +364,10 @@ int starspan_db(
 	DBFHandle file = DBFCreate(filename);
 	if ( !file ) {
 		fprintf(stderr, "Couldn't create %s\n", filename);
-		return 1;
+		return 0;
 	}
 
-	DBObserver obs(tr, file, select_fields, noColRow, noXY);	
-	tr.addObserver(&obs);
-	tr.traverse();
-	
-	DBFClose(file);
-	fprintf(stdout, "finished.\n");
-
-	return 0;
+	return new DBObserver(tr, file, select_fields, noColRow, noXY);	
 }
 		
 

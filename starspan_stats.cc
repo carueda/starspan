@@ -12,41 +12,6 @@
 #include <assert.h>
 
 
-/**
-  * Gets a value from a band as a double.
-  */
-static double extract_value(GDALDataType bandType, char* sign) {
-	double value = 0.0;
-	
-	switch(bandType) {
-		case GDT_Byte:
-			value = (int) *( (char*) sign );
-			break;
-		case GDT_UInt16:
-			value = *( (unsigned short*) sign );
-			break;
-		case GDT_Int16:
-			value = *( (short*) sign );
-			break;
-		case GDT_UInt32:
-			value = *( (unsigned int*) sign );
-			break;
-		case GDT_Int32:
-			value = *( (int*) sign );
-			break;
-		case GDT_Float32:
-			value = *( (float*) sign );
-			break;
-		case GDT_Float64:
-			value = *( (double*) sign );
-			break;
-		default:
-			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
-			exit(1);
-	}
-	return value;
-}
-
 
 /**
   * Creates fields and populates the table.
@@ -135,6 +100,7 @@ public:
 				fprintf(file, ",%g", aggregated[i]);
 			}
 			fprintf(file, "\n");
+			currentFeature = 0;
 		}
 	}
 
@@ -162,7 +128,7 @@ public:
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
 			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-			aggregated[i] += extract_value(bandType, ptr);
+			aggregated[i] += starspan_extract_double_value(bandType, ptr);
 			
 			// move to next piece of data in buffer:
 			ptr += typeSize;
