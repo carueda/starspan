@@ -14,6 +14,11 @@ $Id$
 		<basename>_<fieldname1>.ser
 		<basename>_<fieldname2>.ser
 		...
+		
+	starspan_gen_envisl.cc #includes <list.h> although it should be <list>.
+	For some reason <list> does not compile on scorpio, gcc 3.3.4!
+	(<list> compiles just fine with my gcc 2.95.4).
+	
 	
 2004-09-09
 	TraversalEvent: (col,row) is now (1,1)-based (to be more
