@@ -181,8 +181,6 @@ public:
 
 		for ( vector<Pixel>::const_iterator pixel = pixels.begin(); pixel != pixels.end(); pixel++ ) {
 			// first get buffer with all bands
-			assert((pixel)->col < 2919);
-			assert((pixel)->row < 1733);
 			tr.getBandValuesForPixel(pixel->col, pixel->row, bandValues_buffer);
 
 			// now get those values in double format:
@@ -336,11 +334,7 @@ public:
 	  * Adds a new pixel to aggregation
 	  */
 	void addPixel(TraversalEvent& ev) {
-		int col = ev.pixel.col;
-		int row = ev.pixel.row;
-		assert(col < 2919);
-		assert(row < 1733);
-		pixels.push_back(Pixel(col, row));
+		pixels.push_back(Pixel(ev.pixel.col, ev.pixel.row));
 	}
 
 };
