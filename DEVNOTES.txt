@@ -2,6 +2,11 @@ starspan devnotes
 $Id$
 
 
+2005-02-15 (0.94beta)
+	- Comments about --O and --outformat proposed variations in: 
+	http://casil.ucdavis.edu/tracker/?func=detail&aid=200072&group_id=48&atid=350112
+	
+	
 2005-02-12 (0.94beta)
 	- starting 0.94beta
 	- I just grabbed the last GDAL cvs snapshot and build a fresh gdal. I see
