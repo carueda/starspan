@@ -1,5 +1,5 @@
 //
-// tool0 - first sketch of the starspan tool
+// starspan1 - first sketch
 // $Id$
 //
 #include "shapefil.h"

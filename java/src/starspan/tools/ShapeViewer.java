@@ -6,13 +6,14 @@
 
 package starspan.tools;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.awt.Color;
 import java.awt.Font;
 import java.net.URL;
-
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
-
 import java.io.File;
 
 import org.geotools.data.FeatureSource;
@@ -42,37 +43,41 @@ import org.geotools.styling.TextSymbolizer;
 public class ShapeViewer {
 
     public static void main(String[] args) throws Exception {
-        // Prepare feature source
-		
-        String basePath = "/home/carueda/cstars/GeoTools/spearfishdemo/data/";
-        
-        // ... roads
-        ShapefileDataStore dsRoads = new ShapefileDataStore( new File( basePath + "Area_gen" ).toURL() );
-        FeatureSource fsRoads = dsRoads.getFeatureSource("Area_gen");
-        
-        // ... streams
-        ShapefileDataStore dsStreams = new ShapefileDataStore( new File( basePath + "E_parrot" ).toURL() );
-        FeatureSource fsStreams = dsStreams.getFeatureSource("E_parrot");
-        
+        if ( args.length == 0 ) {
+			System.err.println("missing args");
+			return;
+		}
+		List list = new ArrayList();
+		for ( int i = 0; i < args.length; i++ ) {
+			File file = new File(args[i]);
+			URL url = file.toURL();
+			ShapefileDataStore dsRoads = new ShapefileDataStore(url);
+			FeatureSource fsRoads = dsRoads.getFeatureSource(file.getName());
+			list.add(fsRoads);
+		}
 
         // Prepare styles
         StyleBuilder sb = new StyleBuilder();
         
-        // ... streams style
-        LineSymbolizer lsStream = sb.createLineSymbolizer(Color.BLUE, 3);
-        Style streamsStyle = sb.createStyle(lsStream);
-        
-        // ... roads style
         LineSymbolizer ls1 = sb.createLineSymbolizer(Color.YELLOW, 1);
         LineSymbolizer ls2 = sb.createLineSymbolizer(Color.BLACK, 5);
         Style roadsStyle = sb.createStyle();
         roadsStyle.addFeatureTypeStyle(sb.createFeatureTypeStyle(null, sb.createRule(ls2)));
         roadsStyle.addFeatureTypeStyle(sb.createFeatureTypeStyle(null, sb.createRule(ls1)));
         
+        Mark redCircle = sb.createMark(StyleBuilder.MARK_CIRCLE, Color.RED, Color.BLACK, 0);
+        Graphic grBugs = sb.createGraphic(null, redCircle, null);
+        PointSymbolizer psBugs = sb.createPointSymbolizer(grBugs);
+        Style bugsStyle = sb.createStyle(psBugs);
+		
+		
         // Build the map
         MapContext map = new DefaultMapContext();
-        map.addLayer(fsStreams, streamsStyle);
-        map.addLayer(fsRoads, roadsStyle);
+		for ( Iterator it = list.iterator(); it.hasNext(); ) {
+			FeatureSource fsRoads = (FeatureSource) it.next();
+			map.addLayer(fsRoads, roadsStyle);
+			map.addLayer(fsRoads, bugsStyle);
+		}
 
         // Show the map
         StyledMapPane mapPane = new StyledMapPane();

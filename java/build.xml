@@ -8,6 +8,7 @@
 	<property name="generated" value="../../_GENERATED/starspan"/>
 
 	<!-- External required libraries -->
+	<property name="envifile"  value="../lib/envifile.jar"/>
 	<property name="jts"  value="../lib/JTS-1.4.jar"/>
 	<property name="shape"  value="../lib/gt2-shapefile.jar"/>
 	<property name="vecmath"  value="../lib/vecmath-1.2.1.jar"/>
@@ -23,6 +24,9 @@
 	<property name="src.dir" value="src/starspan"/>
 	<property name="dest.dir" value="${build}/classes"/>
 
+	<!-- Main class to specify in manifest -->
+	<property name="mainclass" value="starspan.tools.Prototype1"/>
+	
 	<target name="init">
 		<tstamp/>
 		<mkdir dir="${dest.dir}"/>
@@ -30,6 +34,7 @@
 	</target>
 
 	<target name="dist" depends="starspan.jar">
+		<copy file="${envifile}" todir="${dist}"/>
 		<copy file="${jts}" todir="${dist}"/>
 		<copy file="${shape}" todir="${dist}"/>
 		<copy file="${vecmath}" todir="${dist}"/>
@@ -44,8 +49,8 @@
 			includes="starspan/**">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}"/>
-				<attribute name="Main-class" value="starspan.tools.ShapeViewer"/>
-				<attribute name="Class-path" value="${jts} ${shape} ${vecmath} ${gt2} ${arcgrid}"/>
+				<attribute name="Main-class" value="${mainclass}"/>
+				<attribute name="Class-path" value="${envifile} ${jts} ${shape} ${vecmath} ${gt2} ${arcgrid}"/>
 			</manifest>
 		</jar>
 	</target>
@@ -54,7 +59,7 @@
 		<javac srcdir="${src.dir}" destdir="${dest.dir}"
 			debug="on"
 			source="1.4"
-			classpath="${jts}:${shape}:${vecmath}:${gt2}:${arcgrid}"
+			classpath="${envifile}:${jts}:${shape}:${vecmath}:${gt2}:${arcgrid}"
 		/>
 	</target>
 
