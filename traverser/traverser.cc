@@ -491,35 +491,42 @@ void Traverser::process_feature(OGRFeature* feature) {
 	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
 	switch ( intersection_type ) {
 		case wkbPoint:
+		case wkbPoint25D:
 			fputc('.', stdout); fflush(stdout);
 			processPoint((OGRPoint*) intersection_geometry);
 			break;
 	
 		case wkbMultiPoint:
+		case wkbMultiPoint25D:
 			fputc(':', stdout); fflush(stdout);
 			pixset = new set<EPixel>();
 			processMultiPoint((OGRMultiPoint*) intersection_geometry);
 			break;
 	
 		case wkbLineString:
+		case wkbLineString25D:
 			fputc('|', stdout); fflush(stdout);
 			pixset = new set<EPixel>();
 			processLineString((OGRLineString*) intersection_geometry);
 			break;
 	
 		case wkbMultiLineString:
+		case wkbMultiLineString25D:
 			fputc('!', stdout); fflush(stdout);
 			pixset = new set<EPixel>();
 			processMultiLineString((OGRMultiLineString*) intersection_geometry);
 			break;
 			
 		case wkbPolygon:
+		case wkbPolygon25D:
 			fputc('@', stdout); fflush(stdout);
 			processPolygon((OGRPolygon*) intersection_geometry);
 			break;
 			
 		default:
-			fprintf(stdout, "?: intersection type not considered\n");
+			fprintf(stdout, "%s: intersection type not considered\n",
+				OGRGeometryTypeToName(intersection_type)
+			);
 	}
 
 	if ( pixset ) {
