@@ -33,7 +33,10 @@ struct GlobalInfo {
 	vector<GDALRasterBand*> bands;
 	                           
 	/** Union of envelopes of rasters. */
-	OGRGeometry* rastersGeometry;
+	OGRGeometry* rastersUnion;
+
+	/** All raster polys. */
+	OGRMultiPolygon rasterPolys;
 };
 
 

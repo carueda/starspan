@@ -117,12 +117,14 @@ void Traverser::addRaster(Raster* raster) {
 		
 		double x0, y0, x1, y1;
 		rasts[0]->getCoordinates(&x0, &y0, &x1, &y1);
-		globalInfo.rastersGeometry = create_rectangle(x0, y0, x1, y1);
+		OGRPolygon* poly = create_rectangle(x0, y0, x1, y1);
+		globalInfo.rastersUnion = poly;
+		globalInfo.rasterPolys.addGeometryDirectly(poly);
 	}
 	else {   //  assert( rasts.size() > 1 )
 		const int last = rasts.size() -1;
 
-		// update rastersGeometry by unioning the new raster.
+		// update rastersUnion by unioning the new raster.
 
 		// we keep the restriction that pixel size must be equal
 		double pix_x_size, pix_y_size;
@@ -133,25 +135,26 @@ void Traverser::addRaster(Raster* raster) {
 			exit(1);
 		}
 		
-		// update: rastersGeometry += new rectangle
+		// update: rastersUnion += new rectangle
 		double x0, y0, x1, y1;
 		rasts[last]->getCoordinates(&x0, &y0, &x1, &y1);
-		OGRPolygon* poly = create_rectangle(x0, y0, x1, y1); 
-		OGRGeometry* new_rastersGeometry = 0;
+		OGRPolygon* poly = create_rectangle(x0, y0, x1, y1);
+		globalInfo.rasterPolys.addGeometryDirectly(poly);
+		OGRGeometry* new_rastersUnion = 0;
 		try {
-			new_rastersGeometry = globalInfo.rastersGeometry->Union(poly);
+			new_rastersUnion = globalInfo.rastersUnion->Union(poly);
 		} 
 		catch(geos::GEOSException* ex) {
 			cerr<< "geos::GEOSException: " << ex->toString()<< endl;
 			exit(1);
 		}
-		delete globalInfo.rastersGeometry;
-		globalInfo.rastersGeometry = new_rastersGeometry;
+		delete globalInfo.rastersUnion;
+		globalInfo.rastersUnion = new_rastersUnion;
 	}
 	
 	// update grid info
 	OGREnvelope env;
-	globalInfo.rastersGeometry->getEnvelope(&env);
+	globalInfo.rastersUnion->getEnvelope(&env);
 	grid.setOrigin(env);
 }
 
@@ -159,6 +162,8 @@ void Traverser::addRaster(Raster* raster) {
 // destroys this traverser
 //
 Traverser::~Traverser() {
+	if ( globalInfo.rastersUnion )
+		delete globalInfo.rastersUnion;
 	if ( bandValues_buffer )
 		delete[] bandValues_buffer;
 	if ( lineRasterizer )
@@ -714,7 +719,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	OGRGeometry* intersection_geometry = 0;
 	
 	try {
-		intersection_geometry = feature_geometry->Intersection(globalInfo.rastersGeometry);
+		intersection_geometry = feature_geometry->Intersection(globalInfo.rastersUnion);
 	}
 	catch(geos::GEOSException* ex) {
 		cerr<< ">>>>> FID: " << feature->GetFID()
@@ -814,7 +819,7 @@ void Traverser::traverse() {
 
 	if ( getenv("STARSPAN_DUMP_RASTER_UNION") ) {
 		fprintf(stdout, "RASTER_UNION = ");
-		globalInfo.rastersGeometry->dumpReadable(stdout);
+		globalInfo.rasterPolys.dumpReadable(stdout);
 		fflush(stdout);
 	}
 		

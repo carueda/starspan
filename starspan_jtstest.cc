@@ -49,7 +49,7 @@ struct JtsTestObserver : public Observer {
 	  */
 	void init(GlobalInfo& info) { 
 		fprintf(stdout, "rastersGeometry: ");
-		info.rastersGeometry->dumpReadable(stdout);
+		info.rasterPolys.dumpReadable(stdout);
 		fprintf(stdout, "\n");
 	}
 
