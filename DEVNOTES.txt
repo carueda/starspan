@@ -8,6 +8,9 @@ $Id$
 	
 		now list of observers: addObserver instead of setObserver
 		
+	StatsObserver: new observer to compute basic statistics.
+	Currently the skeleton is working;  pending to add mechanism to
+	specify and process different statistics ...
 	
 	
 2004-09-16
