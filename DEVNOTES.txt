@@ -3,6 +3,8 @@ $Id$
 
 2004-08-04
 	New jts module.
+	New option -jtstest that generates a JTS test suite.
+	starspan has started passing the first tests :-)
 
 2004-08-03
 	In order to have GEOS functionality from within GDAL I did
