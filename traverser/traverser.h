@@ -252,7 +252,8 @@ public:
 	/**
 	  * Sets the output to write progress info.
 	  */
-	void Traverser::setProgress(ostream& out) { 
+	void Traverser::setProgress(double perc, ostream& out) { 
+		progress_perc = perc;
 		progress_out = &out;
 	}
 	
@@ -328,6 +329,7 @@ private:
 	set<EPixel>* pixset;
 
 	ostream* progress_out;
+	double progress_perc;
 	bool verbose;
 };
 

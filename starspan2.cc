@@ -54,6 +54,8 @@ static void usage(const char* msg) {
 		"      -noXY\n"
 		"      -fid <FID>\n"
 		"      -ppoly \n"
+		"      -progress [value] \n"
+		"      -verbose \n"
 		"      -in   \n"
 		"      -srs <srs>\n"
 		"\n"
@@ -104,6 +106,7 @@ int main(int argc, char ** argv) {
 	
 	bool verbose = false;
 	bool progress = false;
+	double progress_perc = 1;
 
 	//
 	// collect arguments  -- TODO: use getopt later on
@@ -284,6 +287,8 @@ int main(int argc, char ** argv) {
 		}
 
 		else if ( 0==strcmp("-progress", argv[i]) ) {
+			if ( i+1 < argc && argv[i+1][0] != '-' )
+				progress_perc = atof(argv[++i]);
 			progress = true;
 		}
 		
@@ -378,7 +383,7 @@ int main(int argc, char ** argv) {
 	
 	tr.setVerbose(verbose);
 	if ( progress )
-		tr.setProgress(cout);
+		tr.setProgress(progress_perc, cout);
 
 	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
 		if ( tr.getNumRasters() == 0 || !tr.getVector() ) {

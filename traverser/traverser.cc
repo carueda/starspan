@@ -663,7 +663,7 @@ void Traverser::traverse() {
 		if ( progress_out ) {
 			long psize = layer->GetFeatureCount();
 			if ( psize > 0 )
-				progress = new Progress(psize, 3, *progress_out);
+				progress = new Progress(psize, progress_perc, *progress_out);
 			else
 				progress = new Progress(150, *progress_out);
 		}
