@@ -72,7 +72,7 @@ EOF
 	return;
 }
 
-if [ "$1" == "-xhelp" ]; then
+if [ "$1" == "--xhelp" ]; then
 	usage
 	exit
 
