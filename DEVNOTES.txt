@@ -2,6 +2,13 @@ starspan devnotes
 $Id$
 
 
+2005-02-12 (0.93beta)
+	- I just grabbed the last GDAL cvs snapshot and build a fresh gdal. I see
+	that vrtdataset.h (among others that used to be under frmts) are now siblings
+	of gdal.h under GDAL_PREFIX/include/.  So a future version of our Makefile
+	will use only the GDAL_PREFIX. (No more GDAL_SRC_DIR).
+
+	
 2005-02-11 (0.93beta)
 	- starting 0.93beta.
 	- New Makefile.props.fink (jgrn307)
