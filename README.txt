@@ -1,6 +1,17 @@
 starspan readme
 $Id$
 
+2004-07-28
+	GeoTools seems an interesting way to go:
+	  - http://docs.codehaus.org/display/GEOTOOLS/Data+access+basic+tutorial
+	    Data access basic tutorial -- shapefile example
+	Also JTS Topology Suite - http://www.vividsolutions.com/jts/JTSHome.htm
+	(in fact geotools uses JTS)
+	I'll try geotools ..
+	 
+
+
+
 SHPLIB
 	Some tests to link against the shplib library:
 		make
