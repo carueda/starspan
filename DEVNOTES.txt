@@ -1,6 +1,10 @@
 starspan devnotes
 $Id$
 
+2004-09-30 (0.82beta)
+	starspan_stats: bug fixed: I was calling pixels.empty() instead
+	of pixels.clear()!
+	
 2004-09-29 (0.81beta)
 
 	-dump_geometries: new testing operation (implemented in

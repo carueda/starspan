@@ -315,7 +315,7 @@ public:
 			}
 			fprintf(file, "\n");
 			currentFeatureID = -1;
-			pixels.empty();
+			pixels.clear();
 		}
 	}
 
