@@ -478,6 +478,30 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 	}
 }
 
+
+class MyPolygonizer : public geos::Polygonizer {
+public:
+	MyPolygonizer() : geos::Polygonizer() {}
+	
+	~MyPolygonizer() {
+		for ( unsigned i = 0; i < polyList->size(); i++ ) {
+			delete (*polyList)[i];
+		}
+		delete polyList;
+
+		for ( unsigned i = 0; i < holeList->size(); i++ ) {
+			delete (*holeList)[i];
+		}
+		delete holeList;
+		
+		for ( unsigned i = 0; i < shellList->size(); i++ ) {
+			delete (*shellList)[i];
+		}
+		delete shellList;
+	}
+	
+};
+
 //
 // process a polygon intersection.
 // The area of intersections are used to determine if a pixel is to be
@@ -523,7 +547,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				
 				if ( noded ) {
 					// now, polygonize:
-					geos::Polygonizer polygonizer;
+					MyPolygonizer polygonizer;
 					polygonizer.add(noded);
 					
 					// and process generated sub-polygons:
