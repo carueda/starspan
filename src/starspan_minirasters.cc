@@ -330,6 +330,8 @@ public:
 			cerr<< "Couldn't get driver " <<pszFormat<< " to create output rasters.\n";
 			return;
 		}
+		
+		const int mr_separation = globalOptions.mini_raster_separation;
 
 		// get dimensions for output images:
 		int strip_width = 0;		
@@ -338,9 +340,12 @@ public:
 			// width will be the maximum miniraster width:
 			if ( strip_width < mrbi->width )
 				strip_width = mrbi->width;
-			// height will be the sum of the miniraster heights:
+			// height will be the sum of the miniraster heights, plus separation pixels (see below):
 			strip_height += mrbi->height;
 		}
+		// add pixels to height according to desired separation between minirasters:
+		strip_height += mr_separation * (mrbi_list->size() - 1);
+		
 		int strip_bands;
 		rast.getSize(NULL, NULL, &strip_bands);
 
@@ -591,7 +596,7 @@ public:
 			unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
 			
 			// advance to next row in strip images 
-			next_row += mrbi->height;
+			next_row += mrbi->height + mr_separation;
 
 		}
 		

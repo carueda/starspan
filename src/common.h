@@ -71,6 +71,9 @@ struct GlobalOptions {
 	
 	// miniraster parity
 	string mini_raster_parity;
+	
+	/** separation in pixels between minirasters in strip */
+	int mini_raster_separation;
 };
 
 extern GlobalOptions globalOptions;
