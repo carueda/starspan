@@ -47,7 +47,10 @@ OBJS = $(subst .cc,.o,$(SRCS))
 CXXFLAGS = -g -Wall \
 		   $(INCLUDE)
 
-LIBPATH = -L$(PREFIX)/lib
+LIBPATH = -L$(AGG_PREFIX)/lib \
+	 -L$(GDAL_PREFIX)/lib \
+	 -L$(GEOS_PREFIX)/lib \
+	 -L$(SHAPELIB_PREFIX)/lib \
 
 LDFLAGS = -lgdal -lshp -lgeos
 
