@@ -1,44 +1,29 @@
-starspan readme
+STARSPAN Readme
+
+STARSPAN is designed to bridge the raster and vector worlds of spatial analysis
+using fast algorithms for pixel level extraction from point and polygon data.
+
+The main purpose of starspan is to generate databases of pixel values (from one
+or a set of raster images) falling within points or polygons, and fusing them
+with the database attributes from the vector files. This allows a user to do
+statistical analysis of the pixel vs attribute data in any existing statistical
+package (the output of starspan is a CSV file) and can greatly speed up
+classification training and testing using many image analysis packages (e.g.
+ENVI, Imagine, PCI) by focusing the classification on only pixels with known
+attributes, not the entire image.
+
+STARSPAN runs on any Unix/Linux flavor (including MacOs X and Windows via
+Cygwin) although it has been only fully tested on Linux and MacOS X. The
+software is completely free. 
+
+For installation instructions see INSTALL.txt
+
+The main website is located at: http://starspan.casil.ucdavis.edu/
+Feature requests and bug reports are encouraged, and these can be posted on the
+gforge website at: http://casil.ucdavis.edu/projects/starspan/
+
+
+
+--------------------------------------------------------
 $Id$
-
-See INSTALL.txt for installation instructions.
-
-
-Contents
-
-traverser/    Observer-based processing mechanism.
-              This is the core of the starspan library.
-            
-starspan.h    Declaration of main operations.
-            
-starspan2.cc  Contains the main() function.
-
-starspan_csv.cc           CSV creation
-starspan_dump.cc          for geometry visualization
-starspan_gen_envisl.cc    Envi standard/spectral library creation
-starspan_jtstest.cc       JTS test suit creation
-starspan_minirasters.cc   miniraster creation
-starspan_stats.cc         Basic statistics
-starspan_update_csv.cc    update table in csv format        
-starspan_util.cc          misc supporting utilities
-
-Interfaces aimed to have some abstraction on raster and
-vector objects: 
-	vector/       Vector interface implemented on OGR
-	raster/       Raster interface implemented on GDAL
-
-jts/        JTS_TestGenerator: generates a test suite suitable for
-            the JTS Test runner
-
-
-
-
-Previous approaches for the starspan tool:
-	java/         Geotools/JTS based approach: quite interesting but
-	              limitations in format support made me decide for
-				  a GDAL/OGR/GEOS approach.
-	polygon/      tests on CGAL
-	libtests/     basic library tests
-
-	starspan1.cc  preliminary version of the tool.
 
