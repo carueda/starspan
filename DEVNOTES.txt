@@ -1,6 +1,22 @@
 starspan devnotes
 $Id$
 
+
+2004-11-12  ****
+Reverting to version at 2004-11-09  -- cvs -q update -D "2004-11-09"
+	P starspan.h
+	P starspan2.cc
+	P starspan_csv.cc
+	P starspan_jtstest.cc
+	P raster/Raster.h
+	P raster/Raster_gdal.cc
+	P traverser/traverser.cc
+	P traverser/traverser.h
+I'm keeping the previous scheme for multiple raster in traverser,
+but merging other changes I made:
+	starspan_csv:  ...
+
+
 2004-11-12 (0.9beta)
 	starspan_csv: simplified scheme: each raster processed independently.
 	Output scheme:
