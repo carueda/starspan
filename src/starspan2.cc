@@ -12,6 +12,8 @@
 #include <ctime>
 
 
+static bool show_dev_options = false;
+
 GlobalOptions globalOptions;
 
 
@@ -22,10 +24,26 @@ static void usage(const char* msg) {
 		fprintf(stderr, "Type `starspan --help' for help\n");
 		exit(1);
 	}
+	// header:
 	fprintf(stdout, 
 		"\n"
 		"CSTARS starspan %s (%s %s)\n"
 		"\n"
+		, STARSPAN_VERSION, __DATE__, __TIME__
+	);
+	
+	// developer options:
+	if ( show_dev_options ) {
+		fprintf(stdout, 
+		"      --dump_geometries <filename>\n"
+		"      --jtstest <filename>\n"
+		"      --ppoly \n"
+		"      --srs <srs>\n"
+		);
+	}
+	else {	
+		// main body:
+		fprintf(stdout, 
 		"USAGE:\n"
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
@@ -33,7 +51,6 @@ static void usage(const char* msg) {
 		"      --vector <filename>\n"
 		"      --speclib <filename>\n"
 		"      --update-csv <filename>\n"
-		"\n"
 		"      --raster_field <name>\n"
 		"      --raster_directory <directory>\n"
 		"      --csv <name>\n"
@@ -41,13 +58,11 @@ static void usage(const char* msg) {
 		"      --envisl <name> \n"
 		"      --stats outfile.csv {avg|mode|stdev|min|max}...\n"
 		"      --calbase <link> <filename> [<stats>...]\n"
-		"      --report \n"
-		"      --dump_geometries <filename>\n"
+		"      --in   \n"
 		"      --mini_rasters <prefix> \n"
 		"      --mini_raster_strip <filename> \n"
 		"      --mini_raster_parity {even | odd | @<field>} \n"
 		"      --separation <num-pixels> \n"
-		"      --jtstest <filename>\n"
 		"\n"
 		"      --fields <field1> <field2> ... <fieldn>\n"
 		"      --pixprop <minimum-pixel-proportion>\n"
@@ -57,25 +72,28 @@ static void usage(const char* msg) {
 		"      --skip_invalid_polys \n"
 		"      --nodata <value> \n"
 		"      --buffer <distance> [<quadrantSegments>] \n"
-		"      --progress [<value>] \n"
 		"      --RID_as_given \n"
+		"      --progress [<value>] \n"
+		"      --report \n"
 		"      --verbose \n"
-		"      --ppoly \n"
-		"      --in   \n"
-		"      --srs <srs>\n"
 		"      --version\n"
+		);
+	}
+	
+	// footer:
+	fprintf(stdout, 
 		"\n"
 		"Additional information at http://starspan.casil.ucdavis.edu\n"
 		"\n"
-		, STARSPAN_VERSION, __DATE__, __TIME__
 	);
+	
 	exit(0);
 }
 
 ///////////////////////////////////////////////////////////////
 // main test program
 int main(int argc, char ** argv) {
-	if ( argc == 1 || 0==strcmp("--help", argv[1]) ) {
+	if ( argc == 1 ) {
 		usage(NULL);
 	}
 	
@@ -346,8 +364,9 @@ int main(int argc, char ** argv) {
 			mini_srs = argv[i];
 		}
 
-		// HELP
-		else if ( 0==strcmp("--help", argv[i]) ) {
+		// HELP: --help or --help-dev
+		else if ( 0==strncmp("--help", argv[i], 6) ) {
+			show_dev_options = 0==strcmp("--help-dev", argv[i]);
 			usage(NULL);
 		}
 		// version
