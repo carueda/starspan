@@ -439,7 +439,6 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 }
 
 
-
 //
 // process a multi-polygon intersection.
 //
@@ -447,6 +446,68 @@ void Traverser::processMultiPolygon(OGRMultiPolygon* mpoly) {
 	for ( int i = 0; i < mpoly->getNumGeometries(); i++ ) {
 		OGRPolygon* poly = (OGRPolygon*) mpoly->getGeometryRef(i);
 		processPolygon(poly);
+	}
+}
+
+//
+// process a geometry collection intersection.
+//
+void Traverser::processGeometryCollection(OGRGeometryCollection* coll) {
+	for ( int i = 0; i < coll->getNumGeometries(); i++ ) {
+		OGRGeometry* geo = (OGRGeometry*) coll->getGeometryRef(i);
+		processGeometry(geo);
+	}
+}
+
+//
+// get intersection type and process accordingly
+// Note that pixset is created where duplicate pixel control is required.
+//
+void Traverser::processGeometry(OGRGeometry* intersection_geometry) {
+	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
+	switch ( intersection_type ) {
+		case wkbPoint:
+		case wkbPoint25D:
+			processPoint((OGRPoint*) intersection_geometry);
+			break;
+	
+		case wkbMultiPoint:
+		case wkbMultiPoint25D:
+			pixset = new set<EPixel>();
+			processMultiPoint((OGRMultiPoint*) intersection_geometry);
+			break;
+	
+		case wkbLineString:
+		case wkbLineString25D:
+			pixset = new set<EPixel>();
+			processLineString((OGRLineString*) intersection_geometry);
+			break;
+	
+		case wkbMultiLineString:
+		case wkbMultiLineString25D:
+			pixset = new set<EPixel>();
+			processMultiLineString((OGRMultiLineString*) intersection_geometry);
+			break;
+			
+		case wkbPolygon:
+		case wkbPolygon25D:
+			processPolygon((OGRPolygon*) intersection_geometry);
+			break;
+			
+		case wkbMultiPolygon:
+		case wkbMultiPolygon25D:
+			processMultiPolygon((OGRMultiPolygon*) intersection_geometry);
+			break;
+			
+		case wkbGeometryCollection:
+		case wkbGeometryCollection25D:
+			processGeometryCollection((OGRGeometryCollection*) intersection_geometry);
+			break;
+			
+		default:
+			throw (string(OGRGeometryTypeToName(intersection_type))
+			    + ": intersection type not considered."
+			);
 	}
 }
 
@@ -484,52 +545,14 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	assert(!pixset);
 	
-	//
-	// get intersection type and process accordingly
 	// Note that pixset is created where duplicate pixel control is required.
-	//
-	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
-	switch ( intersection_type ) {
-		case wkbPoint:
-		case wkbPoint25D:
-			processPoint((OGRPoint*) intersection_geometry);
-			break;
-	
-		case wkbMultiPoint:
-		case wkbMultiPoint25D:
-			pixset = new set<EPixel>();
-			processMultiPoint((OGRMultiPoint*) intersection_geometry);
-			break;
-	
-		case wkbLineString:
-		case wkbLineString25D:
-			pixset = new set<EPixel>();
-			processLineString((OGRLineString*) intersection_geometry);
-			break;
-	
-		case wkbMultiLineString:
-		case wkbMultiLineString25D:
-			pixset = new set<EPixel>();
-			processMultiLineString((OGRMultiLineString*) intersection_geometry);
-			break;
-			
-		case wkbPolygon:
-		case wkbPolygon25D:
-			processPolygon((OGRPolygon*) intersection_geometry);
-			break;
-			
-		case wkbMultiPolygon:
-		case wkbMultiPolygon25D:
-			processMultiPolygon((OGRMultiPolygon*) intersection_geometry);
-			break;
-			
-		default:
-			cerr<< "starspan: "
-			    << OGRGeometryTypeToName(intersection_type)
-			    << ": intersection type not considered.\n"
-			    << "           Base feature FID=" <<feature->GetFID()<< " is " 
-				<< OGRGeometryTypeToName(feature_geometry->getGeometryType()) << endl;
-			;
+	try {
+		processGeometry(intersection_geometry);
+	}
+	catch(string err) {
+		cerr<< "starspan: FID=" <<feature->GetFID()
+		    << ", " << OGRGeometryTypeToName(feature_geometry->getGeometryType())
+		    << endl << err << endl;
 	}
 
 	if ( pixset ) {

@@ -6,6 +6,7 @@ $Id$
 	Traverser: options for progress and verbose output.
 	
 	added Traverser::processMultiPolygon
+	added Traverser::processGeometryCollection
 
 2004-10-07 (0.85beta)
 

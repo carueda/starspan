@@ -300,6 +300,8 @@ private:
 	void processMultiLineString(OGRMultiLineString* coll);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
+	void processGeometryCollection(OGRGeometryCollection* coll);
+	void processGeometry(OGRGeometry* intersection_geometry);
 
 	void process_feature(OGRFeature* feature);
 	
