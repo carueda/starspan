@@ -64,7 +64,8 @@ int starspan_gen_envisl(
 	Raster* rast, 
 	Vector* vect, 
 	const char* select_fields,     // comma-separated field names
-	const char* envisl_name
+	const char* envisl_name,
+	bool envi_image            // true for image, false for spectral lib
 );
 
 	

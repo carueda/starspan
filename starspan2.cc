@@ -39,6 +39,7 @@ static void usage(const char* msg) {
 		"      -report              Shows info about given input files\n"
 		"      -dbf <name>          Generates a DBF file\n"
 		"      -csv <name>          Generates a CSV file\n"
+		"      -envi <name>         Generates an ENVI image\n"
 		"      -envisl <name>       Generates an ENVI spectral library\n"
 		"      -mr <prefix>         Generates mini rasters\n"
 		"      -jtstest <filename>  Generates a JTS test file\n"
@@ -75,7 +76,8 @@ int main(int argc, char ** argv) {
 	bool do_report = false;
 	bool only_in_feature = false;
 	bool use_polys = false;
-	const char*  envisl_name = NULL;
+	const char*  envi_name = NULL;
+	bool envi_image = true;
 	const char*  select_fields = NULL;
 	const char*  dbf_name = NULL;
 	const char*  csv_name = NULL;
@@ -125,13 +127,14 @@ int main(int argc, char ** argv) {
 			an_output_given = true;
 			mini_prefix = argv[i];
 		}
-		else if ( 0==strcmp("-envisl", argv[i]) ) {
+		else if ( 0==strcmp("-envi", argv[i]) || 0==strcmp("-envisl", argv[i]) ) {
+			envi_image = 0==strcmp("-envi", argv[i]);
 			if ( ++i == argc )
-				usage("-envisl: which base name?");
+				usage("-envi, -envisl: which base name?");
 			if ( an_output_given )
-				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+				usage("Only one of -dbf, -csv, -envi*, -mr, or -jtstest, please\n");
 			an_output_given = true;
-			envisl_name = argv[i];
+			envi_name = argv[i];
 		}
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
 			if ( ++i == argc )
@@ -209,7 +212,7 @@ int main(int argc, char ** argv) {
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
-	if ( dbf_name || csv_name || envisl_name || mini_prefix || jtstest_filename) { 
+	if ( dbf_name || csv_name || envi_name || mini_prefix || jtstest_filename) { 
 		if ( !rast || !vect ) {
 			usage("Specified output option requires both a raster and a vector to proceed\n");
 		}
@@ -221,8 +224,8 @@ int main(int argc, char ** argv) {
 	else if ( csv_name ) { 
 		return starspan_csv(rast, vect, select_fields, csv_name);
 	}
-	else if ( envisl_name ) { 
-		return starspan_gen_envisl(rast, vect, select_fields, envisl_name);
+	else if ( envi_name ) { 
+		return starspan_gen_envisl(rast, vect, select_fields, envi_name, envi_image);
 	}
 	else if ( mini_prefix ) {
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);

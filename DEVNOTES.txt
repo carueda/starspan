@@ -4,6 +4,9 @@ $Id$
 2004-09-10
 	Band# names now starting from 1.
 	
+	-envi:  creates envi image
+	-envisl:  creates envi spectral library
+	
 2004-09-09
 	TraversalEvent: (col,row) are now (1,1)-based (to be more
 	compatible with standard tools, e.g. envi).
