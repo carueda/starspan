@@ -20,10 +20,10 @@ int Vector::end() {
 
 
 
-static void ReportOnLayer(FILE* file, OGRLayer* poLayer) {
+static void ReportOnLayer(int iLayer, FILE* file, OGRLayer* poLayer) {
     OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
 
-    fprintf(file, "\nLayer name: %s\n", poDefn->GetName() );
+    fprintf(file, "\nLayer %d: Name: %s\n", iLayer, poDefn->GetName() );
 	fprintf(file, "Geometry: %s\n", OGRGeometryTypeToName(poDefn->GetGeomType()));
 	fprintf(file, "Feature Count: %d\n", poLayer->GetFeatureCount());
 	
@@ -54,6 +54,7 @@ static void ReportOnLayer(FILE* file, OGRLayer* poLayer) {
 		);
 	}
 
+	/*
     OGRFeature* poFeature;
 	int nFetchFID = OGRNullFID;
 	int bSummaryOnly = FALSE;	
@@ -74,6 +75,7 @@ static void ReportOnLayer(FILE* file, OGRLayer* poLayer) {
             delete poFeature;
         }
     }
+	*/
 }
 
 
@@ -103,15 +105,14 @@ OGRLayer* Vector::getLayer(int layer_num) {
 }
 
 void Vector::report(FILE* file) {
-	fprintf(file, "poDS->GetLayerCount() = %d\n", poDS->GetLayerCount());
-	
+	fprintf(file, "Layers = %d\n", poDS->GetLayerCount());
 	for( int iLayer = 0; iLayer < poDS->GetLayerCount(); iLayer++ ) {
 		OGRLayer* poLayer = poDS->GetLayer(iLayer);
 		if( poLayer == NULL ) {
 			fprintf(file, "FAILURE: Couldn't fetch advertised layer %d!\n", iLayer);
 			exit(1);
 		}
-		ReportOnLayer(file, poLayer);
+		ReportOnLayer(iLayer+1, file, poLayer);
 	}
 }
 
