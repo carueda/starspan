@@ -9,6 +9,8 @@
 
 #include <vector>
 
+using namespace std;
+
 
 /** indices into stats.result arrays: */
 enum {
