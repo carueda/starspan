@@ -88,6 +88,10 @@ public:
 class Traverser : LineRasterizerObserver {
 public:
 
+	//
+	// these class members might be converted to instance members..
+	//
+	
 	/**
 	  * Sets the proportion of intersected area required for a pixel to be included.
 	  * This parameter is only used during processing of polygons.
@@ -99,8 +103,16 @@ public:
 	static void setPixelProportion(double pixprop);
 
 	/**
+	  * Only the given FID will be processed.
+	  * Useful for debugging.
+	  *
+	  * @param FID  a FID.
+	  */
+	static void setDesiredFID(long FID);
+
+	/**
 	  * Creates a traverser.
-	  * Then you will call setObserver() and maybe setFractionForInclusion().
+	  * Then you will call setObserver().
 	  */
 	Traverser(Raster* r, Vector* v);
 	
@@ -148,6 +160,8 @@ private:
 	void processPolygon_point(OGRPolygon* poly);
 	void processPolygon_pixel(OGRPolygon* poly);
 
+	void process_feature(OGRFeature* feature);
+	
 	// LineRasterizerObserver	
 	void pixelFound(double x, double y);
 };

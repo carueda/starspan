@@ -16,10 +16,15 @@
 
 
 static double pixelProportion = -1.0;   // disabled
+static long desired_FID = -1;
 
 
 void Traverser::setPixelProportion(double pixprop) {
 	pixelProportion = pixprop; 
+}
+
+void Traverser::setDesiredFID(long FID) {
+	desired_FID = FID; 
 }
 
 
@@ -344,6 +349,74 @@ void Traverser::processPolygon_pixel(OGRPolygon* poly) {
 }
 
 
+
+
+//
+// main method for traversal
+//
+void Traverser::process_feature(OGRFeature* feature) {
+	//
+	// get geometry
+	//
+	OGRGeometry* feature_geometry = feature->GetGeometryRef();
+
+	//
+	// intersect this feature with raster (raster ring)
+	//
+	OGRGeometry* intersection_geometry = feature_geometry->Intersection(&raster_poly);
+	if ( !intersection_geometry ) {
+		return;
+	}
+
+	fprintf(stdout, 
+		"\n\nFID: %ld  INTERSECTION %s\n",
+		feature->GetFID(),
+		intersection_geometry->getGeometryName()
+	);			
+	
+	//
+	// notify observer about this feature
+	// 
+	observer->intersectionFound(feature);
+
+	//
+	// get intersection type and process accordingly
+	//
+	OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
+	switch ( intersection_type ) {
+		case wkbPoint:
+			fputc('.', stdout); fflush(stdout);
+			processPoint((OGRPoint*) intersection_geometry);
+			break;
+	
+		case wkbMultiPoint:
+			fputc(':', stdout); fflush(stdout);
+			processMultiPoint((OGRMultiPoint*) intersection_geometry);
+			break;
+	
+		case wkbLineString:
+			fputc('|', stdout); fflush(stdout);
+			processLineString((OGRLineString*) intersection_geometry);
+			break;
+	
+		case wkbMultiLineString:
+			fputc('!', stdout); fflush(stdout);
+			processMultiLineString((OGRMultiLineString*) intersection_geometry);
+			break;
+			
+		case wkbPolygon:
+			fputc('@', stdout); fflush(stdout);
+			processPolygon((OGRPolygon*) intersection_geometry);
+			break;
+			
+		default:
+			fprintf(stdout, "?: intersection type not considered\n");
+	}
+	
+	delete intersection_geometry;
+}
+
+
 //
 // main method for traversal
 //
@@ -369,73 +442,29 @@ void Traverser::traverse() {
 	// notify observer about raster ring
 	//
 	observer->rasterPoly(&raster_poly);
+
+    OGRFeature* feature;
 	
 	//
-	// For each feature in vector datasource:
+	// Was a specific FID given?
 	//
-    OGRFeature* feature;
-	while( (feature = layer->GetNextFeature()) != NULL ) {
-		//
-		// get geometry
-		//
-		OGRGeometry* feature_geometry = feature->GetGeometryRef();
-
-		//
-		// intersect this feature with raster (raster ring)
-		//
-		OGRGeometry* intersection_geometry = feature_geometry->Intersection(&raster_poly);
-		if ( !intersection_geometry ) {
-			delete feature;
-			continue;
+	if ( desired_FID >= 0 ) {
+		feature = layer->GetFeature(desired_FID);
+		if ( !feature ) {
+			fprintf(stderr, "FID %ld not found in %s\n", desired_FID, vect->getName());
+			exit(1);
 		}
-
-		fprintf(stdout, 
-			"\n\nFID: %ld  INTERSECTION %s\n",
-			feature->GetFID(),
-			intersection_geometry->getGeometryName()
-		);			
-		
-		//
-		// notify observer about this feature
-		// 
-		observer->intersectionFound(feature);
-
-		//
-		// get intersection type and process accordingly
-		//
-		OGRwkbGeometryType intersection_type = intersection_geometry->getGeometryType();
-		switch ( intersection_type ) {
-			case wkbPoint:
-				fputc('.', stdout); fflush(stdout);
-				processPoint((OGRPoint*) intersection_geometry);
-				break;
-		
-			case wkbMultiPoint:
-				fputc(':', stdout); fflush(stdout);
-				processMultiPoint((OGRMultiPoint*) intersection_geometry);
-				break;
-		
-			case wkbLineString:
-				fputc('|', stdout); fflush(stdout);
-				processLineString((OGRLineString*) intersection_geometry);
-				break;
-		
-			case wkbMultiLineString:
-				fputc('!', stdout); fflush(stdout);
-				processMultiLineString((OGRMultiLineString*) intersection_geometry);
-				break;
-				
-			case wkbPolygon:
-				fputc('@', stdout); fflush(stdout);
-				processPolygon((OGRPolygon*) intersection_geometry);
-				break;
-				
-			default:
-				fprintf(stdout, "?: intersection type not considered\n");
-		}
-		
-		delete intersection_geometry;
+		process_feature(feature);
 		delete feature;
+	}
+	else {
+		//
+		// For each feature in vector datasource:
+		//
+		while( (feature = layer->GetNextFeature()) != NULL ) {
+			process_feature(feature);
+			delete feature;
+		}
 	}
 }
 

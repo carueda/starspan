@@ -55,6 +55,8 @@ static void usage(const char* msg) {
 		"              Only used in intersections resulting in polygons.\n"
 		"              By default, the pixel is included only if the polygon \n"
 		"              contains the upper left corner of the pixel.\n"
+		"      -fid <value>\n"
+		"              Only the given FID will be scanned.\n"
 		"      -in     (Used with -mr)\n"
 		"              Only pixels contained in geometry features are retained.\n"
 		"              Zero (0) is used to nullify pixels outside features.\n"
@@ -133,6 +135,14 @@ int main(int argc, char ** argv) {
 			if ( pix_prop < 0.0 || pix_prop > 1.0 )
 				usage("invalid pixel proportion");
 			Traverser::setPixelProportion(pix_prop);
+		}
+		else if ( 0==strcmp("-fid", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-fid: desired FID?");
+			long FID = atol(argv[i]);
+			if ( FID < 0 )
+				usage("invalid FID");
+			Traverser::setDesiredFID(FID);
 		}
 		else if ( 0==strcmp("-in", argv[i]) ) {
 			only_in_feature = true;
