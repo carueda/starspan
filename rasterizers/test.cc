@@ -1,19 +1,29 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <cstdlib>
 #include "rasterizers.h"
 
+
+//
+//   g++ -Wall -I/usr/local/include/agg2  LineRasterizer.cc  test.cc
+//   ./a.out 3 3 10.1 5.3 20.6 10.1
+//   pixel size:  3, 3
+//   From  (10.1, 5.3) -> (20.6, 10.1)
+//           9,3
+//           12,6
+//           15,6
+//           18,9
+//
 
 class MyLineRasterizerObserver : public LineRasterizerObserver {
 public:	
 	void pixelFound(double x, double y) {
-		fprintf(stdout, "\t%g %g \n", x, y);
+		cout << "\t" << x << "," << y << endl;
 	}
 };
 
 int main(int argc, char** argv) {
 	if ( argc != 7 ) {
-		fprintf(stderr, "test pix_size_x pix_size_y x1 y1 x2 y2\n");
+		cerr <<  "test pix_size_x pix_size_y x1 y1 x2 y2" << endl;
 		return 0;
 	}
 	int arg = 1;
@@ -26,10 +36,11 @@ int main(int argc, char** argv) {
 
 	LineRasterizer lr(pix_size_x, pix_size_y);
 	MyLineRasterizerObserver observer;
-	lr.addObserver(&observer);
+	lr.setObserver(&observer);
 	
-	fprintf(stdout, "From  %g %g  ->  %g %g:\n", x1, y1, x2, y2);
-	lr.line(x1, y1, x2, y2);
+	cout << "pixel size:  " << pix_size_x << ", " << pix_size_y << endl;  
+	cout << "From  (" << x1 << ", " << y1 << ") -> (" << x2 << ", " << y2 << ")" << endl;  
+	lr.line(x1, y1, x2, y2, true);
 	
     return 0;
 }
