@@ -455,6 +455,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 			fprintf(stdout, "\b\b\b\b%4d", (i+1)); fflush(stdout);
 		}
 	}
+	delete geos_poly;
+	
 	if ( verbose ) {
 		fprintf(stdout, "\n"); 
 		fprintf(stdout, " %d pixels in poly out of %d pixels in envelope\n", 

@@ -2,8 +2,10 @@ starspan devnotes
 $Id$
 
 2004-10-12 (0.87beta)
-	Some cleanup
-
+	Some cleanup and checks for memory leaks:
+		- StatsObserver.computeResults(): vector of values released.
+		- Traverser::processPolygon: geos_poly released.
+		
 2004-10-11 (0.86beta)
 	Traverser::processPolygon: now catches GEOS exceptions which
 	may occur when a pixel is intersected with a self-intersecting
