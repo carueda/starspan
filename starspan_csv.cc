@@ -89,7 +89,7 @@ public:
 		//
 
 		// Create FID field
-		fprintf(file, "FID");
+		//***fprintf(file, "FID");
 		
 		// Create (col,row) fields, if so indicated
 		if ( !noColRow ) {
@@ -125,10 +125,10 @@ public:
 		
 		// Create fields for bands
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
-			fprintf(file, ",Band%d", i+1);
+			//***fprintf(file, ",Band%d", i+1);
 		}
 		
-		fprintf(file, "\n");
+		//***fprintf(file, "\n");
 		
 		currentFeature = NULL;
 	}
@@ -155,7 +155,7 @@ public:
 		//
 
 		// Add FID value:
-		fprintf(file, "%ld", currentFeature->GetFID());
+		fprintf(file, "%ld\n", currentFeature->GetFID());
 		
 		// add (col,row) fields
 		if ( !noColRow ) {
@@ -195,12 +195,13 @@ public:
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
 			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-			fprintf(file, ",%s", extract_value(bandType, sign));
+			//***fprintf(file, ",%s", extract_value(bandType, sign));
+			fprintf(file, "%s\n", extract_value(bandType, sign));
 			
 			// move to next piece of data in buffer:
 			sign += typeSize;
 		}
-		fprintf(file, "\n");
+		//***fprintf(file, "\n");
 	}
 
 	/**

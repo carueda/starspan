@@ -2,25 +2,30 @@
 # Makefile to build the starspan tool
 # $Id$
 #
+# Locally modified in cstars
 #
 
+# common prefix
+PREFIX := /proj/delta/delta_2004/code/starspan/usr_local
+
 # specify the GDAL source directory
-GDAL_SRC_DIR := /home/carueda/cstars/GDAL/gdal
+GDAL_SRC_DIR := /proj/delta/delta_2004/code/starspan/external/GDAL/gdal
 
 # specify where GDAL is installed (--prefix)
-GDAL_PREFIX := /usr/local
+GDAL_PREFIX := $(PREFIX)
 
 # specify where GEOS is installed (--prefix)
-GEOS_PREFIX := /usr/local
+GEOS_PREFIX := $(PREFIX)
 
 # specify where SHAPELIB is installed
-SHAPELIB_PREFIX := /usr/local
+SHAPELIB_PREFIX := $(PREFIX)
 
 # specify where AGG is installed
-AGG_PREFIX := /usr/local
+AGG_PREFIX := $(PREFIX)
 
+#------------------------------------------------------------
 
-INCLUDE := -I/usr/local/include
+INCLUDE := -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv		 
 
 # starspan_db.cc
 INCLUDE += -I${SHAPELIB_PREFIX}/include/libshp
@@ -30,7 +35,8 @@ INCLUDE += -I$(GDAL_SRC_DIR)/frmts
 		 
 # See rasterizers/LineRasterizer.cc
 INCLUDE += -I${AGG_PREFIX}/include/agg2 
-INCLUDE += -Ivector -Iraster -Itraverser -Irasterizers -Ijts -Icsv		 
+
+INCLUDE += -I/usr/local/include
 
 
 SRCS =	starspan_stats.cc \
@@ -49,18 +55,22 @@ SRCS =	starspan_stats.cc \
 		rasterizers/LineRasterizer.cc \
 		csv/Csv.cc
 
-	   
+
+OBJS = $(subst .cc,.o,$(SRCS))
+
 CXXFLAGS = -g -Wall \
 		   $(INCLUDE)
 
-LIBPATH = -L/usr/local/lib
+LIBPATH = -L$(PREFIX)/lib
 
-LDFLAGS = -lshp -lgdal -lgeos
+LDFLAGS = -lgdal -lshp -lgeos
 
 .PHONY= all install clean
 
 all: starspan2
 
+objs : $(OBJS)
+	   
 starspan2: starspan2.o $(SRCS)
 	g++ $(CXXFLAGS) $(OBJ_OPT) \
 	    $(LIBPATH) -o starspan2 starspan2.o $(SRCS) $(LDFLAGS)
