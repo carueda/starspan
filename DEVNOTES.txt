@@ -30,6 +30,8 @@ $Id$
 	about this situation to see what Frank says about that.
 	For now, the mini raster options ARE broken due to this
 	GDAL bug!
+	I just checkout the last gdal cvs snapshot and it seems
+	that the problem is still there (by looking at the code).
 
 2005-03-23 (0.962beta)
 	Usage message reorganized: testing and other developer
