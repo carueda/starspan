@@ -4,7 +4,6 @@
 # Carlos A. Rueda
 # starspan - launcher script
 # NOTE: Adjust as necessary for your environment
-# 2004-09-10: adjustment for cstars machines 
 # $Id$
 #
 
@@ -17,8 +16,10 @@ if [ "`uname -n`" == "px" ]; then
 	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
 else
 	# cstars machines
-	export LD_LIBRARY_PATH=/net/scratch_ceres/PAVO/lib:/usr/local/lib:$LD_LIBRARY_PATH
-	STARSPAN2=$BINDIR/starspan2-scorpio
+	export LD_LIBRARY_PATH=/proj/delta/delta_2004/code/starspan/usr_local/lib
+
+	#export LD_LIBRARY_PATH=/net/scratch_ceres/PAVO/lib:/usr/local/lib:$LD_LIBRARY_PATH
+	#STARSPAN2=$BINDIR/starspan2-scorpio
 fi
 
 function usage() {
