@@ -374,13 +374,12 @@ double** starspan_getFeatureStatsByField(
 	const char* field_name, 
 	const char* field_value, 
 	Vector* vect, Raster* rast,
-	double pix_prop,
 	vector<const char*> select_stats,
 	long *FID
 ) {
 	Traverser tr;
-	if ( pix_prop >= 0.0 )
-		tr.setPixelProportion(pix_prop);
+	if ( globalOptions.pix_prop >= 0.0 )
+		tr.setPixelProportion(globalOptions.pix_prop);
 	tr.setVector(vect);
 	tr.addRaster(rast);
 	tr.setDesiredFeatureByField(field_name, field_value);

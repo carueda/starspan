@@ -163,7 +163,6 @@ public:
 	
 	/**
 	  * Adds a raster.
-	  * -- NOTE: only first one added is processed until complete impl is done.
 	  * @param r the raster dataset
 	  */
 	void addRaster(Raster* raster);
@@ -280,9 +279,17 @@ public:
 	}
 	
 	/**
+	  * Sets if invalid polygons should be skipped.
+	  * By default all polygons are processed.
+	  */
+	void Traverser::setSkipInvalidPolygons(bool b) { 
+		skip_invalid_polys = b;
+	}
+	
+	/**
 	  * Executes the traversal.
 	  * This traverser should not be modified while
-	  * the traversal is performed. Otherwise undefined
+	  * the traversal is performed. Otherwise unexpected
 	  * behaviour may occur.
 	  */
 	void traverse(void);
@@ -349,6 +356,7 @@ private:
 	bool verbose;
 	ostream* logstream;
 	bool debug_dump_polys;
+	bool skip_invalid_polys;
 };
 
 

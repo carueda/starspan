@@ -56,16 +56,14 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	FILE* file;
-	bool noColRow, noXY;
 	OGRFeature* currentFeature;
 	vector<const char*>* select_fields;
 	
 	/**
 	  * Creates a csv creator
 	  */
-	CSVObserver(Traverser& tr, FILE* f, vector<const char*>* select_fields,
-		bool noColRow, bool noXY)
-	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields)
+	CSVObserver(Traverser& tr, FILE* f, vector<const char*>* select_fields)
+	: file(f), select_fields(select_fields)
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -92,13 +90,13 @@ public:
 		fprintf(file, "FID");
 		
 		// Create (col,row) fields, if so indicated
-		if ( !noColRow ) {
+		if ( !globalOptions.noColRow ) {
 			fprintf(file, ",col");
 			fprintf(file, ",row");
 		}
 		
 		// Create (x,y) fields, if so indicated
-		if ( !noXY ) {
+		if ( !globalOptions.noXY ) {
 			fprintf(file, ",x");
 			fprintf(file, ",y");
 		}
@@ -156,12 +154,12 @@ public:
 		fprintf(file, "%ld", currentFeature->GetFID());
 		
 		// add (col,row) fields
-		if ( !noColRow ) {
+		if ( !globalOptions.noColRow ) {
 			fprintf(file, ",%d,%d", col, row);
 		}
 		
 		// add (x,y) fields
-		if ( !noXY ) {
+		if ( !globalOptions.noXY ) {
 			fprintf(file, ",%.3f,%.3f", ev.pixel.x, ev.pixel.y);
 		}
 		
@@ -219,9 +217,7 @@ public:
 Observer* starspan_csv(
 	Traverser& tr,
 	vector<const char*>* select_fields,
-	const char* filename,
-	bool noColRow,
-	bool noXY
+	const char* filename
 ) {
 	// create output file
 	FILE* file = fopen(filename, "w");
@@ -230,7 +226,7 @@ Observer* starspan_csv(
 		return 0;
 	}
 
-	return new CSVObserver(tr, file, select_fields, noColRow, noXY);	
+	return new CSVObserver(tr, file, select_fields);	
 }
 		
 

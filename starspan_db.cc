@@ -42,7 +42,6 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	DBFHandle file;
-	bool noColRow, noXY;
 	OGRFeature* currentFeature;
 	int next_record_index;
 	vector<const char*>* select_fields;	
@@ -51,9 +50,8 @@ public:
 	/**
 	  * Creates a dbf creator
 	  */
-	DBObserver(Traverser& tr, DBFHandle f, vector<const char*>* select_fields,
-		bool noColRow, bool noXY)
-	: file(f), noColRow(noColRow), noXY(noXY), select_fields(select_fields) 
+	DBObserver(Traverser& tr, DBFHandle f, vector<const char*>* select_fields)
+	: file(f), select_fields(select_fields) 
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -94,7 +92,7 @@ public:
 		next_field_index++;
 		
 		// Create (col,row) fields, if so indicated
-		if ( !noColRow ) {
+		if ( !globalOptions.noColRow ) {
 			field_type = FTInteger;
 			field_width = 6;
 			field_precision = 0;
@@ -110,7 +108,7 @@ public:
 		}
 		
 		// Create (x,y) fields, if so indicated
-		if ( !noXY ) {
+		if ( !globalOptions.noXY ) {
 			field_type = FTDouble;
 			field_width = 18;
 			field_precision = 3;
@@ -249,7 +247,7 @@ public:
 		);
 		
 		// add (col,row) fields
-		if ( !noColRow ) {
+		if ( !globalOptions.noColRow ) {
 			DBFWriteIntegerAttribute(
 				file,
 				next_record_index,            // int iShape -- record number
@@ -265,7 +263,7 @@ public:
 		}
 		
 		// add (x,y) fields
-		if ( !noXY ) {
+		if ( !globalOptions.noXY ) {
 			DBFWriteDoubleAttribute(
 				file,
 				next_record_index,            // int iShape -- record number
@@ -352,9 +350,7 @@ public:
 Observer* starspan_db(
 	Traverser& tr,
 	vector<const char*>* select_fields,
-	const char* filename,
-	bool noColRow,
-	bool noXY
+	const char* filename
 ) {
 	// create output file
 	DBFHandle file = DBFCreate(filename);
@@ -363,7 +359,7 @@ Observer* starspan_db(
 		return 0;
 	}
 
-	return new DBObserver(tr, file, select_fields, noColRow, noXY);	
+	return new DBObserver(tr, file, select_fields);	
 }
 		
 

@@ -18,6 +18,32 @@
 #define STARSPAN_VERSION "0.87beta"
 
 
+struct GlobalOptions {
+	bool use_pixpolys;
+	bool skip_invalid_polys;
+
+	double pix_prop;
+	
+	/** desired FID */
+	long FID;
+	
+	bool verbose;
+	
+	bool progress;
+	double progress_perc;
+
+	/** param noColRow if true, no col,row fields will be included */
+	bool noColRow;
+	
+	/** if true, no x,y fields will be included */
+  	bool noXY;
+
+	bool only_in_feature;
+};
+
+extern GlobalOptions globalOptions;
+
+
 /////////////////////////////////////////////////////////////////////////////
 // some services:
 
@@ -54,8 +80,8 @@ double** starspan_getFeatureStats(
 double** starspan_getFeatureStatsByField(
 	const char* field_name, 
 	const char* field_value, 
-	Vector* vect, Raster* rast,
-	double pix_prop,
+	Vector* vect, 
+	Raster* rast,
 	vector<const char*> select_stats,
 	long *FID
 ); 
@@ -82,7 +108,6 @@ double** starspan_getFeatureStatsByField(
   * @param vector_filename Vector datasource
   * @param raster_filenames rasters
   * @param speclib_filename spectral library file name
-  * @param pixprop A value assumed to be in [0.0, 1.0].
   * @param link_name Name of field to be used as link vector-speclib
   * @param select_stats List of desired statistics (avg, mode, stdev, min, max)
   * @param calbase_filename output file name
@@ -93,7 +118,6 @@ int starspan_tuct_2(
 	const char* vector_filename,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
-	double pix_prop,
 	const char* link_name,
 	vector<const char*> select_stats,
 	const char* calbase_filename
@@ -157,17 +181,13 @@ Observer* starspan_getStatsObserver(
   * @param tr Data traverser
   * @param select_fields desired fields
   * @param csv_filename output file name
-  * @param noColRow if true, no col,row fields will be included
-  * @param noXY if true, no x,y fields will be included
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_csv(
 	Traverser& tr, 
 	vector<const char*>* select_fields,
-	const char* csv_filename,
-	bool noColRow,
-	bool noXY
+	const char* csv_filename
 );
 
 
@@ -184,17 +204,13 @@ Observer* starspan_csv(
   * @param tr Data traverser
   * @param select_fields desired fields
   * @param db_filename output file name
-  * @param noColRow if true, no col,row fields will be included
-  * @param noXY if true, no x,y fields will be included
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_db(
 	Traverser& tr,
 	vector<const char*>* select_fields,
-	const char* db_filename,
-	bool noColRow,
-	bool noXY
+	const char* db_filename
 );
 
 
@@ -239,17 +255,15 @@ int starspan_update_csv(
 
 /**
   * Creates a ptplot-readable file with geometries and
-  * grid
+  * grid.
+  *
   * @param tr Data traverser
-  * @param use_pixpolys If true, pixels are represented as polygons;
-  *        otherwise as points.
   * @param filename output file name
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_dump(
 	Traverser& tr,
-	bool use_pixpolys,
 	const char* filename
 );
 
@@ -260,16 +274,14 @@ void dumpFeature(Vector* vector, long FID, const char* filename);
 
 /**
   * Generate a JTS test.
+  *
   * @param tr Data traverser
-  * @param use_pixpolys If true, pixels are represented as polygons;
-  *        otherwise as points.
   * @param jtstest_filename output file name
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_jtstest(
 	Traverser& tr,
-	bool use_pixpolys,
 	const char* jtstest_filename
 );
 
@@ -280,7 +292,6 @@ Observer* starspan_jtstest(
 int starspan_minirasters(
 	Traverser& tr,
 	const char* prefix,
-	bool only_in_feature,
 	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
 );

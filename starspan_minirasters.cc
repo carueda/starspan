@@ -15,7 +15,6 @@
 int starspan_minirasters(
 	Traverser& tr,
 	const char* prefix,
-	bool only_in_feature,
 	const char* pszOutputSRS  // see gdal_translate option -a_srs 
 	                         // If NULL, projection is taken from input dataset
 ) {
@@ -103,7 +102,7 @@ int starspan_minirasters(
 				pszOutputSRS
 			);
 			
-			if ( only_in_feature ) {
+			if ( globalOptions.only_in_feature ) {
 				fprintf(stdout, "nullifying pixels not contained in feature..\n");
 				
 				// check locations in intersection_env.

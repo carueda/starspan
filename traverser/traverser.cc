@@ -35,6 +35,7 @@ Traverser::Traverser() {
 	verbose = false;
 	logstream = 0;
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
+	skip_invalid_polys = false;
 }
 
 void Traverser::addObserver(Observer* aObserver) { 
@@ -431,8 +432,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	geos::WKTWriter wktWriter;
 	
 	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
-	if ( !geos_poly->isValid() ) {
-		cerr<< "Invalid polygon.  skipping..."<< endl;
+	if ( skip_invalid_polys && !geos_poly->isValid() ) {
+		cerr<< "--skipping invalid polygon--"<< endl;
 		if ( debug_dump_polys ) {
 			cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
 		}
