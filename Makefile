@@ -52,7 +52,7 @@ LIBPATH = \
 
 LDFLAGS = -lgdal -lgeos
 
-.PHONY= all install clean prof
+.PHONY= all install tidy clean-test clean prof
 
 all: starspan2
 
@@ -78,5 +78,11 @@ prof: starspan2.cc $(SRCS)
 .cc.o:
 	g++ -c $(CXXFLAGS) $(OBJ_OPT) $<
 
-clean:
-	rm -f *.o *~ *.da  starspan2 starspan2_prof
+tidy:
+	rm -f *.o *~
+	
+clean-test:
+	rm -rf tests/generated/
+	
+clean: clean-test tidy
+	rm -f *.da  starspan2 starspan2_prof

@@ -2,6 +2,9 @@ starspan devnotes
 $Id$
 
 
+2005-02-10 (0.92beta)
+	- Minor Makefile changes
+	
 2005-02-07 (0.92beta)
 	- Starting to work on new --mini_raster_strip option.
 	  See starspan_miniraster_strip.cc (partially implemented)
