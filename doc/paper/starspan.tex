@@ -58,19 +58,25 @@ GIS \sep remote sensing
 	\starspan{} is an open source computer program developed at Center of Spatial
 	Technologies and Remote Sensing (CSTARS) for fast and flexible extraction of
 	pixel data from spectral raster images. The tool was developed as part
-	of project for mapping invasive species ... \citep{ustin04}
-	It works on two basic inputs: 1.Raster
-	data: one or multiple raster files 2.Vector data: a file defining a set of
-	geometry features The basic operation performed by \starspan{} is the
-	extraction of the spectral data from the raster files whose pixels are
-	geometrically contained in the geometry features (points, lines, polygons)
-	in the vector data. Extracted pixel data are stored in a number of different
-	formats, including CSV files, a common text-based format that can be
-	imported in many standard applications for further processing. Other
-	functionalities include: band-wise statistics generation per feature,
-	generation of paired pixel band values for subsequent calculation of
-	calibration coefficients, update options, and generation of output data in
-	ENVI formats (standard image and spectral library).
+	of a project for mapping invasive plant species using hyperspectral
+	imagery ... \citep{ustin04}.
+	
+	Main inputs for the program are one or multiple raster files and a vector
+	file defining a set of geometry features. The basic operation performed by
+	\starspan{} is the extraction of the spectral data from the raster files
+	whose pixels are geometrically contained in the geometry features (points,
+	lines, polygons) in the vector data. Extracted pixel data are stored in a
+	number of different formats, including ENVI \citep{envi} (standard image and
+	spectral library) and CSV (comma-separated values), a common text-based
+	format that can be imported into standard applications for further analysis.
+	Other functionalities include the generation of band specific statistics for
+	specified features, extraction of features into individual raster
+	(mini-raster generation), update options, and generation of paired pixel
+	band values for subsequent calculation of calibration coefficients.
+	
+	As a design goal, \starspan is written under object-oriented principles
+	so it can be easily extended with new functionalities without significant
+	loss in performance.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,6 +270,10 @@ Subsequent lines contain corresponding values for each FID.
 	Mapping Invasive Plant Species in the Sacramento- San Joaquin Delta Region
 	Using Hyperspectral Imagery.
 	
+
+\bibitem[ENVI (2004)]{envi}
+	
+	ENVI ... 	
 
 \bibitem[GEOS (2004)]{geos}
 	
