@@ -1,6 +1,20 @@
 starspan devnotes
 $Id$
 
+2004-10-11 (0.86beta)
+	Traverser::processPolygon: now catches GEOS exceptions which
+	may occur when a pixel is intersected with a self-intersecting
+	polygon; to be more specific it seems the problem arises when 
+	the self-intersection happens to be in the area involved in the 
+	pixel/poly intersection.
+	Currently the exceptions are just ignored so the process can
+	continue.
+	An environmental variable STARSPAN_DUMP_POLYS_ON_EXCEPTION controls
+	if the involved polygons should be WKT-printed to stderr.
+	An appropiated solution to this case is PENDING.
+	See http://geos.refractions.net/pipermail/geos-devel/2004-September/001045.html
+	
+	
 2004-10-08 (0.86beta)
 	new  util/Progress class.
 	Traverser: options for progress and verbose output.
