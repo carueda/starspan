@@ -34,15 +34,15 @@ struct GlobalInfo {
 /**
   * Event sent to traversal observers every time an intersecting
   * pixel is found.
+  * Note that all pixel locations are 0-based, with (0,0) denoting
+  * the upper left corner pixel.
   */
 struct TraversalEvent {
 	/**
 	  * Info about the location of pixels.
 	  */
 	struct {
-		/** (col,row) location relative to raster image. 
-		  * Upper left corner is (1,1)
-		  */
+		/** 0-based (col,row) location relative to raster image.  */
 		int col;
 		int row;
 		
