@@ -43,7 +43,8 @@ static void usage(const char* msg) {
 		"\n"
 		"   commands:\n"
 		"      -report              Shows info about given input files\n"
-		"      -db <name>           Generates a DBF file\n"
+		"      -dbf <name>          Generates a DBF file\n"
+		"      -csv <name>          Generates a CSV file\n"
 		"      -envisl <name>       Generates an ENVI spectral library\n"
 		"      -mr <prefix>         Generates mini rasters\n"
 		"      -jtstest <filename>  Generates a JTS test file\n"
@@ -82,10 +83,13 @@ int main(int argc, char ** argv) {
 	bool do_report = false;
 	bool only_in_feature = false;
 	const char*  envisl_name = NULL;
-	const char*  db_name = NULL;
+	const char*  dbf_name = NULL;
+	const char*  csv_name = NULL;
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* jtstest_filename = NULL;
+	
+	bool an_output_given = false;
 	
 	for ( int i = 1; i < argc; i++ ) {
 		
@@ -103,24 +107,44 @@ int main(int argc, char ** argv) {
 		}
 		
 		// COMMANDS
-		else if ( 0==strcmp("-db", argv[i]) ) {
+		else if ( 0==strcmp("-dbf", argv[i]) ) {
 			if ( ++i == argc )
-				usage("-db: which name?");
-			db_name = argv[i];
+				usage("-dbf: which name?");
+			if ( an_output_given )
+				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+			an_output_given = true;
+			dbf_name = argv[i];
+		}
+		else if ( 0==strcmp("-csv", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-csv: which name?");
+			if ( an_output_given )
+				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+			an_output_given = true;
+			csv_name = argv[i];
 		}
 		else if ( 0==strcmp("-mr", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-mr: which prefix?");
+			if ( an_output_given )
+				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+			an_output_given = true;
 			mini_prefix = argv[i];
 		}
 		else if ( 0==strcmp("-envisl", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-envisl: which base name?");
+			if ( an_output_given )
+				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+			an_output_given = true;
 			envisl_name = argv[i];
 		}
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-jtstest: which JTS test file name?");
+			if ( an_output_given )
+				usage("Only one of -dbf, -csv, -envisl, -mr, or -jtstest, please\n");
+			an_output_given = true;
 			jtstest_filename = argv[i];
 		}
 		else if ( 0==strcmp("-report", argv[i]) ) {
@@ -175,32 +199,25 @@ int main(int argc, char ** argv) {
 	if ( vector_filename )
 		vect = new Vector(vector_filename);
 
-	if ( db_name     && mini_prefix 
-	||   envisl_name && mini_prefix
-	||   db_name     && envisl_name ) {
-		usage("Only one of -db, -envisl, or -mr, please\n");
-	}
-	
 	CPLPushErrorHandler(starspan_myErrorHandler);
 	
 	
-	// COMMANDS
-	if ( db_name ) { 
+	if ( dbf_name || csv_name || envisl_name || mini_prefix || jtstest_filename) { 
 		if ( !rast || !vect ) {
-			usage("-db option requires both a raster and a vector file to proceed\n");
+			usage("Specified output option requires both a raster and a vector to proceed\n");
 		}
-		return starspan_db(rast, vect, db_name);
+	}
+	// COMMANDS
+	if ( dbf_name ) { 
+		return starspan_db(rast, vect, dbf_name);
+	}
+	else if ( csv_name ) { 
+		return starspan_csv(rast, vect, csv_name);
 	}
 	else if ( envisl_name ) { 
-		if ( !rast || !vect ) {
-			usage("-envisl option requires both a raster and a vector file to proceed\n");
-		}
 		return starspan_gen_envisl(rast, vect, envisl_name, mini_srs);
 	}
 	else if ( mini_prefix ) {
-		if ( !rast || !vect ) {
-			usage("-mr option requires both a raster and a vector file to proceed\n");
-		}
 		return starspan_minirasters(*rast, *vect, mini_prefix, only_in_feature, mini_srs);
 	}
 	else if ( jtstest_filename ) {

@@ -34,6 +34,7 @@ INCLUDE += -Ivector -Iraster -Itraverser -Irasterizers -Ijts
 
 
 SRCS = starspan_db.cc \
+       starspan_csv.cc \
        starspan_gen_envisl.cc \
        starspan_minirasters.cc \
        starspan_jtstest.cc \

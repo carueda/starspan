@@ -2,6 +2,9 @@ starspan devnotes
 $Id$
 
 2004-09-08
+	New option -csv to generate a CSV output file.
+	Option -db renamed to -dbf
+	
 	Traverser: new approach for pixel inclusion in intersections
 	resulting in polygons. A parameter pixelProprtion is used.
 	New option -pixprop.

@@ -36,6 +36,26 @@ int starspan_db(
 	const char* db_filename
 );
 
+/**
+  * Generates a CSV file with the following columns:
+  *     FID, col,row {vect-attrs}, {bands-from-raster}
+  * where:
+  *     FID:          feature ID as given by OGRFeature#GetFID()
+  *     col,row:      pixel location relative to (0,0) in raster
+  *     {vect-attrs}: attributes from vector
+  *     {rast-bands}: bands from raster at corresponding location
+  *
+  * @param rast Raster dataset to be scanned.
+  * @param vect Vector datasource defining regions to be extracted from raster.
+  *
+  * @return 0 iff OK. 
+  */
+int starspan_csv(
+	Raster* rast, 
+	Vector* vect, 
+	const char* csv_filename
+);
+
 /** Generates envi spectral library ... (preliminaries)
     returns 0 iff OK. */
 int starspan_gen_envisl(
