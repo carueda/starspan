@@ -97,8 +97,8 @@ void Traverser::traverse() {
 			// FIXME: check this calculation
 			int mini_x0 = (int) ((intersection_env.MinX - min_x) / pix_size_x);
 			int mini_y0 = (int) ((intersection_env.MinY - min_y) / pix_size_y);
-			int mini_width =  (int) ((intersection_env.MaxX+pix_size_x - intersection_env.MinX) / pix_size_x); 
-			int mini_height = (int) ((intersection_env.MaxY+pix_size_y - intersection_env.MinY) / pix_size_y);
+			//int mini_width =  (int) ((intersection_env.MaxX+pix_size_x - intersection_env.MinX) / pix_size_x); 
+			//int mini_height = (int) ((intersection_env.MaxY+pix_size_y - intersection_env.MinY) / pix_size_y);
 
 			// check locations in intersection_env.
 			// These locations have to be on the grid defined by the

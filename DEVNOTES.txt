@@ -1,6 +1,10 @@
 starspan devnotes
 $Id$
 
+2004-08-30
+	Option -db to create a DBF with pixels contained in vector features.
+	Added some design documentation.
+	
 2004-08-22
 	New option -envisl to create en envi spectral library.
 	This function uses a traverser object.
