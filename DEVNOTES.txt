@@ -2,6 +2,13 @@ starspan devnotes
 $Id$
                                     
 
+2005-03-23 (0.963beta)
+	Makefile.props.templ: GDAL_SRC_DIR removed: we don't
+	need this any more as GDAL (from 1.2.6) already installs
+	vrtdataset.h in GDAL's PREFIX/include/.
+	
+	
+
 2005-03-23 (0.962beta)
 	Usage message reorganized: testing and other developer
 	oriented options are shown with --help-dev.

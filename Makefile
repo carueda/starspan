@@ -17,14 +17,13 @@ include Makefile.props
 
 #------------------------------------------------------------
 
+# my include directories:
 INCLUDE := -Isrc -Isrc/csv -Isrc/jts -Isrc/raster -Isrc/rasterizers -Isrc/stats \
            -Isrc/traverser -Isrc/util -Isrc/vector 
 
+# external include directories:
 INCLUDE += -I$(GDAL_PREFIX)/include
-INCLUDE += -I$(GDAL_SRC_DIR)/frmts
-INCLUDE += -I$(GDAL_SRC_DIR)
-
-INCLUDE += -I/usr/local/include
+INCLUDE += -I$(GEOS_PREFIX)/include
 
 
 SRCS =	src/starspan_stats.cc \
@@ -55,6 +54,7 @@ CXXFLAGS = -g -Wall \
 
 PROF = -pg -fprofile-arcs
 
+# for external libraries:
 LIBPATH = \
 	 -L$(GDAL_PREFIX)/lib \
 	 -L$(GEOS_PREFIX)/lib
