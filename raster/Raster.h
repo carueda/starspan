@@ -36,6 +36,11 @@ public:
 	// gets raster coordinates
 	void getCoordinates(double *x0, double *y0, double *x1, double *y1);
 	
+	// gets the pixel size as reported by the geo transform associated to
+	// the dataset.
+	void getPixelSize(double *pix_x_size, double *pix_y_size);
+
+
 	// closes this raster.
 	~Raster();
 	

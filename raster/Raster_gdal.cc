@@ -83,7 +83,14 @@ void Raster::getCoordinates(double *x0, double *y0, double *x1, double *y1) {
 	int width, height;
 	getSize(&width, &height, NULL);
 	geo_corner(adfGeoTransform,0, 0, x0, y0);
-	geo_corner(adfGeoTransform, width, height, x1, y1);
+	geo_corner(adfGeoTransform, width-1, height-1, x1, y1);
+}
+
+void Raster::getPixelSize(double *pix_x_size, double *pix_y_size) {
+    if( !geoTransfOK )
+		return;
+	if ( pix_x_size ) *pix_x_size = adfGeoTransform[1];
+	if ( pix_y_size ) *pix_y_size = adfGeoTransform[5];
 }
 
 void Raster::report(FILE* file) {
@@ -95,6 +102,11 @@ void Raster::report(FILE* file) {
 	int width, height, bands;
 	getSize(&width, &height, &bands);
     fprintf(file, "Size is %d, %d;  bands = %d\n", width, height, bands);
+	
+	double pix_x_size, pix_y_size;
+	getPixelSize(&pix_x_size, &pix_y_size);
+	fprintf(file, "Pixel size: %g x %g\n", pix_x_size, pix_y_size);
+	
     fprintf(file, "Corner Coordinates:\n");
     report_corner(file, "Upper Left", 0, 0);
     report_corner(file, "Lower Left", 0, height);
