@@ -2,6 +2,11 @@ starspan devnotes
 $Id$
 
 
+2005-02-04 (0.92beta)
+	- setting up a test scheme: new directory tests/ and script
+	  tests/run_tests.sh. New Makefile target `test'.
+	  
+
 2005-02-02 (0.92beta)
 	- new traverser services to get access to set of visited pixel during
 	  current intersecting feature.

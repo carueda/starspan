@@ -62,6 +62,9 @@ starspan2: starspan2.cc $(SRCS)
 	g++ $(CXXFLAGS) $(OBJ_OPT) \
 	    $(LIBPATH) -o starspan2 starspan2.cc $(SRCS) $(LDFLAGS)
 
+test:
+	(cd tests/ && ./run_tests.sh ../starspan)
+	
 install:
 	install -p starspan starspan2 $(STARSPAN_PREFIX)/bin/ 
 
