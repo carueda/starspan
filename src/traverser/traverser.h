@@ -234,8 +234,8 @@ public:
 	  * This method will have no effect if setDesiredFID(FID) is called with
 	  * a valid FID.
 	  *
-	  * @param field_name
-	  * @param field_value
+	  * @param field_name Name of field
+	  * @param field_value Value of the field
 	  */
 	void setDesiredFeatureByField(const char* field_name, const char* field_value);
 	
@@ -326,7 +326,7 @@ public:
 	}
 	
 	/**
-	  * Sets verbose flag
+	  * Sets log output
 	  */
 	void setLog(ostream& log) { 
 		logstream = &log;
@@ -348,14 +348,6 @@ public:
 	  */
 	void traverse(void);
 
-	/**
-	  * Returns the set of visited pixels
-	  * according to current feature.
-	  */
-	inline set<EPixel> getPixelSet(void) {
-		return pixset;
-	}
-	
 	/**
 	  * Returns the number of visited pixels
 	  * in the current feature.
@@ -390,6 +382,7 @@ public:
 		
 	} summary;
 	
+	/** reports a summary of intersection to std output. */
 	void reportSummary(void);
 	
 private:
