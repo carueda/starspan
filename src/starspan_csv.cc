@@ -41,8 +41,9 @@ public:
 	}
 	
 	/**
-	  * Creates first line with column headers:
-	  *    FID, [col,row,] [x,y,] fields-from-feature, RID, bands-from-raster
+	  * If write_header is true, it creates first line with 
+	  * column headers:
+	  *    FID, fields-from-feature, [col,row,] [x,y,] RID, bands-from-raster
 	  */
 	void init(GlobalInfo& info) {
 		global_info = &info;
@@ -205,9 +206,25 @@ int starspan_csv(
 	// if file exists, append new rows. Otherwise create file.
 	file = fopen(csv_filename, "r+");
 	if ( file ) {
-		fseek(file, 0, SEEK_END);
 		if ( globalOptions.verbose )
 			fprintf(stdout, "Appending to existing file %s\n", csv_filename);
+
+		fseek(file, 0, SEEK_END);
+
+		// check that new data will start in a new line:
+		// if last character is not '\n', then write a '\n':
+		// (This check will make the output more robust in case
+		// the previous information is not properly aligned, eg.
+		// when the previous generation was killed for some reason.)
+		long endpos = ftell(file);
+		if ( endpos > 0 ) {
+			fseek(file, endpos -1, SEEK_SET);
+			char c;
+			if ( 1 == fread(&c, sizeof(c), 1, file) ) {
+				if ( c != '\n' )
+					fputc('\n', file);    // add a new line
+			}
+		}
 	}
 	else {
 		// create output file
