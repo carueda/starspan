@@ -1,12 +1,10 @@
 /* Copyright (C) 1999 Lucent Technologies */
 /* Excerpted from 'The Practice of Programming' */
 /* by Brian W. Kernighan and Rob Pike */
-
 // updated by carueda 2004-09-16
+// $Id$
 
 #include "Csv.h"
-
-//using namespace std;
 
 // endofline: check for and consume \r, \n, \r\n, or EOF
 bool Csv::endofline(char c)
