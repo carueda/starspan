@@ -78,16 +78,7 @@ void Stats::compute(vector<int>& values) {
 
 	if ( include[MODE] ) {
 		map<int,int> count;
-		
-		// take values again
-		for ( unsigned i = 0; i < num_values; i++ ) {
-			const int value = values[i];
-			map<int, int>::iterator it = count.find(value); 
-			if ( it == count.end() )
-				count.insert(map<int,int>::value_type(value, 1));
-			else
-				count[value]++;
-		}
+		computeCounts(values, count);		
 		int best_value;
 		int best_count = 0;
 		for ( map<int, int>::iterator it = count.begin(); it != count.end(); it++ ) {
@@ -101,6 +92,19 @@ void Stats::compute(vector<int>& values) {
 		result[MODE] = best_value;
 	}
 }
+
+void Stats::computeCounts(vector<int>& values, map<int,int>& count) {
+	const unsigned num_values = values.size();
+	for ( unsigned i = 0; i < num_values; i++ ) {
+		const int value = values[i];
+		map<int, int>::iterator it = count.find(value); 
+		if ( it == count.end() )
+			count.insert(map<int,int>::value_type(value, 1));
+		else
+			count[value]++;
+	}
+}
+
 
 void Stats::compute(vector<double>& values) {
 	//

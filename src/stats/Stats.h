@@ -8,6 +8,7 @@
 #define Stats_h
 
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -58,6 +59,12 @@ public:
 	  * compute those stats s where include[s] == true.
 	  */
 	void compute(vector<double>& values); 
+	
+	/**
+	  * Utility method to count the number of occurrences of each value.
+	  * Results are updated in the given map.
+	  */
+	static void computeCounts(vector<int>& values, map<int,int>& count); 
 	
 };
 

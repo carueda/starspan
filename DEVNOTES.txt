@@ -9,6 +9,9 @@ $Id$
 	New method traverser.getPixelSetSize(), which is now
 	used in MiniRasterObserver.intersectionEnd().
 	
+	New static method Stats.computeCounts() to count the number of 
+	occurrences of each value in a vector<int>.
+	
 2005-03-04 (0.961beta)
 	starspan_update_csv.cc: simple printf-to-cout changes
 	Minor text updates in starspan script.
