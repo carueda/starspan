@@ -23,7 +23,6 @@
 struct JtsTestObserver : public Observer {
 	JTS_TestGenerator* jtstest;
 	int jtstest_count;
-	OGRPolygon* raster_poly;
 	OGRGeometryCollection* pp;
 	double pix_x_size, pix_y_size;
 
@@ -35,7 +34,6 @@ struct JtsTestObserver : public Observer {
 	: pix_x_size(pix_x_size_), pix_y_size(pix_y_size_) {
 		jtstest = new JTS_TestGenerator(jtstest_filename);
 		jtstest_count = 0;
-		raster_poly = NULL;
 		pp = NULL;
 	}
 
@@ -50,9 +48,8 @@ struct JtsTestObserver : public Observer {
 	  *
 	  */
 	void init(GlobalInfo& info) { 
-		raster_poly = &info.rasterPoly;
-		fprintf(stdout, "raster_poly: ");
-		raster_poly->dumpReadable(stdout);
+		fprintf(stdout, "rastersGeometry: ");
+		info.rastersGeometry->dumpReadable(stdout);
 		fprintf(stdout, "\n");
 	}
 
@@ -65,7 +62,6 @@ struct JtsTestObserver : public Observer {
 		}
 		
 		OGRGeometry* geom = feature->GetGeometryRef();
-		//OGRGeometry* geom = raster_poly;
 		
 		char case_descr[128];
 		sprintf(case_descr, "%s contains multipoint", geom->getGeometryName());

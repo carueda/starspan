@@ -31,11 +31,37 @@ struct GlobalInfo {
 	
 	/** info about all bands in given rasters */
 	vector<GDALRasterBand*> bands;
-	
-	/** A rectangle covering the raster extension. */
-	OGRPolygon rasterPoly;
+	                           
+	/** Union of envelopes of rasters. */
+	OGRGeometry* rastersGeometry;
 };
+
+
+/**
+  * Global grid defined by unioning all input raster envelopes.
+  */
+struct GridInfo {
+	double x0, y0;
+	double pix_x_size, pix_y_size;
 	
+	//
+	// (x,y) to (col,row) conversion
+	//
+	void toColRow(double x, double y, int *col, int *row) {
+		*col = (int) floor( (x - x0) / pix_x_size );
+		*row = (int) floor( (y - y0) / pix_y_size );
+	}
+	
+	//
+	// (col,row) to (x,y) conversion: (x,y) is the upper left corner of pixel [col,row]
+	//
+	void toGridXY(int col, int row, double *x, double *y) {
+		*x = x0 + col * pix_x_size;
+		*y = y0 + row * pix_y_size;
+	}
+	
+};
+
 	
 /**
   * Event sent to traversal observers every time an intersecting
@@ -268,7 +294,7 @@ public:
 	  *      Assumed to have at least getBandBufferSize() bytes allocated.
 	  * @return buffer
 	  */
-	void* getBandValuesForPixel(int col, int row, void* buffer);
+	void* getBandValuesForPixel(double x, double y, void* buffer);
 	
 	/**
 	  * Sets the output to write progress info.
@@ -338,23 +364,18 @@ private:
 	string desired_fieldValue;
 	
 	GlobalInfo globalInfo;
-	int width, height;
-	double x0, y0, x1, y1;
-	double pix_x_size, pix_y_size;
-	OGREnvelope raster_env;
+	GridInfo grid;
+	
 	size_t minimumBandBufferSize;
 	double* bandValues_buffer;
 	LineRasterizer* lineRasterizer;
 	void notifyObservers(void);
-	void getBandValuesForPixel(int col, int row);
-	void toColRow(double x, double y, int *col, int *row);
-	void toGridXY(int col, int row, double *x, double *y);
+	void getBandValuesForPixel(double x, double y);
 	void processPoint(OGRPoint*);
 	void processMultiPoint(OGRMultiPoint*);
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
-	void pixelFoundInPolygon(double x, double y);
-	void Traverser::processValidPolygon(geos::Polygon* geos_poly);
+	void processValidPolygon(geos::Polygon* geos_poly);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
 	void processGeometryCollection(OGRGeometryCollection* coll);

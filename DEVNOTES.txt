@@ -1,6 +1,11 @@
 starspan devnotes
 $Id$
 
+2004-11-10 (0.9beta)
+	Starting changes to allow the input rasters to at different locations.
+	
+	
+
 2004-10-21 (0.89beta)
 	Some cleanup: Raster, Traverser, Stats.
 	To improve performance on computation of integers:

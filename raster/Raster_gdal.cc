@@ -109,6 +109,20 @@ void Raster::toColRow(double x, double y, int *col, int *row) {
 }
 
 
+bool Raster::toColRow(GDALDataset* ds, double x, double y, int *col, int *row) {
+	double adfGeoTransform[6];
+	if ( ds->GetGeoTransform(adfGeoTransform) != CE_None )
+		return false;
+	double pix_x_size = adfGeoTransform[1];
+	double pix_y_size = adfGeoTransform[5];
+	double x0, y0;
+	geo_corner(adfGeoTransform,0, 0, &x0, &y0);
+	*col = (int) floor( (x - x0) / pix_x_size );
+	*row = (int) floor( (y - y0) / pix_y_size );
+	return true;
+}
+
+
 void* Raster::getBandValuesForPixel(int col, int row) {
 	assert(bandValues_buffer);
 	

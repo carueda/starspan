@@ -78,6 +78,19 @@ void Traverser::setVector(Vector* vector) {
 }
 
 
+inline static OGRPolygon* create_rectangle(double x0, double y0, double x1, double y1) { 
+	OGRLinearRing ring;
+	ring.addPoint(x0, y0);
+	ring.addPoint(x1, y0);
+	ring.addPoint(x1, y1);
+	ring.addPoint(x0, y1);
+	OGRPolygon* poly = new OGRPolygon();
+	poly->addRing(&ring);
+	poly->closeRings();
+	return poly;
+}
+
+
 //
 //
 void Traverser::addRaster(Raster* raster) {
@@ -98,50 +111,46 @@ void Traverser::addRaster(Raster* raster) {
 	
 	if ( rasts.size() == 1 ) {
 		// info taken from first raster.
+		rasts[0]->getPixelSize(&grid.pix_x_size, &grid.pix_y_size);
 		
-		rasts[0]->getSize(&width, &height, NULL);
+		double x0, y0, x1, y1;
 		rasts[0]->getCoordinates(&x0, &y0, &x1, &y1);
-		rasts[0]->getPixelSize(&pix_x_size, &pix_y_size);
-
-		// create a geometry for raster envelope:
-		OGRLinearRing raster_ring;
-		raster_ring.addPoint(x0, y0);
-		raster_ring.addPoint(x1, y0);
-		raster_ring.addPoint(x1, y1);
-		raster_ring.addPoint(x0, y1);
-		globalInfo.rasterPoly.addRing(&raster_ring);
-		globalInfo.rasterPoly.closeRings();
-		globalInfo.rasterPoly.getEnvelope(&raster_env);
-		
-		lineRasterizer = new LineRasterizer(x0, y0, pix_x_size, pix_y_size);
-		lineRasterizer->setObserver(this);
+		globalInfo.rastersGeometry = create_rectangle(x0, y0, x1, y1);
 	}
-	
-	if ( rasts.size() > 1 ) {
-		// check compatibility against first raster:
-		// (rather strict for now)
-		
-		int last = rasts.size() -1;
-		int _width, _height;
-		double _x0, _y0, _x1, _y1;
-		double _pix_x_size, _pix_y_size;
-		rasts[last]->getSize(&_width, &_height, NULL);
-		rasts[last]->getCoordinates(&_x0, &_y0, &_x1, &_y1);
-		rasts[last]->getPixelSize(&_pix_x_size, &_pix_y_size);
+	else {   //  assert( rasts.size() > 1 )
+		const int last = rasts.size() -1;
 
-		if ( _width != width || _height != height ) {
-			cerr<< "Different number of lines/cols\n";
-			exit(1);
-		}
-		if ( _x0 != x0 || _y0 != y0 || _x1 != x1 || _y1 != y1) {
-			cerr<< "Different geographic location\n";
-			exit(1);
-		}
-		if ( _pix_x_size != pix_x_size || _pix_y_size != pix_y_size ) {
+		// update rastersGeometry by unioning the new raster.
+
+		// we keep the restriction that pixel size must be equal
+		double pix_x_size, pix_y_size;
+		rasts[last]->getPixelSize(&pix_x_size, &pix_y_size);
+		if ( grid.pix_x_size != pix_x_size || grid.pix_y_size != pix_y_size ) {
 			cerr<< "Different pixel size\n";
 			exit(1);
 		}
+		
+		// update: rastersGeometry += new rectangle
+		double x0, y0, x1, y1;
+		rasts[last]->getCoordinates(&x0, &y0, &x1, &y1);
+		OGRPolygon* poly = create_rectangle(x0, y0, x1, y1); 
+		OGRGeometry* new_rastersGeometry = 0;
+		try {
+			new_rastersGeometry = globalInfo.rastersGeometry->Union(poly);
+		} 
+		catch(geos::GEOSException* ex) {
+			cerr<< "geos::GEOSException: " << ex->toString()<< endl;
+			exit(1);
+		}
+		delete globalInfo.rastersGeometry;
+		globalInfo.rastersGeometry = new_rastersGeometry;
 	}
+	
+	// update grid info
+	OGREnvelope env;
+	globalInfo.rastersGeometry->getEnvelope(&env);
+	grid.x0 = env.MinX;
+	grid.y0 = env.MinY;
 }
 
 //
@@ -154,28 +163,41 @@ Traverser::~Traverser() {
 		delete lineRasterizer;
 }
 
-void* Traverser::getBandValuesForPixel(int col, int row, void* buffer) {
+void* Traverser::getBandValuesForPixel(double x, double y, void* buffer) {
 	char* ptr = (char*) buffer;
 	for ( unsigned i = 0; i < globalInfo.bands.size(); i++ ) {
 		GDALRasterBand* band = globalInfo.bands[i];
 		GDALDataType bandType = band->GetRasterDataType();
-	
-		int status = band->RasterIO(
-			GF_Read,
-			col, row,
-			1, 1,             // nXSize, nYSize
-			ptr,              // pData
-			1, 1,             // nBufXSize, nBufYSize
-			bandType,         // eBufType
-			0, 0              // nPixelSpace, nLineSpace
-		);
+		int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
+		// initialize with NODATA value  (here fixed to zero)  PENDING
+		memset(&ptr, 0, bandTypeSize);
 		
-		if ( status != CE_None ) {
-			cerr<< "Error reading band value, status= " <<status<< "\n";
-			exit(1);
+		GDALDataset* dataset = band->GetDataset();
+		int col, row;
+		if ( Raster::toColRow(dataset, x, y, &col, &row) ) {
+			int width = band->GetXSize();
+			int height = band->GetYSize();
+			if ( col >= width || row >= height ) {
+				// leave NODATA value.
+			}
+			else {
+				// get value from band:
+				int status = band->RasterIO(
+					GF_Read,
+					col, row,
+					1, 1,             // nXSize, nYSize
+					ptr,              // pData
+					1, 1,             // nBufXSize, nBufYSize
+					bandType,         // eBufType
+					0, 0              // nPixelSpace, nLineSpace
+				);
+				if ( status != CE_None ) {
+					cerr<< "Error reading band value, status= " <<status<< "\n";
+					exit(1);
+				}
+			}
 		}
 		
-		int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
 		ptr += bandTypeSize;
 	}
 	
@@ -183,9 +205,9 @@ void* Traverser::getBandValuesForPixel(int col, int row, void* buffer) {
 }
 
 
-void Traverser::getBandValuesForPixel(int col, int row) {
+void Traverser::getBandValuesForPixel(double x, double y) {
 	assert(bandValues_buffer);
-	getBandValuesForPixel(col, row, bandValues_buffer);
+	getBandValuesForPixel(x, y, bandValues_buffer);
 }
 
 
@@ -204,6 +226,8 @@ int Traverser::getPixelIntegerValuesInBand(
 		int col = colrow->col;
 		int row = colrow->row;
 		int value = 0;
+		int width = band->GetXSize();
+		int height = band->GetYSize();
 		if ( col < 0 || col >= width || row < 0 || row >= height ) {
 			// nothing:  keep the 0 value
 		}
@@ -242,6 +266,8 @@ int Traverser::getPixelDoubleValuesInBand(
 	for ( vector<CRPixel>::const_iterator colrow = colrows->begin(); colrow != colrows->end(); colrow++ ) {
 		int col = colrow->col;
 		int row = colrow->row;
+		int width = band->GetXSize();
+		int height = band->GetYSize();
 		double value = 0.0;
 		if ( col < 0 || col >= width || row < 0 || row >= height ) {
 			// nothing:  keep the 0.0 value
@@ -267,37 +293,16 @@ int Traverser::getPixelDoubleValuesInBand(
 	return 0;
 }
 
-
-
-//
-// (x,y) to (col,row) conversion
-//
-inline void Traverser::toColRow(double x, double y, int *col, int *row) {
-	*col = (int) floor( (x - x0) / pix_x_size );
-	*row = (int) floor( (y - y0) / pix_y_size );
-}
-
-//
-// (col,row) to (x,y) conversion
-//
-inline void Traverser::toGridXY(int col, int row, double *x, double *y) {
-	*x = x0 + col * pix_x_size;
-	*y = y0 + row * pix_y_size;
-}
-
 //
 // Implementation as a LineRasterizerObserver, but also called directly. 
 // Checks for duplicate pixel.
 //
 void Traverser::pixelFound(double x, double y) {
-	// get pixel location:
+	// get pixel location in the global grid:
 	int col, row;
-	toColRow(x, y, &col, &row);
+	grid.toColRow(x, y, &col, &row);
 	
-	if ( col < 0 || col >= width 
-	||   row < 0 || row >= height ) {
-		return;
-	}
+	assert ( col >= 0 && row >= 0 );
 	
 	// check this location has not been processed
 	EPixel colrow(col, row);
@@ -306,15 +311,16 @@ void Traverser::pixelFound(double x, double y) {
 	}
 	pixset.insert(colrow);
 	
-	toGridXY(col, row, &x, &y);
+	grid.toGridXY(col, row, &x, &y);
 
 	TraversalEvent event(col, row, x, y);
 	summary.num_processed_pixels++;
 	
 	// if at least one observer is not simple...
 	if ( notSimpleObserver ) {
-		// get also band values
-		getBandValuesForPixel(col, row);
+		// get also all values for this pixel from the bands.
+		// Use point at center of the pixel:
+		getBandValuesForPixel(x + grid.pix_x_size/2, y + grid.pix_y_size/2);
 		event.bandValues = bandValues_buffer;
 	}
 	
@@ -379,42 +385,6 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-// for processPolygon:
-
-//
-// Does NOT check for pixel duplication.
-//
-// N O T E  :   NOT USED
-//
-void Traverser::pixelFoundInPolygon(double x, double y) {
-	// get pixel location:
-	int col, row;
-	toColRow(x, y, &col, &row);
-	
-	if ( col < 0 || col >= width 
-	||   row < 0 || row >= height ) {
-		return;
-	}
-	
-	toGridXY(col, row, &x, &y);
-	
-	TraversalEvent event(col, row, x, y);
-	
-	// if at least one observer is not simple...
-	if ( notSimpleObserver ) {
-		// get also band values
-		getBandValuesForPixel(col, row);
-		event.bandValues = bandValues_buffer;
-	}
-	
-	// notify observers:
-	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
-		(*obs)->addPixel(event);
-}
-
-
 //
 // To avoid some OGR overhead, I use GEOS directly.
 //
@@ -443,14 +413,14 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 	
 	// get envelope corners in pixel coordinates:
 	int minCol, minRow, maxCol, maxRow;
-	toColRow(intersection_env->getMinX(), intersection_env->getMinY(), &minCol, &minRow);
-	toColRow(intersection_env->getMaxX(), intersection_env->getMaxY(), &maxCol, &maxRow);
+	grid.toColRow(intersection_env->getMinX(), intersection_env->getMinY(), &minCol, &minRow);
+	grid.toColRow(intersection_env->getMaxX(), intersection_env->getMaxY(), &maxCol, &maxRow);
 	// Note: minCol is not necessarily <= maxCol (idem for *Row)
 
 	// get envelope corners in grid coordinates:
 	double minX, minY, maxX, maxY;
-	toGridXY(minCol, minRow, &minX, &minY);
-	toGridXY(maxCol, maxRow, &maxX, &maxY);
+	grid.toGridXY(minCol, minRow, &minX, &minY);
+	grid.toGridXY(maxCol, maxRow, &maxX, &maxY);
 
 	if ( logstream ) {
 		(*logstream)
@@ -472,16 +442,16 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 		fprintf(stdout, " processing rows: %4d", 0); fflush(stdout);
 	}
 
-	const double pix_area = fabs(pix_x_size*pix_y_size);
+	const double pix_area = fabs(grid.pix_x_size * grid.pix_y_size);
 	
-	double abs_pix_y_size = fabs(pix_y_size);
-	double abs_pix_x_size = fabs(pix_x_size);
+	double abs_pix_y_size = fabs(grid.pix_y_size);
+	double abs_pix_x_size = fabs(grid.pix_x_size);
 	double y = minY;
 	for ( int i = 0; i < rows_env; i++, y += abs_pix_y_size) {
 		double x = minX;
 		for (int j = 0; j < cols_env; j++, x += abs_pix_x_size) {
 			// create pixel polygon for (x,y) grid location:
-			geos::Polygon* pix_poly = create_pix_poly(x, y, x + pix_x_size, y + pix_y_size);
+			geos::Polygon* pix_poly = create_pix_poly(x, y, x + grid.pix_x_size, y + grid.pix_y_size);
 			// intersect
 			geos::Geometry* pix_inters = 0;
 			try {
@@ -511,7 +481,6 @@ inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
 					
 					// we now check for pixel duplication always
 					pixelFound(x, y);
-					//pixelFoundInPolygon(x, y);  <-  no any more
 				}
 				delete pix_inters;
 			}
@@ -724,7 +693,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	OGRGeometry* intersection_geometry = 0;
 	
 	try {
-		intersection_geometry = feature_geometry->Intersection(&globalInfo.rasterPoly);
+		intersection_geometry = feature_geometry->Intersection(globalInfo.rastersGeometry);
 	}
 	catch(geos::GEOSException* ex) {
 		cerr<< ">>>>> FID: " << feature->GetFID()
@@ -812,6 +781,16 @@ void Traverser::traverse() {
 	
 	// assuming biggest data type we assign enough memory:
 	bandValues_buffer = new double[globalInfo.bands.size()];
+
+	// prepare line rasterizer in case we need it:       
+	lineRasterizer = new LineRasterizer(
+		grid.x0, 
+		grid.y0, 
+		grid.pix_x_size, 
+		grid.pix_y_size
+	);
+	lineRasterizer->setObserver(this);
+
 		
 	//
 	// notify observers about initialization of process
