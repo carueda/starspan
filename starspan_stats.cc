@@ -35,8 +35,8 @@ public:
 	
 	vector<CRPixel> pixels;
 	
+	Stats stats;
 	double* result_stats[TOT_RESULTS];
-	bool compute[TOT_RESULTS];
 	
 	bool releaseStats;
 	
@@ -58,7 +58,7 @@ public:
 		bandValues = 0;
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 			result_stats[i] = 0;
-			compute[i] = false;
+			stats.include[i] = false;
 		}
 		// by default, result_stats arrays (to be allocated in init())
 		// get released in end():
@@ -68,13 +68,15 @@ public:
 		
 		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 			if ( 0 == strcmp(*stat, "avg") )
-				compute[AVG] = true;
+				stats.include[AVG] = true;
+			else if ( 0 == strcmp(*stat, "mode") )
+				stats.include[MODE] = true;
 			else if ( 0 == strcmp(*stat, "stdev") )
-				compute[STDEV] = true;
+				stats.include[STDEV] = true;
 			else if ( 0 == strcmp(*stat, "min") )
-				compute[MIN] = true;
+				stats.include[MIN] = true;
 			else if ( 0 == strcmp(*stat, "max") )
-				compute[MAX] = true;
+				stats.include[MAX] = true;
 			else {
 				cerr<< "Unrecognized stats " << *stat<< endl;
 				exit(1);
@@ -197,20 +199,9 @@ public:
 	  * Desired results are reported by finalizePreviousFeatureIfAny.
 	  */
 	void computeResults(void) {
-		// initialize results:
-		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
-			for ( unsigned j = 0; j < global_info->bands.size(); j++ )
-				result_stats[i][j] = 0.0;
-		}
-
-		Stats stats;
-		
 		for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-		
 			vector<double>* values = tr.getPixelValuesInBand(j+1, &pixels);
-
 			stats.compute(values);
-
 			for ( int i = 0; i < TOT_RESULTS; i++ ) {
 				result_stats[i][j] = stats.result[i]; 
 			}

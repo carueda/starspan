@@ -3,10 +3,13 @@ $Id$
 
 2004-10-06 (0.84beta)
 	New scheme for -calbase command:
-	-calbase linkname output.csv
+	-calbase linkname output.csv stat1 stat2 ...
 	-vector V                 : with field linkname (eg. Cal_ID)
 	-speclib F                : csv format:  linkname,1,2,...,m
 	-raster R1 ...            : images
+	
+	stat1 stat2 ... are optional desired statistics from rasters; by
+	default AVG is calculated
 
 	This is based on the following additions/changes:
 
@@ -19,6 +22,7 @@ $Id$
 	which should be more efficient according to GDAL model although efficiency
 	also depends on the specific interleave of raster datasets; in particular
 	BSQ is the preferred interleave for band-wise calculations.
+	Included "mode" statistic.
 
 2004-10-04 (0.83beta)
 	starspan_stats.cc: new starspan_getFeatureStats(FID,vect,rast,stats)

@@ -41,9 +41,9 @@ static void usage(const char* msg) {
 		"      -csv <name>\n"
 		"      -envi <name>\n"
 		"      -envisl <name> \n"
-		"      -stats outfile.csv [avg|stdev|min|max]...\n"
+		"      -stats outfile.csv [avg|mode|stdev|min|max]...\n"
+		"      -calbase <link> <filename> [<stats>...]\n"
 		"      -dump_geometries <filename>\n"
-		"      -calbase <link> <filename>\n"
 		"      -mr <prefix> \n"
 		"      -jtstest <filename>\n"
 		"\n"
@@ -152,6 +152,13 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-calbase: which output file name?");
 			calbase_filename = argv[i];
+			while ( ++i < argc && argv[i][0] != '-' ) {
+				select_stats.push_back(argv[i]);
+			}
+			if ( select_stats.size() == 0 )
+				select_stats.push_back("avg");
+			if ( i < argc && argv[i][0] == '-' ) 
+				--i;
 		}
 		
 		else if ( 0==strcmp("-dbf", argv[i]) ) {
@@ -308,6 +315,7 @@ int main(int argc, char ** argv) {
 			speclib_filename,
 			pix_prop,
 			callink_name,
+			select_stats,
 			calbase_filename
 		);
 	}

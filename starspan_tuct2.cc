@@ -22,6 +22,7 @@ int starspan_tuct_2(
 	const char* speclib_filename,
 	double pix_prop,
 	const char* link_name,
+	vector<const char*> select_stats,
 	const char* calbase_filename
 ) {
 	// open input file
@@ -53,11 +54,11 @@ int starspan_tuct_2(
 	//
 	// write header:
 	//
-	calbase_file<< 
-	  "FID," <<link_name<< ",RID,BandNumber,FieldBandValue,ImageBandValue" << endl
-	;
-	
-	vector<const char*> select_stats(1, "avg");
+	calbase_file<< "FID," <<link_name<< ",RID,BandNumber,FieldBandValue";
+	for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
+		calbase_file<< "," << *stat << "_ImageBandValue";
+	}
+	calbase_file<< endl;
 	
 	//
 	// for each raster...
@@ -126,21 +127,32 @@ int starspan_tuct_2(
 				if ( FID >= 0 ) {
 					for ( int bandNumber = 1; bandNumber <= bands; bandNumber++ ) {
 						double fieldBandValue = atof(csv.getfield(bandNumber).c_str());
-						double imageBandValue = stats[AVG][bandNumber-1];
 
-						// normalize whatever is necessary:
-						// ... PENDING
-		
-		
 						// write record
 						calbase_file 
 							<< FID             <<","
 							<< link_val        <<","
 							<< raster_filename <<","
 							<< bandNumber      <<","
-							<< fieldBandValue  <<","
-							<< imageBandValue  << endl
+							<< fieldBandValue
 						;
+						
+						for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
+							double imageBandValue = 0.0;
+							if ( 0 == strcmp(*stat, "avg") )
+								imageBandValue = stats[AVG][bandNumber-1];
+							else if ( 0 == strcmp(*stat, "mode") )
+								imageBandValue = stats[MODE][bandNumber-1];
+							else if ( 0 == strcmp(*stat, "stdev") )
+								imageBandValue = stats[STDEV][bandNumber-1];
+							else if ( 0 == strcmp(*stat, "min") )
+								imageBandValue = stats[MIN][bandNumber-1];
+							else if ( 0 == strcmp(*stat, "max") )
+								imageBandValue = stats[MAX][bandNumber-1];
+							
+							calbase_file<< "," << imageBandValue;
+						}
+						calbase_file<< endl;
 					}
 	
 				}

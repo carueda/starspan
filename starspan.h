@@ -30,7 +30,7 @@
   * @param FID
   * @param vect
   * @param rast
-  * @param select_stats List of desired statistics (avg, stdev, min, max)
+  * @param select_stats List of desired statistics (avg, mode, stdev, min, max)
   */
 double** starspan_getFeatureStats(
 	long FID, Vector* vect, Raster* rast,
@@ -48,7 +48,7 @@ double** starspan_getFeatureStats(
   * @param field_value   Field value
   * @param vect
   * @param rast
-  * @param select_stats List of desired statistics (avg, stdev, min, max)
+  * @param select_stats List of desired statistics (avg, mode, stdev, min, max)
   * @param FID  Output: If not null, it'll have the corresponding FID.
   */
 double** starspan_getFeatureStatsByField(
@@ -68,20 +68,23 @@ double** starspan_getFeatureStatsByField(
 
 /**
   * Generates a CSV file with the following columns:
-  *     FID, link, RID, BandNumber, FieldBandValue, ImageBandValue
+  *     FID, link, RID, BandNumber, FieldBandValue, <s1>_ImageBandValue, <s2>_ImageBandValue, ...
   * where:
   *     FID:          (informative.  link is given by next field)
   *     link:         link field
   *     RID           raster filename
   *     BandNumber    1 .. N
   *     FieldBandValue  value from input speclib
-  *     ImageBandValue  MEAN value for BandNumber in RID
+  *     <s1>_ImageBandValue  
+  *                   selected statistics for BandNumber in RID
+  *                   example, avg_ImageBandValue.
   *
   * @param vector_filename Vector datasource
   * @param raster_filenames rasters
   * @param speclib_filename spectral library file name
   * @param pixprop A value assumed to be in [0.0, 1.0].
   * @param link_name Name of field to be used as link vector-speclib
+  * @param select_stats List of desired statistics (avg, mode, stdev, min, max)
   * @param calbase_filename output file name
   *
   * @return 0 iff OK 
@@ -92,6 +95,7 @@ int starspan_tuct_2(
 	const char* speclib_filename,
 	double pix_prop,
 	const char* link_name,
+	vector<const char*> select_stats,
 	const char* calbase_filename
 );
 
