@@ -339,6 +339,14 @@ public:
 	void traverse(void);
 
 	/**
+	  * Returns the set of visited pixels
+	  * according to current feature.
+	  */
+	inline set<EPixel> getPixelSet(void) {
+		return pixset;
+	}
+	
+	/**
 	  * True if pixel at [col,row] has been already visited
 	  * according to current feature.
 	  */
