@@ -119,7 +119,7 @@ void Traverser::addRaster(Raster* raster) {
 		rasts[0]->getCoordinates(&x0, &y0, &x1, &y1);
 		OGRPolygon* poly = create_rectangle(x0, y0, x1, y1);
 		globalInfo.rastersUnion = poly;
-		globalInfo.rasterPolys.addGeometryDirectly(poly);
+		globalInfo.rasterPolys.addGeometry(poly);
 	}
 	else {   //  assert( rasts.size() > 1 )
 		const int last = rasts.size() -1;
@@ -139,7 +139,7 @@ void Traverser::addRaster(Raster* raster) {
 		double x0, y0, x1, y1;
 		rasts[last]->getCoordinates(&x0, &y0, &x1, &y1);
 		OGRPolygon* poly = create_rectangle(x0, y0, x1, y1);
-		globalInfo.rasterPolys.addGeometryDirectly(poly);
+		globalInfo.rasterPolys.addGeometry(poly);
 		OGRGeometry* new_rastersUnion = 0;
 		try {
 			new_rastersUnion = globalInfo.rastersUnion->Union(poly);
