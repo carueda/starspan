@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 using namespace std;
 
 /**
@@ -23,6 +22,7 @@ using namespace std;
   */
 class MiniRasterObserver : public Observer {
 public:
+	Traverser& tr;
 	OGRLayer* layer;
 	Raster& rast;
 	GlobalInfo* global_info;
@@ -31,21 +31,19 @@ public:
 	GDALDatasetH hOutDS;
 	long pixel_count;
 
-	vector<CRPixel> pixels;
+	// to help in determination of extrema col,row coordinates
+	bool first;
+	int mini_col0, mini_row0, mini_col1, mini_row1;
 	
-	// last processed FID
-	long last_FID;
-
 	/**
-	  * 
+	  * Creates the observer for this operation. 
 	  */
-	MiniRasterObserver(OGRLayer* layer, Raster* rast, const char* prefix, const char* pszOutputSRS)
-	: layer(layer), rast(*rast), prefix(prefix), pszOutputSRS(pszOutputSRS)
+	MiniRasterObserver(Traverser& tr, OGRLayer* layer, Raster* rast, const char* prefix, const char* pszOutputSRS)
+	: tr(tr), layer(layer), rast(*rast), prefix(prefix), pszOutputSRS(pszOutputSRS)
 	{
 		global_info = 0;
 		pixel_count = 0;
 		hOutDS = 0;
-		last_FID = -1;
 	}
 	
 	/**
@@ -56,10 +54,9 @@ public:
 	}
 	
 	/**
-	  * finalizes current feature if any; closes the file
+	  * Nothing done.
 	  */
 	void end() {
-		finalizePreviousFeatureIfAny();
 	}
 	
 	/**
@@ -77,83 +74,102 @@ public:
 		global_info = &info;
 	}
 
+	/**
+	  * Just sets first = true.
+	  */
+	void intersectionFound(OGRFeature* feature) {
+		first = true;
+	}
 
 	/**
-	  * dispatches finalization of previous feature
+	  * used to keep track of the extrema
 	  */
-	void finalizePreviousFeatureIfAny(void) {
+	void addPixel(TraversalEvent& ev) {
+		int col = ev.pixel.col;
+		int row = ev.pixel.row;
+		if ( first ) {
+			first = false;
+			mini_col0 = mini_col1 = col;
+			mini_row0 = mini_row1 = row;
+		}
+		else {
+			if ( mini_col0 > col )
+				mini_col0 = col;
+			if ( mini_row0 > row )
+				mini_row0 = row;
+			if ( mini_col1 < col )
+				mini_col1 = col;
+			if ( mini_row1 < row )
+				mini_row1 = row;
+		}
+	}
+
+	/**
+	  * Proper creation of mini-raster with info gathered during traversal
+	  * of the given feature.
+	  */
+	void intersectionEnd(OGRFeature* feature) {
+		set<EPixel> pixels = tr.getPixelSet();
 		if ( !pixels.size() )
 			return;
 		
-		int mini_x0, mini_y0, mini_x1, mini_y1;
-		bool first = true;
-		for ( vector<CRPixel>::const_iterator colrow = pixels.begin(); colrow != pixels.end(); colrow++ ) {
-			int col = colrow->col;
-			int row = colrow->row;
-			if ( first ) {
-				first = false;
-				mini_x0 = mini_x1 = col;
-				mini_y0 = mini_y1 = row;
-			}
-			else {
-				if ( mini_x0 > col )
-					mini_x0 = col;
-				if ( mini_y0 > row )
-					mini_y0 = row;
-				if ( mini_x1 < col )
-					mini_x1 = col;
-				if ( mini_y1 < row )
-					mini_y1 = row;
-			}
-		}		
-		int mini_width = mini_x1 - mini_x0 + 1;  
-		int mini_height = mini_y1 - mini_y0 + 1;
+		int mini_width = mini_col1 - mini_col0 + 1;  
+		int mini_height = mini_row1 - mini_row0 + 1;
 		
 		// create mini raster
+		long FID = feature->GetFID();
 		char mini_filename[1024];
-		sprintf(mini_filename, "%s%04ld.img", prefix, last_FID);
+		sprintf(mini_filename, "%s%04ld.img", prefix, FID);
 		
 		GDALDatasetH hOutDS = starspan_subset_raster(
 			rast.getDataset(),
-			mini_x0-1, mini_y0-1, mini_width+2, mini_height+2,
+			mini_col0, mini_row0, mini_width, mini_height,
 			mini_filename,
 			pszOutputSRS
 		);
 		
 		if ( globalOptions.only_in_feature ) {
-			fprintf(stdout, "nullifying pixels not contained in feature..\n");
-			fprintf(stdout, "   PENDING\n");
+			double nodata = globalOptions.nodata;
 			
-			// FIXME: nullify pixels outside feature
-			// ...
+			if ( globalOptions.verbose )
+				fprintf(stdout, "nullifying pixels...\n");
+
+			const int nBandCount = GDALGetRasterCount(hOutDS);
+			
+			int num_points = 0;			
+			for ( int row = mini_row0; row <= mini_row1; row++ ) {
+				for ( int col = mini_col0; col <= mini_col1 ; col++ ) {
+					if ( tr.pixelVisited(col, row) ) {
+						num_points++;
+					}
+					else {   // nullify:
+						for(int i = 0; i < nBandCount; i++ ) {
+							GDALRasterBand* band = ((GDALDataset *) hOutDS)->GetRasterBand(i+1);
+							band->RasterIO(
+								GF_Write,
+								col - mini_col0, 
+								row - mini_row0,
+								1, 1,              // nXSize, nYSize
+								&nodata,           // pData
+								1, 1,              // nBufXSize, nBufYSize
+								GDT_Float64,       // eBufType
+								0, 0               // nPixelSpace, nLineSpace
+							);
+							
+						}
+					}
+				}
+			}
+			if ( globalOptions.verbose )
+				fprintf(stdout, " %d points retained\n", num_points);
 		}
-		fprintf(stdout, "all points retained\n");
-		//fprintf(stdout, " %d points retained\n", num_points);
 
 		GDALClose(hOutDS);
 		fprintf(stdout, "\n");
 
 		pixels.clear();
 	}
-
-	/**
-	  * Inits creation of mini-raster corresponding to new feature
-	  */
-	void intersectionFound(OGRFeature* feature) {
-		finalizePreviousFeatureIfAny();
-		
-		// keep track of last FID processed:
-		last_FID = feature->GetFID();
-	}
-
-	/**
-	  * 
-	  */
-	void addPixel(TraversalEvent& ev) {
-		pixels.push_back(CRPixel(ev.pixel.col, ev.pixel.row));
-	}
 };
-
 
 
 Observer* starspan_getMiniRasterObserver(
@@ -177,7 +193,7 @@ Observer* starspan_getMiniRasterObserver(
 	}
 	Raster* rast = tr.getRaster(0);
 
-	return new MiniRasterObserver(layer, rast, prefix, pszOutputSRS);
+	return new MiniRasterObserver(tr, layer, rast, prefix, pszOutputSRS);
 }
 
 

@@ -2,6 +2,14 @@ starspan devnotes
 $Id$
 
 
+2005-02-02 (0.92beta)
+	- new traverser services to get access to set of visited pixel during
+	  current intersecting feature.
+	- miniraster using nodata value to nullify pixels outside geometries.
+
+2005-02-01 (0.92beta)
+	--nodata added
+
 2005-01-24 (0.92beta)
 	All options with double dash.
 	New option --version.
