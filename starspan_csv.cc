@@ -275,9 +275,11 @@ int starspan_csv(
 	
 	fclose(file);
 	
+	/***   PENDING
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		delete rasters[i];
 	}
+	***/
 	
 	return 0;
 }
