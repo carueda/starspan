@@ -257,6 +257,7 @@ int starspan_csv(
 	}
 	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
 		bool write_header = i == 0;
 		tr.removeRasters();
 		tr.addRaster(rasters[i]);
