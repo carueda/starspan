@@ -40,13 +40,15 @@ static void usage(const char* msg) {
 		"      -update-dbf <filename>\n"
 		"\n"
 		"   commands:\n"
-		"      -report \n"
-		"      -dbf <name>   \n"
+		"      -raster_field <name>\n"
+		"      -raster_directory <directory>\n"
 		"      -csv <name>\n"
 		"      -envi <name>\n"
 		"      -envisl <name> \n"
 		"      -stats outfile.csv [avg|mode|stdev|min|max]...\n"
 		"      -calbase <link> <filename> [<stats>...]\n"
+		"      -report \n"
+		"      -dbf <name>   \n"
 		"      -dump_geometries <filename>\n"
 		"      -mr <prefix> \n"
 		"      -jtstest <filename>\n"
@@ -115,6 +117,9 @@ int main(int argc, char ** argv) {
 	const char* callink_name = 0;
 	const char* calbase_filename = 0;
 	
+	const char* raster_field_name = 0;
+	const char* raster_directory = ".";
+
 	const char* dump_geometries_filename = NULL;
 	
 	//
@@ -194,6 +199,18 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("-csv: which name?");
 			csv_name = argv[i];
+		}
+		
+		else if ( 0==strcmp("-raster_field", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-raster_field: which field name?");
+			raster_field_name = argv[i];
+		}
+		
+		else if ( 0==strcmp("-raster_directory", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-raster_directory: which raster directory?");
+			raster_directory = argv[i];
 		}
 		
 		else if ( 0==strcmp("-stats", argv[i]) ) {
@@ -332,15 +349,29 @@ int main(int argc, char ** argv) {
 		if ( !vector_filename ) {
 			usage("-csv expects a vector input (use -vector)");
 		}
-		if ( raster_filenames.size() == 0 ) {
+		if ( raster_field_name && raster_filenames.size() > 0 ) {
+			usage("Only one of -raster_field or -raster please");
+		}
+		if ( raster_field_name ) {
+			res = starspan_csv_raster_field(
+				vector_filename,  
+				raster_field_name,
+				raster_directory,
+				select_fields, 
+				csv_name
+			);
+		}
+		else if ( raster_filenames.size() > 0 ) {
+			res = starspan_csv(
+				vector_filename,  
+				raster_filenames,
+				select_fields, 
+				csv_name
+			);
+		}
+		else {
 			usage("-csv expects at least a raster input (use -raster)");
 		}
-		res = starspan_csv(
-			vector_filename,  
-			raster_filenames,
-			select_fields, 
-			csv_name
-		);
 	}
 	else if ( calbase_filename ) {
 		if ( !vector_filename ) {

@@ -13,42 +13,6 @@
 
 
 /**
-  * Gets a value from a band as a string.
-  */
-static char* extract_value(GDALDataType bandType, char* sign) {
-	static char value[1024];
-	
-	switch(bandType) {
-		case GDT_Byte:
-			sprintf(value, "%d", (int) *( (char*) sign ));
-			break;
-		case GDT_UInt16:
-			sprintf(value, "%u", *( (unsigned short*) sign ));
-			break;
-		case GDT_Int16:
-			sprintf(value, "%d", *( (short*) sign ));
-			break;
-		case GDT_UInt32:
-			sprintf(value, "%u", *( (unsigned int*) sign ));
-			break;
-		case GDT_Int32:
-			sprintf(value, "%u", *( (int*) sign ));
-			break;
-		case GDT_Float32:
-			sprintf(value, "%f", *( (float*) sign ));
-			break;
-		case GDT_Float64:
-			sprintf(value, "%f", *( (double*) sign ));
-			break;
-		default:
-			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
-			exit(1);
-	}
-	return value;
-}
-
-
-/**
   * This observer extracts from ONE raster
   */
 class CSVObserver : public Observer {
@@ -201,14 +165,17 @@ public:
 		}
 		
 		// add band values to record:
-		char* sign = (char*) band_values;
+		char* ptr = (char*) band_values;
+		char value[1024];
 		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
 			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
-			fprintf(file, ",%s", extract_value(bandType, sign));
+			
+			starspan_extract_string_value(bandType, ptr, value);
+			fprintf(file, ",%s", value);
 			
 			// move to next piece of data in buffer:
-			sign += typeSize;
+			ptr += typeSize;
 		}
 		fprintf(file, "\n");
 	}

@@ -2,6 +2,11 @@ starspan devnotes
 $Id$
 
 
+2004-11-13
+	New options: -raster_field, -raster_directory
+	starspan_csv_raster_field.cc 
+	
+	
 2004-11-12  ****
 Reverting to version at 2004-11-09  -- cvs -q update -D "2004-11-09"
 	P starspan.h

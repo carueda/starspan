@@ -178,6 +178,33 @@ Observer* starspan_getStatsObserver(
 
 
 
+/** Extraction from rasters specified in vector field.
+  * Generates a CSV file with the following columns:
+  *     FID, {vect-attrs}, [col,row,] [x,y,] {rast-bands}
+  * where:
+  *     FID:          feature ID as given by OGRFeature#GetFID()
+  *     {vect-attrs}: attributes from vector, including the specified RID field
+  *     col,row:      pixel location relative to [0,0] in raster
+  *     x,y:          pixel location in geographic coordinates
+  *     {rast-bands}: bands from raster RID at corresponding location
+  *
+  * @param vector_filename Vector datasource
+  * @param raster_field_name Name of field containing the raster filename
+  * @param raster_directory raster filenames are relative to this directory
+  * @param select_fields desired fields from vector
+  * @param csv_filename output file name
+  *
+  * @return 0 iff OK 
+  */
+int starspan_csv_raster_field(
+	const char* vector_filename,
+	const char* raster_field_name,
+	const char* raster_directory,
+	vector<const char*>* select_fields,
+	const char* csv_filename
+);
+
+
 /** Extraction from multiple rasters.
   * Generates a CSV file with the following columns:
   *     FID, {vect-attrs}, RID, [col,row,] [x,y,] {rast-bands}
@@ -370,6 +397,37 @@ inline double starspan_extract_double_value(GDALDataType bandType, void* ptr) {
 	return value;
 }
 
+/**
+  * Gets a value from a band as a string.
+  */
+inline void starspan_extract_string_value(GDALDataType bandType, char* ptr, char* value) {
+	switch(bandType) {
+		case GDT_Byte:
+			sprintf(value, "%d", (int) *( (char*) ptr ));
+			break;
+		case GDT_UInt16:
+			sprintf(value, "%u", *( (unsigned short*) ptr ));
+			break;
+		case GDT_Int16:
+			sprintf(value, "%d", *( (short*) ptr ));
+			break;
+		case GDT_UInt32:
+			sprintf(value, "%u", *( (unsigned int*) ptr ));
+			break;
+		case GDT_Int32:
+			sprintf(value, "%u", *( (int*) ptr ));
+			break;
+		case GDT_Float32:
+			sprintf(value, "%f", *( (float*) ptr ));
+			break;
+		case GDT_Float64:
+			sprintf(value, "%f", *( (double*) ptr ));
+			break;
+		default:
+			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
+			exit(1);
+	}
+}
 
 
 
