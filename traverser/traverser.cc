@@ -513,8 +513,8 @@ void Traverser::process_feature(OGRFeature* feature) {
 		default:
 			cerr<< "traverser: "
 			    << OGRGeometryTypeToName(intersection_type)
-			    << ": intersection type not considered,\n"
-			    << "  Feature type is " 
+			    << ": intersection type not considered.\n"
+			    << "           Base feature FID= " <<feature->GetFID()<< " is " 
 				<< OGRGeometryTypeToName(feature_geometry->getGeometryType()) << endl;
 			;
 	}
