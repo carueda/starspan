@@ -13,6 +13,7 @@ $Id$
 	New method Traverser#setDesiredFeatureByField(fieldname, fieldvalue).
 	New starspan_getFeatureStatsByField
 	starspan_tuct2.cc: entry point: starspan_tuct_2(...)
+	First tests: OK
 
 2004-10-04 (0.83beta)
 	starspan_stats.cc: new starspan_getFeatureStats(FID,vect,rast,stats)
