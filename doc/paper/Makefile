@@ -4,7 +4,9 @@ NAME=starspan
 # Document:	
 .PHONY: all pdf ps clean
 
-$(NAME).pdf: $(NAME).tex
+$(NAME).pdf: $(NAME).tex $(NAME).bib
+	pdflatex $<
+	bibtex $(NAME)
 	pdflatex $<
 	rm -f *.log *.out *.aux *.dvi
 	
