@@ -1,0 +1,69 @@
+<!--
+	Build for starspan
+	Carlos A. Rueda
+	$Id$
+-->
+<project name="starspan" default="dist" >
+	<!-- Base dir for generated files -->
+	<property name="generated" value="../../_GENERATED/starspan"/>
+
+	<!-- External required libraries -->
+	<property name="jts"  value="../lib/JTS-1.4.jar"/>
+	<property name="shape"  value="../lib/gt2-shapefile.jar"/>
+	<property name="vecmath"  value="../lib/vecmath-1.2.1.jar"/>
+	<property name="gt2"  value="../lib/gt2-main.jar"/>
+	<property name="arcgrid"  value="../lib/gt2-arcgrid.jar"/>
+
+	<!-- Directory to put compiled classes -->
+	<property name="build" value="${generated}/BUILD"/>
+
+	<!-- Directory to put distribution -->
+	<property name="dist" value="${generated}/DIST"/>
+
+	<property name="src.dir" value="src/starspan"/>
+	<property name="dest.dir" value="${build}/classes"/>
+
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${dest.dir}"/>
+		<mkdir dir="${dist}"/>
+	</target>
+
+	<target name="dist" depends="starspan.jar">
+		<copy file="${jts}" todir="${dist}"/>
+		<copy file="${shape}" todir="${dist}"/>
+		<copy file="${vecmath}" todir="${dist}"/>
+		<copy file="${gt2}" todir="${dist}"/>
+		<copy file="${arcgrid}" todir="${dist}"/>
+	</target>
+	
+	<target name="starspan.jar" depends="compile"
+	description="Makes executable starspan.jar">
+		<jar jarfile="${dist}/starspan.jar"
+			basedir="${build}/classes"
+			includes="starspan/**">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}"/>
+				<attribute name="Main-class" value="starspan.tools.ShapeViewer"/>
+				<attribute name="Class-path" value="${jts} ${shape} ${vecmath} ${gt2} ${arcgrid}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src.dir}" destdir="${dest.dir}"
+			debug="on"
+			source="1.4"
+			classpath="${jts}:${shape}:${vecmath}:${gt2}:${arcgrid}"
+		/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build}/classes/starspan"/>
+	</target>
+
+	<target name="clean-dist" depends="clean">
+		<delete file="${dist}/starspan.jar"/>
+	</target>
+
+</project>

@@ -1,8 +1,10 @@
-java tests
+java code
 $Id$
 
-Rasterizer.java
-	to rasterize a list of points
+starspan.tools:
+	ShapeViewer: based on SpearfishSample.java
+	ShapeDump: based on org.geotools.demos.data.ShapeReader
 	
-ShapeViewer.java
-	to visualize shapes from a shpfile .. 
+	Still very simple but working OK
+	
+
