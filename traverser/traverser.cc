@@ -100,7 +100,7 @@ void Traverser::addRaster(Raster* raster) {
 		globalInfo.rasterPoly.closeRings();
 		globalInfo.rasterPoly.getEnvelope(&raster_env);
 		
-		lineRasterizer = new LineRasterizer(pix_x_size, pix_y_size);
+		lineRasterizer = new LineRasterizer(x0, y0, pix_x_size, pix_y_size);
 		lineRasterizer->setObserver(this);
 	}
 	
@@ -202,11 +202,10 @@ void Traverser::pixelFound(double x, double y) {
 	int col, row;
 	toColRow(x, y, &col, &row);
 	
-	assert(0 <= col);
-	assert(col < width);
-	assert(0 <= row);
-	assert(row < height);
-	
+	if ( col < 0 || col >= width 
+	||   row < 0 || row >= height ) {
+		return;
+	}
 	
 	if ( pixset ) {
 		// check this location has not been processed
@@ -216,6 +215,8 @@ void Traverser::pixelFound(double x, double y) {
 		}
 		pixset->insert(colrow);
 	}
+	
+	toGridXY(col, row, &x, &y);
 	
 	TraversalEvent event;
 	event.pixel.col = col;

@@ -100,6 +100,7 @@ int main(int argc, char ** argv) {
 	vector<const char*> raster_filenames;
 	double pix_prop = -1.0;
 	long FID = -1;
+	const char* dump_geometries_filename = NULL;
 
 	//
 	// collect arguments  -- TODO: use getopt later on
@@ -238,6 +239,12 @@ int main(int argc, char ** argv) {
 			mini_srs = argv[i];
 		}
 
+		else if ( 0==strcmp("-dump_geometries", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("-dump_geometries: which name?");
+			dump_geometries_filename = argv[i];
+		}
+		
 		// HELP
 		else if ( 0==strcmp("-help", argv[i]) ) {
 			usage(NULL);
@@ -340,11 +347,18 @@ int main(int argc, char ** argv) {
 			tr.addObserver(obs);
 	}
 	
+	if ( dump_geometries_filename ) {
+		Observer* obs = starspan_dump(tr, use_polys, dump_geometries_filename);
+		if ( obs )
+			tr.addObserver(obs);
+	}
+
 	if ( jtstest_filename ) {
 		Observer* obs = starspan_jtstest(tr, use_polys, jtstest_filename);
 		if ( obs )
 			tr.addObserver(obs);
 	}
+
 
 	// report and minirasters don't use Observer scheme;  
 	// just call corresponding functions:	

@@ -51,7 +51,8 @@ SRCS =	starspan_stats.cc \
 		raster/Raster_gdal.cc \
 		vector/Vector_ogr.cc \
 		rasterizers/LineRasterizer.cc \
-		csv/Csv.cc
+		csv/Csv.cc \
+		starspan_dump.cc
 
 
 OBJS = $(subst .cc,.o,$(SRCS))

@@ -14,7 +14,7 @@
 #include <stdio.h> // FILE
 
 
-#define STARSPAN_VERSION "0.8beta"
+#define STARSPAN_VERSION "0.81beta"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -131,6 +131,19 @@ int starspan_update_csv(
 );
 
 
+/**
+  * Creates a ptplot-readable file with geometries and
+  * grid
+  * @param tr Data traverser
+  * @param filename output file name
+  *
+  * @return observer to be added to traverser. 
+  */
+Observer* starspan_dump(
+	Traverser& tr,
+	bool use_polys,
+	const char* filename
+);
 
 
 

@@ -8,7 +8,7 @@
 #
 
 BINDIR=`dirname $0`
-JTSJARS=$BINDIR/jts.jars/
+JARS=$BINDIR/jars/
 STARSPAN2=$BINDIR/starspan2
 
 if [ "`uname -n`" == "px" ]; then
@@ -51,15 +51,22 @@ elif [ "$1" == "--test" ]; then
 	echo "[Launching JTS TopologyTestApp...]"
 	shift
 	CP=$CLASSPATH
-	for i in $JTSJARS/*.jar; do CP=$i:$CP; done
+	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp $CP com.vividsolutions.jtstest.testrunner.TopologyTestApp $*
 
 elif [ "$1" == "--jts" ]; then
 	echo "[Launching JTSTestBuilder...]"
 	shift
 	CP=$CLASSPATH
-	for i in $JTSJARS/*.jar; do CP=$i:$CP; done
+	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp $CP com.vividsolutions.jtstest.testbuilder.JTSTestBuilder $*
+
+elif [ "$1" == "--view_geometries" ]; then
+	echo "[Launching ptplot...]"
+	shift
+	CP=$CLASSPATH
+	CP=$JARS/plotapplication.jar:$CP
+	java -Xmx256m -cp $CP ptolemy.plot.PlotApplication $*
 
 else
 	# call starspan2

@@ -1,6 +1,25 @@
 starspan devnotes
 $Id$
 
+2004-09-29 (0.81beta)
+
+	-dump_geometries: new testing operation (implemented in
+	starspan_dump.cc) to generate plot of geometries and raster extent.
+	This provides a better control on visualization. 
+	Output format is the textual form accepted by the Ptolemy Plot
+	library, http://ptolemy.eecs.berkeley.edu/java/ptplot/ .
+	A new extended usage option --view_geometries launches the
+	ptplotapplication tool.
+	
+	typical usage:
+		starspan -vector V -raster R -dump_geometries mygeometries.csv
+		starspan --view_geometries mygeometries.csv
+	
+	LineRasterizer: Now uses origin (x0,y0) to make a proper traslation
+	before calling the bresenham algorithm. Preliminary tests (via
+	--view_geometries) give now accurate results.
+	
+
 2004-09-28 (0.8beta)
 	StatsObserver: vector<Pixel> pixels (was vector<Pixel*>).
 	

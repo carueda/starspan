@@ -36,10 +36,12 @@ class LineRasterizer {
 public:
 	/**
 	  * Creates a line rasterizer.
-	  * @param pixel_size_x_ pixel size in x direction
-	  * @param pixel_size_y_ pixel size in y direction
+	  * @param x0 origin abscissa
+	  * @param y0 origin ordinate
+	  * @param pixel_size_x pixel size in x direction
+	  * @param pixel_size_y pixel size in y direction
 	  */
-	LineRasterizer(double pixel_size_x_, double pixel_size_y_); 
+	LineRasterizer(double x0, double y0, double pixel_size_x, double pixel_size_y); 
 
 	/**
 	  * Set the observer for this rasterizer.
@@ -59,6 +61,7 @@ public:
 	void line(double x1, double y1, double x2, double y2, bool last=false); 
 	
 protected:
+	double x0, y0;
 	double pixel_size_x;
 	double pixel_size_y;
 	LineRasterizerObserver* observer;
