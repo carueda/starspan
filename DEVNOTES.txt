@@ -1,6 +1,13 @@
 starspan devnotes
 $Id$
 
+2004-08-10
+	(unsuccessful) workarounds for proper projection in mini rasters
+
+2004-08-08
+	organization
+	mini raster generation, option -mr
+
 2004-08-04
 	New jts module.
 	New option -jtstest that generates a JTS test suite.
