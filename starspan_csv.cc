@@ -257,11 +257,15 @@ int starspan_csv(
 		tr.setProgress(globalOptions.progress_perc, cout);
 	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
+	Raster* rasters[raster_filenames.size()];
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
-		Raster raster(raster_filenames[i]);
+		rasters[i] = new Raster(raster_filenames[i]);
+	}
+	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		bool write_header = i == 0;
 		tr.removeRasters();
-		tr.addRaster(&raster);
+		tr.addRaster(rasters[i]);
 		
 		Observer* obs = new CSVObserver(tr, select_fields, write_header, file);
 		tr.addObserver(obs);
@@ -275,6 +279,10 @@ int starspan_csv(
 	}
 	
 	fclose(file);
+	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		delete rasters[i];
+	}
 	
 	return 0;
 }
