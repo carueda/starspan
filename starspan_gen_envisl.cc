@@ -99,7 +99,7 @@ public:
 	}
 
 	
-	void addSignature(double x, double y, void* signature, int typeSize) {
+	void addSignature(double x, double y, void* signature, GDALDataType rasterType, int typeSize) {
 		// write signature to binary file:
 		fwrite(signature, typeSize, numBands, data_file);
 		

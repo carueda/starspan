@@ -148,7 +148,7 @@ void Traverser::traverse() {
 							);
 						}
 						
-						observer->addSignature(x, y, signature, rasterTypeSize);
+						observer->addSignature(x, y, signature, rasterType, rasterTypeSize);
 					}
 				}
 			}

@@ -32,10 +32,8 @@ int starspan_gen_envisl(
 int starspan_db(
 	Raster* rast, 
 	Vector* vect, 
-	const char* db_name,
-	bool only_in_feature,
-	const char* pszOutputSRS  // see gdal_translate option -a_srs 
-	                         // If NULL, projection is taken from input dataset
+	const char* db_filename,
+	bool only_in_feature
 );
 
 /** Generate mini rasters

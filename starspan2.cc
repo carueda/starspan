@@ -89,6 +89,8 @@ int main(int argc, char ** argv) {
 	const char* jtstest_filename = NULL;
 	
 	for ( int i = 1; i < argc; i++ ) {
+		
+		// INPUTS:
 		if ( 0==strcmp("-vector", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-vector: which vector file?");
@@ -100,31 +102,22 @@ int main(int argc, char ** argv) {
 				usage("-raster: which raster file?");
 			raster_filename = argv[i];
 		}
-		else if ( 0==strcmp("-help", argv[i]) ) {
-			usage(NULL);
+		
+		// COMMANDS
+		else if ( 0==strcmp("-db", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-db: which name?");
+			db_name = argv[i];
 		}
 		else if ( 0==strcmp("-mr", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-mr: which prefix?");
 			mini_prefix = argv[i];
 		}
-		else if ( 0==strcmp("-in", argv[i]) ) {
-			only_in_feature = true;
-		}
 		else if ( 0==strcmp("-envisl", argv[i]) ) {
 			if ( ++i == argc )
 				usage("-envisl: which base name?");
 			envisl_name = argv[i];
-		}
-		else if ( 0==strcmp("-db", argv[i]) ) {
-			if ( ++i == argc )
-				usage("-db: which name?");
-			db_name = argv[i];
-		}
-		else if ( 0==strcmp("-srs", argv[i]) ) {
-			if ( ++i == argc )
-				usage("-srs: which srs?");
-			mini_srs = argv[i];
 		}
 		else if ( 0==strcmp("-jtstest", argv[i]) ) {
 			if ( ++i == argc )
@@ -133,6 +126,21 @@ int main(int argc, char ** argv) {
 		}
 		else if ( 0==strcmp("-report", argv[i]) ) {
 			do_report = true;
+		}
+		
+		// OPTIONS
+		else if ( 0==strcmp("-in", argv[i]) ) {
+			only_in_feature = true;
+		}
+		else if ( 0==strcmp("-srs", argv[i]) ) {
+			if ( ++i == argc )
+				usage("-srs: which srs?");
+			mini_srs = argv[i];
+		}
+
+		// HELP
+		else if ( 0==strcmp("-help", argv[i]) ) {
+			usage(NULL);
 		}
 		else {
 			usage("invalid arguments");
@@ -155,7 +163,7 @@ int main(int argc, char ** argv) {
 	if ( db_name     && mini_prefix 
 	||   envisl_name && mini_prefix
 	||   db_name     && envisl_name ) {
-		usage("Only one of -mr, -envisl, or -db, please\n");
+		usage("Only one of -db, -envisl, or -mr, please\n");
 	}
 	
 	CPLPushErrorHandler(starspan_myErrorHandler);
@@ -172,7 +180,7 @@ int main(int argc, char ** argv) {
 		if ( !rast || !vect ) {
 			usage("-db option requires both a raster and a vector file to proceed\n");
 		}
-		return starspan_db(rast, vect, db_name, only_in_feature, mini_srs);
+		return starspan_db(rast, vect, db_name, only_in_feature);
 	}
 	else if ( mini_prefix ) { // this option takes precedence.
 		if ( !rast || !vect ) {
