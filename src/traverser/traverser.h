@@ -7,6 +7,7 @@
 #ifndef traverser_h
 #define traverser_h
 
+#include "common.h"
 #include "Raster.h"
 #include "Vector.h"
 #include "rasterizers.h"
@@ -241,14 +242,11 @@ public:
 	/**
 	  * Sets parameters to apply the buffer operation on geometry features
 	  * before computing the intersection.
-	  * By default, no buffer will be applied.
-	  * (Parameter descriptions from OGR.)
+	  * By default, no buffer operation will be applied.
 	  *
-	  * @param distance          buffer distance to be applied.
-	  * @param quadrantSegments  number of segments to use to approximate a 
-	  *                          quadrant of a circle.
+	  * @param bufferParams      See description in starspan.h
 	  */
-	void setBufferParameters(double distance, int quadrantSegments);
+	void setBufferParameters(BufferParams bufferParams);
 	
 	
 	/**
@@ -436,12 +434,8 @@ private:
 	
 	geos::WKTWriter wktWriter;
 
-	// buffer information
-	struct {
-		bool doit;
-		double distance;
-		int quadrantSegments;
-	} buffer;
+	// buffer parameters
+	BufferParams bufferParams;
 };
 
 

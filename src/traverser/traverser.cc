@@ -38,14 +38,12 @@ Traverser::Traverser() {
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
 	skip_invalid_polys = false;
 
-	buffer.doit = false;
+	bufferParams.given = false;
 }
 
 
-void Traverser::setBufferParameters(double distance, int quadrantSegments) {
-	buffer.distance = distance;
-	buffer.quadrantSegments = quadrantSegments;
-	buffer.doit = true;
+void Traverser::setBufferParameters(BufferParams _bufferParams) {
+	bufferParams = _bufferParams;
 }
 
 
@@ -681,15 +679,47 @@ void Traverser::process_feature(OGRFeature* feature) {
 	//
 	OGRGeometry* feature_geometry = feature->GetGeometryRef();
 
+	///////////////////////////////////////////////////////////////////
 	//
 	// apply buffer operation if so indicated:
 	//
-	if ( buffer.doit ) {
+	if ( bufferParams.given ) {
 		OGRGeometry* buffered_geometry = 0;
+		
+		// get distance:
+		double distance; 
+		if ( bufferParams.distance[0] == '@' ) {
+			const char* attr = bufferParams.distance.c_str() + 1;
+			int index = feature->GetFieldIndex(attr);
+			if ( index < 0 ) {
+				cerr<< "\n\tField `" <<attr<< "' not found\n";
+				return;
+			}
+			distance = feature->GetFieldAsInteger(index);
+		}
+		else {
+			distance = atoi(bufferParams.distance.c_str());
+		}
+		
+		// get quadrantSegments:
+		int quadrantSegments;
+		if ( bufferParams.quadrantSegments[0] == '@' ) {
+			const char* attr = bufferParams.quadrantSegments.c_str() + 1;
+			int index = feature->GetFieldIndex(attr);
+			if ( index < 0 ) {
+				cerr<< "\n\tField `" <<attr<< "' not found\n";
+				return;
+			}
+			quadrantSegments = feature->GetFieldAsInteger(index);
+		}
+		else {
+			quadrantSegments = atoi(bufferParams.quadrantSegments.c_str());
+		}
+		
+		
+		
 		try {
-			buffered_geometry = feature_geometry->Buffer(
-				buffer.distance, buffer.quadrantSegments
-			);
+			buffered_geometry = feature_geometry->Buffer(distance, quadrantSegments);
 		}
 		catch(geos::GEOSException* ex) {
 			cerr<< ">>>>> FID: " << feature->GetFID()
@@ -760,7 +790,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 done:
 	delete intersection_geometry;
-	if ( buffer.doit ) {
+	if ( bufferParams.given ) {
 		delete feature_geometry;
 	}
 }

@@ -2,6 +2,15 @@ starspan devnotes
 $Id$
 
 
+2005-02-19 (0.96beta)
+	--buffer <distance> [<quadrantSegments>]
+	If the parameter starts with '@', then it will be interpreted as the
+	name of the attribute from which the value will be obtained. Example:
+		--buffer @buf_distance 21
+	indicates that the buffer distance is to be taken from the field 
+	buf_distance in the corresponding geometry feature; the quadrantSegments
+	is fixed to 21.  This fulfills request #200066
+	
 2005-02-19 (0.952beta)
 	- Making a source distribution. Example:
 		make dist VERSION=0.1
