@@ -23,7 +23,7 @@ public:
 	GlobalInfo* global_info;
 	Vector* vect;
 	FILE* file;
-	vector<const char*> which;
+	vector<const char*> desired;
 	long currentFeatureID;
 	void* bandValues_buffer;
 	double* bandValues;
@@ -45,14 +45,15 @@ public:
 		TOT_RESULTS
 	};
 	double* result_stats[TOT_RESULTS];
+	bool compute[TOT_RESULTS];
 	
 	
 		
 	/**
 	  * Creates a stats calculator
 	  */
-	StatsObserver(Traverser& tr, FILE* f, vector<const char*> which)
-	: tr(tr), file(f), which(which)
+	StatsObserver(Traverser& tr, FILE* f, vector<const char*> desired)
+	: tr(tr), file(f), desired(desired)
 	{
 		vect = tr.getVector();
 		global_info = 0;
@@ -61,6 +62,22 @@ public:
 		bandValues = 0;
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 			result_stats[i] = 0;
+			compute[i] = false;
+		}
+		
+		for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
+			if ( 0 == strcmp(*stat, "avg") )
+				compute[AVG] = true;
+			else if ( 0 == strcmp(*stat, "stdev") )
+				compute[STDEV] = true;
+			else if ( 0 == strcmp(*stat, "min") )
+				compute[MIN] = true;
+			else if ( 0 == strcmp(*stat, "max") )
+				compute[MAX] = true;
+			else {
+				fprintf(stderr, "Unrecognized stats %s\n", *stat);
+				exit(1);
+			}
 		}
 	}
 	
@@ -125,7 +142,7 @@ public:
 		fprintf(file, ",numPixels");
 		
 		// Create fields for bands
-		for ( vector<const char*>::const_iterator stat = which.begin(); stat != which.end(); stat++ ) {
+		for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
 			for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
 				fprintf(file, ",%s_Band%d", *stat, i+1);
 			}
@@ -207,7 +224,7 @@ public:
 		}
 		
 		// Is a second pass required?
-		if ( true ) {     // FIXME: now this is always done.
+		if ( compute[STDEV] ) {
 			
 			// standard deviation defined as sqrt of the sample variance.
 			// So we need at least 2 pixels.
@@ -239,12 +256,13 @@ public:
 						double h = bandValues[j] - result_stats[AVG][j];
 						result_stats[CUM][j] += h * h; 
 					}
-				}		
-			}
-			// finally take std dev:
-			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-				double sd = sqrt(result_stats[CUM][j] / (num_pixels - 1));
-				result_stats[STDEV][j] = sd;
+				}
+				
+				// finally take std dev:
+				for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+					double sd = sqrt(result_stats[CUM][j] / (num_pixels - 1));
+					result_stats[STDEV][j] = sd;
+				}
 			}
 		}
 	}
@@ -263,7 +281,8 @@ public:
 			computeResults();
 	 
 			// report desired results:
-			for ( vector<const char*>::const_iterator stat = which.begin(); stat != which.end(); stat++ ) {
+			// (desired list is traversed to keep order according to column headers)
+			for ( vector<const char*>::const_iterator stat = desired.begin(); stat != desired.end(); stat++ ) {
 				if ( 0 == strcmp(*stat, "avg") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 						fprintf(file, ",%g", result_stats[AVG][j]);
@@ -323,7 +342,7 @@ public:
 Observer* starspan_getStatsObserver(
 	Traverser& tr,
 	const char* filename,
-	vector<const char*> which
+	vector<const char*> desired
 ) {
 	// create output file
 	FILE* file = fopen(filename, "w");
@@ -332,7 +351,7 @@ Observer* starspan_getStatsObserver(
 		return 0;
 	}
 
-	return new StatsObserver(tr, file, which);	
+	return new StatsObserver(tr, file, desired);	
 }
 		
 
