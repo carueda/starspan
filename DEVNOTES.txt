@@ -1,6 +1,11 @@
 starspan devnotes
 $Id$
 
+2004-10-20
+	More checks for malformed (WKT) geometries.
+	Such a problem generates a GEOS exception but starspan was not
+	catching it.
+	
 2004-10-18
 	Starting to use geos::Polygonizer as a means to fix bad polys.
 	(geos::Polygonizer is not yet in the 2.0.1 official release, I'm using
