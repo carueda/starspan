@@ -558,11 +558,18 @@ public:
 				}
 			}
 			
-			
 			///////////////////////////////////////////////////////////////
-			strip_ds->FlushCache();
-			fid_ds->FlushCache();
-			loc_ds->FlushCache();
+			if ( false ) {  
+				// GDAL bug: ENVIDataset::FlushCache is not idempotent
+				// for header file (repeated items would be generated)
+				strip_ds->FlushCache();
+				fid_ds->FlushCache();
+				loc_ds->FlushCache();
+			}
+			else {
+				// workaround: don't call FlushCache; it seems
+				// we don't need these calls anyway.
+			}
 			
 			// close and delete miniraster
 			delete mini_ds;

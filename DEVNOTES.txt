@@ -1,7 +1,12 @@
 starspan devnotes
 $Id$
+                                    
 
-
+2005-02-26 (0.961beta)
+	starspan_miniraster.cc: workaround to GDAL bug which
+	generates repeated header items when FlushCache is called
+	multiple time on an ENVI dataset.
+	
 2005-02-19 (0.96beta)
 	--buffer <distance> [<quadrantSegments>]
 	If the parameter starts with '@', then it will be interpreted as the
