@@ -25,7 +25,7 @@
   * Gets statistics for a given feature in a raster.
   * RESULT[s][b] = statistic s on band b
   * where:
-  *    MIN <= s <= STDDEV 
+  *    SUM <= s < TOT_RESULTS 
   *    0 <= b < #bands in raster
   * @param FID
   * @param vect
@@ -42,7 +42,7 @@ double** starspan_getFeatureStats(
   * Gets statistics for a feature in a raster.
   * RESULT[s][b] = statistic s on band b
   * where:
-  *    MIN <= s <= STDDEV 
+  *    SUM <= s < TOT_RESULTS
   *    0 <= b < #bands in raster
   * @param field_name    Field name
   * @param field_value   Field value
@@ -290,9 +290,6 @@ int starspan_minirasters(
 
 /** aux routine for reporting */ 
 void starspan_report(Traverser& tr);
-
-/** intersect two envelopes */
-bool starspan_intersect_envelopes(OGREnvelope& oEnv1, OGREnvelope& oEnv2, OGREnvelope& envr);
 
 void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env);
 
