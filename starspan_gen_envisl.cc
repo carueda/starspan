@@ -13,13 +13,13 @@
 
 // used to write the number of lines in header since this is
 // done in two passes: the first one in which the number of
-// lines is unknown, and a sencond one to update it.
+// lines is unknown, and a second one to update it.
 #define LINES_WIDTH 8
 
 
 
 /**
-  *
+  * Populates the spectral library.
   */
 class EnviSlObserver : public Observer {
 public:
@@ -32,7 +32,7 @@ public:
 	long lines_offset;
 	
 	/**
-	  *
+	  * Initializes the header.
 	  */
 	EnviSlObserver(int bands, FILE* df, FILE* hf) {
 		numBands = bands;
@@ -94,7 +94,7 @@ public:
 	}
 	
 	/**
-	  *
+	  * nothing is done.
 	  */
 	~EnviSlObserver() {
 	}
@@ -109,11 +109,13 @@ public:
 
 	
 	/**
-	  *
+	  * Adds a spectrum to the output file.
+	  * Each spectrum take a name with the following structure:
+	  *      FID:col:row
 	  */
 	void addPixel(TraversalEvent& ev) { 
-		double x = ev.pixelLocation.x;
-		double y = ev.pixelLocation.y;
+		int col = ev.pixelLocation.col;
+		int row = ev.pixelLocation.row;
 		void* signature = ev.signature;
 		int typeSize = ev.typeSize;
 		
@@ -121,7 +123,7 @@ public:
 		fwrite(signature, typeSize, numBands, data_file);
 		
 		char signature_name[1024];
-		sprintf(signature_name, "%ld:%.3f:%.3f", current_feature->GetFID(), x, y);
+		sprintf(signature_name, "%ld:%d:%d", current_feature->GetFID(), col, row);
 		
 		// add spectrum name
 		if ( numSignatures > 0 )
