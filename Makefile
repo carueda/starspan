@@ -18,9 +18,6 @@ INCLUDE += -I${SHAPELIB_PREFIX}/include/libshp
 INCLUDE += -I$(GDAL_PREFIX)/include
 INCLUDE += -I$(GDAL_SRC_DIR)/frmts 
 		 
-# See rasterizers/LineRasterizer.cc
-INCLUDE += -I${AGG_PREFIX}/include/agg2 
-
 INCLUDE += -I/usr/local/include
 
 
