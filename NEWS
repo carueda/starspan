@@ -1,0 +1,16 @@
+starspan news
+$Id$
+
+2005-03-23 (0.962beta)
+	New option --count-by-class
+	
+2005-02-26 (0.961beta)                  
+	Added option --separation <num-pixels> to include a	separation
+	between minirasters in strip. Feature request #200074.
+	
+	--report now also shows projection info for rasters.
+	
+2005-02-17 (0.94beta)
+	--mini_raster_strip implemented
+	
+

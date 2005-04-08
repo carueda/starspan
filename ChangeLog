@@ -1,6 +1,9 @@
-starspan devnotes
+starspan ChangeLog
 $Id$
                                     
+
+2005-04-08
+	Setting up GNU build scheme..
 
 2005-04-04
 	New BUILD.windows.txt with notes about compiling the whole
