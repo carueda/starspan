@@ -2,92 +2,45 @@ STARSPAN Installation instructions
 $Id$
 
 Software prerequisites
-The following dependencies must be properly installed on your system:
-
+----------------------
+The following libraries must be properly installed on your system
+before starspan can be compiled and installed:
     * GEOS 2.1.1 or newer
     * GDAL 1.2.6 or newer
 
-These dependencies can be installed as follows.
-Notes:
+For more details about these prerequisites, visit the starspan website
+at http://starspan.casil.ucdavis.edu/
 
-    * You will need to manually download and install the
-    versions indicated above; in particular, the versions
-    through the Debian packaging mechanism are often older
-    than the required ones.
-
-    * No --prefix option is used in the corresponding
-    ./configure commands that we show below. Adjust this as
-    necessary if you need/want to install these libraries
-    under non-standard locations.
-
-    * See also a note on Large File Support that may be
-    important for your system if you are going to process
-    large raster files.
-
-GEOS - Geometry Engine - Open Source, version 2.1.1
-
-This library is required to support geometry operations (via
-OGR/GDAL and directly by STARSPAN to fix self-intersecting
-polygons). Note for Windows/Cygwin users: The GEOS 2.1.1
-will not compile under cygwin. Either download a newer GEOS
-release or the available CVS snapshot.
-
-    * Go to http://geos.refractions.net/  and download geos-2.1.1.tar.bz2 (or newer)
-    * bunzip2 geos-2.1.1.tar.bz2
-    * tar xf geos-2.1.1.tar
-    * cd geos-2.1.1
-    * ./configure
-    * make
-    * make install   # perhaps as root depending on install directory
-
-GDAL - Geospatial Data Abstraction Library
-
-    * Go to http://www.gdal.org/dl/ and download gdal-1.2.6.tar.gz or newer.
-    * tar zxf gdal-1.2.6.tar.gz
-    * cd gdal-1.2.6
-    * ./configure  --with-geos=/usr/local/bin/geos-config
-    * make
-    * make install    # perhaps as root depending on install directory
-
-starspan code
-The starspan tool can be installed as follows.
+starspan installation
+---------------------
+A typical installation of starspan can be done as follows.
 
     * Go to http://casil.ucdavis.edu/project/showfiles.php?group_id=48
-    and download starspan-XXXX.tar.gz where XXXX is the most
-    recent release number.
-
+      and download starspan-XXXX.tar.gz where XXXX is the most
+      recent release number.
     * tar zxf starspan-XXXX.tar.gz
     * cd starspan-XXXX
-    * cp Makefile.props.templ Makefile.props
-      # NOTE for MacOS X: you may want to use Makefile.props.fink instead.
-    
-    * # Edit Makefile.props for necessary adjustments
-    according to your local system (e.g. to put the right
-    values if required libraries are installed in
-    non-standard locations, and to specify where starspan
-    will be installed). Also see below for extended usage
-    dependencies.
-    
+    * ./configure
     * make
-    * make test       # only if you are on a little-endian byte order
-                      #machine (e.g. Intel based)
-    * make install    # perhaps as root depending on install directory
+    * make install
 
-That's it
+By default, `make install' will install starspan's files in
+`/usr/local/bin', `/usr/local/lib', etc. You can specify an
+installation prefix other than `/usr/local' by giving `configure' the
+option `--prefix=PATH'. Depending on the install destination you may
+need to have root privileges to run the `make install' step. Type
+`./configure --help' for more details.
 
-The executables starspan and starspan2 are now installed in
-your system under the location specified in the parameter
-STARSPAN_PREFIX in Makefile.props. Note that the main entry
-point for end users is the shell script starspan.
+To run starspan, just type `starspan [ARGUMENTS]' at the command prompt.
+
 
 Extended usage dependencies
+---------------------------
+Note: If you don't plan to run the extended functionalities, just
+ignore the rest of this section.
 
-Note: If you don't plan to run the extended functionalities,
-just ignore the rest of this section.
-
-Certain testing options require a JRE (Java Runtime
-Environment) and a number of Java archives as explained
-below.
+Certain testing options require a JRE (Java Runtime Environment) and a
+number of Java archives as explained below.
 
 The required Java archives must be copied manually in
 $(STARSPAN_PREFIX)/bin/starspan.jars/

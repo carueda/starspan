@@ -17,15 +17,14 @@ only pixels with known attributes, not the entire image.
 
 Installing starspan
 -------------------
-For installation instructions see INSTALL.txt
+starspan requires the GDAL and GEOS libraries properly installed on 
+your system. For more details, see INSTALL.
 
 Status and documentation
 ------------------------
-
 The main website is located at: http://starspan.casil.ucdavis.edu/
-Feature requests and bug reports are encouraged, and these can be
-posted on the gforge website at:
-http://casil.ucdavis.edu/projects/starspan/
+Feature requests and bug reports can be posted on the gforge website
+at: http://casil.ucdavis.edu/projects/starspan/
 
 
 --------------------------------------------------------
