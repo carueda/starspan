@@ -9,7 +9,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PATH_PROGS(SH, sh)
 AC_PROG_INSTALL
-AM_INIT_AUTOMAKE(starspan,0.99beta)
+AM_INIT_AUTOMAKE(starspan,0.97beta)
 AC_SUBST(SH)
 
 dnl ###########################################################
