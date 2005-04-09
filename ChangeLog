@@ -3,7 +3,21 @@ $Id$
                                     
 
 2005-04-08
-	Setting up GNU build scheme..
+	Setting up GNU build scheme:
+	
+	File renamings:
+		DEVNOTES.txt --> ChangeLog
+		README.txt   --> README
+		INSTALL.txt   --> INSTALL
+		starspan     --> starspan.in
+	New files:
+		configure.in
+		Makefile.am
+		AUTHORS
+		COPYING
+		NEWS
+		THANKS
+		
 
 2005-04-04
 	New BUILD.windows.txt with notes about compiling the whole

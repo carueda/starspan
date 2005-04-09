@@ -1,0 +1,69 @@
+#########################################################
+# starspan configure.in
+# $Id$
+#########################################################
+
+AC_INIT(src/starspan2.cc)
+AC_PREREQ(2.52)
+AC_PROG_CC
+AC_PROG_CXX
+AC_PATH_PROGS(SH, sh)
+AC_PROG_INSTALL
+AM_INIT_AUTOMAKE(starspan,0.99beta)
+AC_SUBST(SH)
+
+dnl ###########################################################
+dnl GEOS
+dnl ###########################################################
+AC_ARG_WITH(geos,[  --with-geos=ARG         Path to geos-config],,)
+if test "$with_geos" = "yes" -o "$with_geos" = "" ; then
+  AC_PATH_PROG(GEOS_CONFIG, geos-config, no)
+else
+  if test "`basename xx/$with_geos`" = "geos-config" ; then
+    AC_MSG_RESULT([GEOS enabled with provided geos-config])
+    GEOS_CONFIG="$with_geos"
+  else
+    AC_MSG_ERROR([--with-geos should have yes or a path to geos-config])
+  fi
+fi
+if test "$GEOS_CONFIG" != "no" ; then
+  VERSION=`$GEOS_CONFIG --version`
+  AC_MSG_RESULT([$GEOS_CONFIG reports version $VERSION])
+  LIBS="`$GEOS_CONFIG --libs` $LIBS"
+  GEOS_INC=`$GEOS_CONFIG --cflags`
+  GEOS_PREFIX=`$GEOS_CONFIG --prefix`
+fi
+
+AC_SUBST(GEOS_INC GEOS_PREFIX)
+
+
+dnl ###########################################################
+dnl GDAL
+dnl ###########################################################
+AC_ARG_WITH(gdal,[  --with-gdal=ARG         Path to gdal-config],,)
+if test "$with_gdal" = "yes" -o "$with_gdal" = "" ; then
+  AC_PATH_PROG(GDAL_CONFIG, gdal-config, no)
+else
+  if test "`basename xx/$with_gdal`" = "gdal-config" ; then
+    AC_MSG_RESULT([GDAL enabled with provided gdal-config])
+    GDAL_CONFIG="$with_gdal"
+  else
+    AC_MSG_ERROR([--with-gdal should have yes or a path to gdal-config])
+  fi
+fi
+if test "$GDAL_CONFIG" != "no" ; then
+  VERSION=`$GDAL_CONFIG --version`
+  AC_MSG_RESULT([$GDAL_CONFIG reports version $VERSION])
+  LIBS="`$GDAL_CONFIG --libs` $LIBS"
+  GDAL_INC=`$GDAL_CONFIG --cflags`
+  GDAL_PREFIX=`$GDAL_CONFIG --prefix`
+  OGR=`$GDAL_CONFIG --ogr-enabled`
+  if test "$OGR" != "yes" ; then
+  	AC_MSG_ERROR([$GDAL_CONFIG says OGR is not enabled])
+  fi
+fi
+AC_SUBST(GDAL_INC GDAL_PREFIX)
+
+
+AC_OUTPUT(Makefile starspan)
+
