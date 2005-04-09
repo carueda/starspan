@@ -15,7 +15,7 @@
 
 #include <cstdio>
 
-#define STARSPAN_VERSION "0.963beta"
+#define STARSPAN_VERSION "0.97beta"
 
 /////////////////////////////////////////////////////////////////////////////
 // services:
