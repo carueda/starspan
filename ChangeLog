@@ -17,6 +17,9 @@ $Id$
 		COPYING
 		NEWS
 		THANKS
+	Removed files:
+		Makefile.props.templ 
+		Makefile.props.fink
 		
 
 2005-04-04
