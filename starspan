@@ -1,9 +1,6 @@
 #!/bin/sh
 #
-# STARSpan project
-# Carlos A. Rueda
 # starspan - launcher script
-# NOTE: Adjust as necessary for your environment
 # $Id$
 #
 
@@ -11,6 +8,9 @@ BINDIR=`dirname $0`
 
 # The proper starspan binary:
 STARSPAN2=$BINDIR/starspan2
+
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # $JARS: the following jars should be present under this directory:
 #
@@ -29,19 +29,6 @@ STARSPAN2=$BINDIR/starspan2
 # Currently JTS 1.4 is used.
 #
 JARS=$BINDIR/starspan.jars/
-
-# Sorry for this noise here, although it should not hurt you anyway.
-# Just ignore it (a next release will be cleaner, hopefully)
-if [ "`uname -n`" == "px" ]; then
-	# my machine :-)
-	export LD_LIBRARY_PATH=$BINDIR/../lib:/usr/local/lib:$LD_LIBRARY_PATH
-else
-	# cstars machines
-	export LD_LIBRARY_PATH=/proj/delta/delta_2004/code/starspan/usr_local/lib:$LD_LIBRARY_PATH
-	
-	# for --run command
-	export PATH=/proj/delta/delta_2004/code/starspan/usr_local/bin:$PATH
-fi
 
 function usage() {
 	cat << EOF
