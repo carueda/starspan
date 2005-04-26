@@ -3,7 +3,9 @@ $Id$
                                     
 
 2005-04-26 (0.98beta)
-	Changes committed
+	Changes committed.
+	Removed temporary NEW-SOURCES-PENDING-MERGE-COMMIT/.
+	Pending: configure regeneration.
 	
 2005-04-21 (*****  to-be 0.98beta   )
 	Traverser: Finally implemented a flood-filling algorithm to 
