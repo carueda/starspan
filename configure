@@ -2928,7 +2928,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=starspan
- VERSION=0.99beta
+ VERSION=0.97beta
 
 
 cat >>confdefs.h <<_ACEOF
