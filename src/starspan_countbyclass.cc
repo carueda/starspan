@@ -126,9 +126,8 @@ public:
 
 		// report the counts:
 		for ( map<int, int>::iterator it = counters.begin(); it != counters.end(); it++ ) {
-			pair<int,int> p = *it;
-			const int class_ = p.first;
-			const int count = p.second;
+			const int class_ = it->first;
+			const int count = it->second;
 			
 			// add record to file:
 			fprintf(file, "%ld,%d,%d\n", FID, class_, count);
