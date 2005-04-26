@@ -18,6 +18,7 @@
 #include <set>
 #include <list>
 #include <vector>
+#include <queue>
 #include <string>
 #include <iostream>
 #include <cstdio>
@@ -406,11 +407,15 @@ private:
 	void getBandValuesForPixel(int col, int row);
 	void toColRow(double x, double y, int *col, int *row);
 	void toGridXY(int col, int row, double *x, double *y);
+	void xyToGridXY(double x, double y, double *gx, double *gy);
 	void processPoint(OGRPoint*);
 	void processMultiPoint(OGRMultiPoint*);
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
 	void processValidPolygon(geos::Polygon* geos_poly);
+	int dispatchPixel(EPixel& colrow, double x, double y);
+	void processValidPolygon_FF(geos::Polygon* geos_poly);
+	void processValidPolygon_BB(geos::Polygon* geos_poly);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
 	void processGeometryCollection(OGRGeometryCollection* coll);

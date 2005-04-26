@@ -2,6 +2,21 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-04-26 (0.98beta)
+	Changes committed
+	
+2005-04-21 (*****  to-be 0.98beta   )
+	Traverser: Finally implemented a flood-filling algorithm to 
+	rasterize polygons. Temporary source files:(*)
+		NEW-SOURCES-PENDING-MERGE-COMMIT/traverser/traverser.h
+		NEW-SOURCES-PENDING-MERGE-COMMIT/traverser/traverser.cc
+		
+	Other minor changes also pending for merge and commit:
+		NEW-SOURCES-PENDING-MERGE-COMMIT/starspan_countbyclass.cc
+		
+	(*) cvs repository (on casil) is down now, so I'll wait
+	    until it's up again to update and commit actual sources... 
+
 2005-04-08 (0.97beta)
 	Setting up GNU build scheme:
 	

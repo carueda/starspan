@@ -296,6 +296,17 @@ inline void Traverser::toGridXY(int col, int row, double *x, double *y) {
 }
 
 //
+// arbitrary (x,y) to grid (x,y) conversion
+//
+inline void Traverser::xyToGridXY(double x, double y, double *gx, double *gy) {
+	int col = (int) floor( (x - x0) / pix_x_size );
+	int row = (int) floor( (y - y0) / pix_y_size );
+	*gx = x0 + col * pix_x_size;
+	*gy = y0 + row * pix_y_size;
+}
+
+
+//
 // Implementation as a LineRasterizerObserver, but also called directly. 
 // Checks for duplicate pixel.
 //
@@ -412,9 +423,139 @@ inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, do
 }
 
 //
-// Process a valid polygon.
+// processValidPolygon(geos::Polygon* geos_poly): Process a valid polygon.
+// I have two algorithms here: 
+//    processValidPolygon_FF: Flood-fill algorithm
+//    processValidPolygon_BB: bounding box scan algorithm
+// Currently I'm developing processValidPolygon_FF
 //
 inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
+	processValidPolygon_FF(geos_poly);
+	//processValidPolygon_BB(geos_poly);
+}
+
+// Does not check for duplication.
+// Return:
+//   -1: [col,row] out of raster extension
+//   0:  [col,row] dispached and added to pixset
+inline int Traverser::dispatchPixel(EPixel& colrow, double x, double y) {
+	if ( colrow.col < 0 || colrow.col >= width  ||  colrow.row < 0 || colrow.row >= height ) {
+		return -1;
+	}
+	
+	TraversalEvent event(colrow.col, colrow.row, x, y);
+	summary.num_processed_pixels++;
+	
+	// if at least one observer is not simple...
+	if ( notSimpleObserver ) {
+		// get also band values
+		getBandValuesForPixel(colrow.col, colrow.row);
+		event.bandValues = bandValues_buffer;
+	}
+	
+	// notify observers:
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+		(*obs)->addPixel(event);
+	
+	// keep track of processed pixels
+	pixset.insert(colrow);
+	return 0;
+}
+
+// processValidPolygon_FF: Flood-fill algorithm
+inline void Traverser::processValidPolygon_FF(geos::Polygon* geos_poly) {
+	const double pix_area = fabs(pix_x_size*pix_y_size);
+	const double pixelProportion_times_pix_area = pixelProportion * pix_area;
+	
+	// need an seed point:
+	geos::Point* seed_point = geos_poly->getInteriorPoint();
+	if ( !seed_point ) {
+		cerr<< "Error: No interior point to use as a seed!\n" <<endl;
+		return;
+	}
+	geos::Coordinate coord = *seed_point->getCoordinate();
+	
+	// seed location:
+	int col, row;
+	toColRow(coord.x, coord.y, &col, &row);
+
+	// will contain good candidates, starting with seed
+	queue<EPixel> candidate_queue;
+	candidate_queue.push(EPixel(col, row));
+	
+	// checked pixels for flooding that are NOT to be included
+	set<EPixel> chkpixels;
+	
+	if ( verbose ) {
+		fprintf(stdout, " Intersecting pixels: %7d", 0); fflush(stdout);
+	}
+	// number of pixels found in polygon:
+	int num_pixels_in_poly = 0;
+	while ( !candidate_queue.empty() ) {
+		EPixel colrow = candidate_queue.front();
+		candidate_queue.pop();         
+		
+		// already processed or checked?
+		if ( pixset.find(colrow) != pixset.end()
+		||   chkpixels.find(colrow) != chkpixels.end() ) {
+			continue;
+		}
+
+		// make regular processing to determine intersection and area:
+		double x, y;
+		toGridXY(colrow.col, colrow.row, &x, &y);
+		// create pixel polygon for (x,y) grid location:
+		geos::Polygon* pix_poly = create_pix_poly(x, y, x + pix_x_size, y + pix_y_size);
+		// intersect
+		geos::Geometry* pix_inters = 0;
+		try {
+			pix_inters = geos_poly->intersection(pix_poly);
+		}
+		catch(geos::TopologyException* ex) {
+			cerr<< "TopologyException: " << ex->toString()<< endl;
+			if ( debug_dump_polys ) {
+				cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
+				cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
+			}
+		}
+		catch(geos::GEOSException* ex) {
+			cerr<< "geos::GEOSException: " << ex->toString()<< endl;
+			if ( debug_dump_polys ) {
+				geos::WKTWriter wktWriter;
+				cerr<< "pix_poly = " << wktWriter.write(pix_poly) << endl;
+				cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
+			}
+		}
+		if ( pix_inters ) {
+			// check area of intersection:
+			double area = pix_inters->getArea();
+			if ( area >= pixelProportion_times_pix_area ) { 
+				if ( 0 == dispatchPixel(colrow, x, y) ) {
+					num_pixels_in_poly++;
+					if ( verbose && num_pixels_in_poly % 512 == 0) {
+						fprintf(stdout, "\b\b\b\b\b\b\b%7d", num_pixels_in_poly); fflush(stdout);
+					}
+					candidate_queue.push(EPixel(colrow.col-1, colrow.row));
+					candidate_queue.push(EPixel(colrow.col+1, colrow.row));
+					candidate_queue.push(EPixel(colrow.col, colrow.row-1));
+					candidate_queue.push(EPixel(colrow.col, colrow.row+1));
+				}
+				else {
+					// colrow wasn't added to pixset; so add it to chkpixels:
+					chkpixels.insert(colrow);
+				}
+			}
+			delete pix_inters;
+		}
+		delete pix_poly;
+	}
+	if ( verbose ) {
+		fprintf(stdout, "\b\b\b\b\b\b\b%7d\n", num_pixels_in_poly); fflush(stdout);
+	}
+}
+
+// processValidPolygon_BB: bounding box scan algorithm
+inline void Traverser::processValidPolygon_BB(geos::Polygon* geos_poly) {
 	const geos::Envelope* intersection_env = geos_poly->getEnvelopeInternal();
 	
 	// get envelope corners in pixel coordinates:
@@ -760,7 +901,8 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	if ( verbose ) {
 		cout<< " Type of intersection: "
-		    << intersection_geometry->getGeometryName()<< endl;
+		    << intersection_geometry->getGeometryName()<< endl
+		;
 	}
 	
 	//
