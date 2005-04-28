@@ -127,11 +127,14 @@ void Traverser::rasterize_geometry_QT(_Rect& e, geos::Geometry* i) {
 		}
 	
 		default:
-			cerr<< "Warning: rasterize_geometry_QT: "
-			    << "intersection ignored: "
-				<< i->getGeometryType() <<endl
-				//<< wktWriter.write(i) <<endl
-			;
+			if ( logstream ) {
+				(*logstream)
+					<< "Warning: rasterize_geometry_QT: "
+					<< "intersection ignored: "
+					<< i->getGeometryType() <<endl
+					//<< wktWriter.write(i) <<endl
+				;
+			}
 	}
 	
 }
