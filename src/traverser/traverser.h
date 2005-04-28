@@ -488,6 +488,7 @@ private:
 					cerr<< "geos_poly = " << tr->wktWriter.write(p) << endl;
 				}
 			}
+			delete poly;
 			return inters;
 		}
 	};
