@@ -279,31 +279,6 @@ int Traverser::getPixelDoubleValuesInBand(
 }
 
 
-//
-// (x,y) to (col,row) conversion
-//
-inline void Traverser::toColRow(double x, double y, int *col, int *row) {
-	*col = (int) floor( (x - x0) / pix_x_size );
-	*row = (int) floor( (y - y0) / pix_y_size );
-}
-
-//
-// (col,row) to (x,y) conversion
-//
-inline void Traverser::toGridXY(int col, int row, double *x, double *y) {
-	*x = x0 + col * pix_x_size;
-	*y = y0 + row * pix_y_size;
-}
-
-//
-// arbitrary (x,y) to grid (x,y) conversion
-//
-inline void Traverser::xyToGridXY(double x, double y, double *gx, double *gy) {
-	int col = (int) floor( (x - x0) / pix_x_size );
-	int row = (int) floor( (y - y0) / pix_y_size );
-	*gx = x0 + col * pix_x_size;
-	*gy = y0 + row * pix_y_size;
-}
 
 
 //
@@ -403,67 +378,20 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 
 
 //
-// To avoid some OGR overhead, I use GEOS directly.
-//
-static geos::GeometryFactory* global_factory = new geos::GeometryFactory();
-static const geos::CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordinateSequenceFactory();
-
-// create pixel polygon
-inline static geos::Polygon* create_pix_poly(double x0, double y0, double x1, double y1) {
-	geos::CoordinateSequence *cl = new geos::DefaultCoordinateSequence();
-	cl->add(geos::Coordinate(x0, y0));
-	cl->add(geos::Coordinate(x1, y0));
-	cl->add(geos::Coordinate(x1, y1));
-	cl->add(geos::Coordinate(x0, y1));
-	cl->add(geos::Coordinate(x0, y0));
-	geos::LinearRing* pixLR = global_factory->createLinearRing(cl);
-	vector<geos::Geometry *>* holes = NULL;
-	geos::Polygon *poly = global_factory->createPolygon(pixLR, holes);
-	return poly;
-}
-
-//
 // processValidPolygon(geos::Polygon* geos_poly): Process a valid polygon.
 // I have two algorithms here: 
 //    processValidPolygon_FF: Flood-fill algorithm
 //    processValidPolygon_BB: bounding box scan algorithm
 // Currently I'm developing processValidPolygon_FF
 //
-inline void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
-	processValidPolygon_FF(geos_poly);
+void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
+	processValidPolygon_QT(geos_poly);
+	//processValidPolygon_FF(geos_poly);
 	//processValidPolygon_BB(geos_poly);
 }
 
-// Does not check for duplication.
-// Return:
-//   -1: [col,row] out of raster extension
-//   0:  [col,row] dispached and added to pixset
-inline int Traverser::dispatchPixel(EPixel& colrow, double x, double y) {
-	if ( colrow.col < 0 || colrow.col >= width  ||  colrow.row < 0 || colrow.row >= height ) {
-		return -1;
-	}
-	
-	TraversalEvent event(colrow.col, colrow.row, x, y);
-	summary.num_processed_pixels++;
-	
-	// if at least one observer is not simple...
-	if ( notSimpleObserver ) {
-		// get also band values
-		getBandValuesForPixel(colrow.col, colrow.row);
-		event.bandValues = bandValues_buffer;
-	}
-	
-	// notify observers:
-	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
-		(*obs)->addPixel(event);
-	
-	// keep track of processed pixels
-	pixset.insert(colrow);
-	return 0;
-}
-
 // processValidPolygon_FF: Flood-fill algorithm
-inline void Traverser::processValidPolygon_FF(geos::Polygon* geos_poly) {
+void Traverser::processValidPolygon_FF(geos::Polygon* geos_poly) {
 	const double pix_area = fabs(pix_x_size*pix_y_size);
 	const double pixelProportion_times_pix_area = pixelProportion * pix_area;
 	
@@ -555,7 +483,7 @@ inline void Traverser::processValidPolygon_FF(geos::Polygon* geos_poly) {
 }
 
 // processValidPolygon_BB: bounding box scan algorithm
-inline void Traverser::processValidPolygon_BB(geos::Polygon* geos_poly) {
+void Traverser::processValidPolygon_BB(geos::Polygon* geos_poly) {
 	const geos::Envelope* intersection_env = geos_poly->getEnvelopeInternal();
 	
 	// get envelope corners in pixel coordinates:
@@ -647,6 +575,11 @@ inline void Traverser::processValidPolygon_BB(geos::Polygon* geos_poly) {
 	}
 }
 
+// To avoid some OGR overhead, I use GEOS directly.
+geos::GeometryFactory* global_factory = new geos::GeometryFactory();
+const geos::CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordinateSequenceFactory();
+
+	
 //
 // process a polygon intersection.
 // The area of intersections are used to determine if a pixel is to be

@@ -138,6 +138,29 @@ public:
 	
 };
 
+
+extern geos::GeometryFactory* global_factory;
+extern const geos::CoordinateSequenceFactory* global_cs_factory;
+
+// create pixel polygon
+inline geos::Polygon* create_pix_poly(double x0, double y0, double x1, double y1) {
+	geos::CoordinateSequence *cl = new geos::DefaultCoordinateSequence();
+	cl->add(geos::Coordinate(x0, y0));
+	cl->add(geos::Coordinate(x1, y0));
+	cl->add(geos::Coordinate(x1, y1));
+	cl->add(geos::Coordinate(x0, y1));
+	cl->add(geos::Coordinate(x0, y0));
+	geos::LinearRing* pixLR = global_factory->createLinearRing(cl);
+	vector<geos::Geometry *>* holes = NULL;
+	geos::Polygon *poly = global_factory->createPolygon(pixLR, holes);
+	return poly;
+}
+
+
+	
+
+
+
 /**
   * A Traverser intersects every geometry feature in a vector datasource
   * with a raster dataset. Observer should be registered for the
@@ -385,6 +408,90 @@ public:
 	void reportSummary(void);
 	
 private:
+	
+	
+	struct _Rect {
+		Traverser* tr;
+		
+		double x, y;     // origin in grid coordinates
+		int cols, rows;  // size in pixels
+		
+		_Rect(Traverser* tr, double x, double y, int cols, int rows): 
+		tr(tr), x(x), y(y), cols(cols), rows(rows)
+		{}
+		
+		inline double area() { 
+			return fabs(cols * tr->pix_x_size * rows * tr->pix_y_size);
+		}
+		
+		inline double x2() { 
+			return x + cols * tr->pix_x_size;
+		}
+		
+		inline double y2() { 
+			return y + rows * tr->pix_y_size;
+		}
+		
+		inline bool empty() { 
+			return cols <= 0 || rows <= 0;
+		}
+		
+		inline _Rect upperLeft() { 
+			int cols2 = (cols >> 1);
+			int rows2 = (rows >> 1);
+			return _Rect(tr, x, y, cols2, rows2);
+		}
+		
+		inline _Rect upperRight() {
+			int cols2 = (cols >> 1);
+			int rows2 = (rows >> 1);
+			double x2 = x + cols2 * tr->pix_x_size; 
+			return _Rect(tr, x2, y, cols - cols2, rows2);
+		}
+		
+		inline _Rect lowerLeft() {
+			int cols2 = (cols >> 1);
+			int rows2 = (rows >> 1);
+			double y2 = y + rows2 * tr->pix_y_size; 
+			return _Rect(tr, x, y2, cols2, rows - rows2);
+		}
+		
+		inline _Rect lowerRight() {
+			int cols2 = (cols >> 1);
+			int rows2 = (rows >> 1);
+			double x2 = x + cols2 * tr->pix_x_size; 
+			double y2 = y + rows2 * tr->pix_y_size; 
+			return _Rect(tr, x2, y2, cols - cols2, rows - rows2);
+		}
+		
+		inline geos::Geometry* intersect(geos::Polygon* p) {
+			if ( empty() )
+				return 0;
+			
+			geos::Polygon* poly = create_pix_poly(x, y, x2(), y2());
+			geos::Geometry* inters = 0;
+			try {
+				inters = p->intersection(poly);
+			}
+			catch(geos::TopologyException* ex) {
+				cerr<< "TopologyException: " << ex->toString()<< endl;
+				if ( tr->debug_dump_polys ) {
+					cerr<< "pix_poly = " << tr->wktWriter.write(poly) << endl;
+					cerr<< "geos_poly = " << tr->wktWriter.write(p) << endl;
+				}
+			}
+			catch(geos::GEOSException* ex) {
+				cerr<< "geos::GEOSException: " << ex->toString()<< endl;
+				if ( tr->debug_dump_polys ) {
+					geos::WKTWriter wktWriter;
+					cerr<< "pix_poly = " << tr->wktWriter.write(poly) << endl;
+					cerr<< "geos_poly = " << tr->wktWriter.write(p) << endl;
+				}
+			}
+			return inters;
+		}
+	};
+	
 	Vector* vect;
 	vector<Raster*> rasts;
 	vector<Observer*> observers;
@@ -405,15 +512,64 @@ private:
 	LineRasterizer* lineRasterizer;
 	void notifyObservers(void);
 	void getBandValuesForPixel(int col, int row);
-	void toColRow(double x, double y, int *col, int *row);
-	void toGridXY(int col, int row, double *x, double *y);
-	void xyToGridXY(double x, double y, double *gx, double *gy);
+	
+	/** (x,y) to (col,row) conversion */
+	inline void toColRow(double x, double y, int *col, int *row) {
+		*col = (int) floor( (x - x0) / pix_x_size );
+		*row = (int) floor( (y - y0) / pix_y_size );
+	}
+	
+	/** (col,row) to (x,y) conversion */
+	inline void toGridXY(int col, int row, double *x, double *y) {
+		*x = x0 + col * pix_x_size;
+		*y = y0 + row * pix_y_size;
+	}
+
+	/** arbitrary (x,y) to grid (x,y) conversion */
+	inline void xyToGridXY(double x, double y, double *gx, double *gy) {
+		int col = (int) floor( (x - x0) / pix_x_size );
+		int row = (int) floor( (y - y0) / pix_y_size );
+		*gx = x0 + col * pix_x_size;
+		*gy = y0 + row * pix_y_size;
+	}
+	
+	// Does not check for duplication.
+	// Return:
+	//   -1: [col,row] out of raster extension
+	//   0:  [col,row] dispached and added to pixset
+	inline int dispatchPixel(EPixel& colrow, double x, double y) {
+		if ( colrow.col < 0 || colrow.col >= width  ||  colrow.row < 0 || colrow.row >= height ) {
+			return -1;
+		}
+		
+		TraversalEvent event(colrow.col, colrow.row, x, y);
+		summary.num_processed_pixels++;
+		
+		// if at least one observer is not simple...
+		if ( notSimpleObserver ) {
+			// get also band values
+			getBandValuesForPixel(colrow.col, colrow.row);
+			event.bandValues = bandValues_buffer;
+		}
+		
+		// notify observers:
+		for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+			(*obs)->addPixel(event);
+		
+		// keep track of processed pixels
+		pixset.insert(colrow);
+		return 0;
+	}
+	
 	void processPoint(OGRPoint*);
 	void processMultiPoint(OGRMultiPoint*);
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
 	void processValidPolygon(geos::Polygon* geos_poly);
-	int dispatchPixel(EPixel& colrow, double x, double y);
+	void processValidPolygon_QT(geos::Polygon* geos_poly);
+	void rasterize_poly_QT(_Rect& env, geos::Polygon* poly);
+	void rasterize_geometry_QT(_Rect& env, geos::Geometry* geom);
+	void dispatchRect_QT(_Rect& r);
 	void processValidPolygon_FF(geos::Polygon* geos_poly);
 	void processValidPolygon_BB(geos::Polygon* geos_poly);
 	void processPolygon(OGRPolygon* poly);
@@ -441,8 +597,6 @@ private:
 	// buffer parameters
 	BufferParams bufferParams;
 };
-
-
 
 #endif
 
