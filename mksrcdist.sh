@@ -16,7 +16,11 @@ tag=`echo release-$VERSION | tr -t . _`
 echo "Make tag [y/-]?:  cvs -q tag $tag"
 read dotag
 
-cvsroot=":pserver:anonymous@cvs.casil.ucdavis.edu:/cvsroot/starspan"
+# $cvsroot: used to export the source from cvs
+# (should be anonymously...
+#cvsroot=":pserver:anonymous@cvs.casil.ucdavis.edu:/cvsroot/starspan"
+# but that's not working, so I'll be using my developer account for now:)
+cvsroot=":ext:crueda@cvs.casil.ucdavis.edu:/cvsroot/starspan"
 
 (test "$dotag" != "y" || cvs -q tag $tag) &&\
 mkdir -p DISTDIR &&\
