@@ -27,6 +27,7 @@ starspan2_SOURCES =	\
 	src/rasterizers/LineRasterizer.cc \
 	src/stats/Stats.cc \
 	src/traverser/traverser.cc \
+	src/traverser/polyqt.cc \
 	src/util/Progress.cc \
 	src/vector/Vector_ogr.cc
 

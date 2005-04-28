@@ -56,7 +56,7 @@ CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"starspan\" -DVERSION=\"0.97beta\" 
+DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"starspan\" -DVERSION=\"0.98beta\" 
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -140,6 +140,7 @@ starspan2_SOURCES = \
 	src/rasterizers/LineRasterizer.cc \
 	src/stats/Stats.cc \
 	src/traverser/traverser.cc \
+	src/traverser/polyqt.cc \
 	src/util/Progress.cc \
 	src/vector/Vector_ogr.cc
 
@@ -171,8 +172,8 @@ am_starspan2_OBJECTS = starspan2.$(OBJEXT) starspan_stats.$(OBJEXT) \
 	starspan_jtstest.$(OBJEXT) starspan_util.$(OBJEXT) \
 	starspan_dump.$(OBJEXT) starspan_tuct2.$(OBJEXT) Csv.$(OBJEXT) \
 	jts.$(OBJEXT) Raster_gdal.$(OBJEXT) LineRasterizer.$(OBJEXT) \
-	Stats.$(OBJEXT) traverser.$(OBJEXT) Progress.$(OBJEXT) \
-	Vector_ogr.$(OBJEXT)
+	Stats.$(OBJEXT) traverser.$(OBJEXT) polyqt.$(OBJEXT) \
+	Progress.$(OBJEXT) Vector_ogr.$(OBJEXT)
 starspan2_OBJECTS = $(am_starspan2_OBJECTS)
 starspan2_LDADD = $(LDADD)
 starspan2_DEPENDENCIES =
@@ -186,7 +187,8 @@ am__depfiles_maybe = depfiles
 DEP_FILES = ./$(DEPDIR)/Csv.Po ./$(DEPDIR)/LineRasterizer.Po \
 	./$(DEPDIR)/Progress.Po ./$(DEPDIR)/Raster_gdal.Po \
 	./$(DEPDIR)/Stats.Po ./$(DEPDIR)/Vector_ogr.Po \
-	./$(DEPDIR)/jts.Po ./$(DEPDIR)/starspan2.Po \
+	./$(DEPDIR)/jts.Po ./$(DEPDIR)/polyqt.Po \
+	./$(DEPDIR)/starspan2.Po \
 	./$(DEPDIR)/starspan_countbyclass.Po \
 	./$(DEPDIR)/starspan_csv.Po \
 	./$(DEPDIR)/starspan_csv_raster_field.Po \
@@ -293,6 +295,7 @@ include ./$(DEPDIR)/Raster_gdal.Po
 include ./$(DEPDIR)/Stats.Po
 include ./$(DEPDIR)/Vector_ogr.Po
 include ./$(DEPDIR)/jts.Po
+include ./$(DEPDIR)/polyqt.Po
 include ./$(DEPDIR)/starspan2.Po
 include ./$(DEPDIR)/starspan_countbyclass.Po
 include ./$(DEPDIR)/starspan_csv.Po
@@ -727,6 +730,28 @@ traverser.obj: src/traverser/traverser.cc
 #	depfile='$(DEPDIR)/traverser.Po' tmpdepfile='$(DEPDIR)/traverser.TPo' \
 #	$(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o traverser.obj `if test -f 'src/traverser/traverser.cc'; then $(CYGPATH_W) 'src/traverser/traverser.cc'; else $(CYGPATH_W) '$(srcdir)/src/traverser/traverser.cc'; fi`
+
+polyqt.o: src/traverser/polyqt.cc
+	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT polyqt.o -MD -MP -MF "$(DEPDIR)/polyqt.Tpo" \
+	  -c -o polyqt.o `test -f 'src/traverser/polyqt.cc' || echo '$(srcdir)/'`src/traverser/polyqt.cc; \
+	then mv "$(DEPDIR)/polyqt.Tpo" "$(DEPDIR)/polyqt.Po"; \
+	else rm -f "$(DEPDIR)/polyqt.Tpo"; exit 1; \
+	fi
+#	source='src/traverser/polyqt.cc' object='polyqt.o' libtool=no \
+#	depfile='$(DEPDIR)/polyqt.Po' tmpdepfile='$(DEPDIR)/polyqt.TPo' \
+#	$(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o polyqt.o `test -f 'src/traverser/polyqt.cc' || echo '$(srcdir)/'`src/traverser/polyqt.cc
+
+polyqt.obj: src/traverser/polyqt.cc
+	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT polyqt.obj -MD -MP -MF "$(DEPDIR)/polyqt.Tpo" \
+	  -c -o polyqt.obj `if test -f 'src/traverser/polyqt.cc'; then $(CYGPATH_W) 'src/traverser/polyqt.cc'; else $(CYGPATH_W) '$(srcdir)/src/traverser/polyqt.cc'; fi`; \
+	then mv "$(DEPDIR)/polyqt.Tpo" "$(DEPDIR)/polyqt.Po"; \
+	else rm -f "$(DEPDIR)/polyqt.Tpo"; exit 1; \
+	fi
+#	source='src/traverser/polyqt.cc' object='polyqt.obj' libtool=no \
+#	depfile='$(DEPDIR)/polyqt.Po' tmpdepfile='$(DEPDIR)/polyqt.TPo' \
+#	$(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o polyqt.obj `if test -f 'src/traverser/polyqt.cc'; then $(CYGPATH_W) 'src/traverser/polyqt.cc'; else $(CYGPATH_W) '$(srcdir)/src/traverser/polyqt.cc'; fi`
 
 Progress.o: src/util/Progress.cc
 	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Progress.o -MD -MP -MF "$(DEPDIR)/Progress.Tpo" \
