@@ -8,8 +8,11 @@ $Id$
 	Preliminary tests OK. The speedup over the flood-fill algorithm
 	with a polygon that	contains 22860 pixels is:
 	   time(flood-fill) / time(quadtree) = 98s/4s = 24.5 (!)
-	TODO: More tests; Check possible memory leak; check the other
-	goemetry types resulting from intersections that are ignored. 
+	TODO: More tests; check the other goemetry types resulting from 
+	intersections that are ignored.
+	
+	starspan2.cc: shutdown calls to release resources: input data 
+	objects and calls to CPLPopErrorHandler() and geos::Unload::Release().	
 	
 2005-04-26 (0.98beta)
 	Changes committed.

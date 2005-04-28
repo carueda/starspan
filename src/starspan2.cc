@@ -478,7 +478,7 @@ int main(int argc, char ** argv) {
 			tr.setProgress(globalOptions.progress_perc, cout);
 	
 		tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
-	
+
 		if ( vector_filename )
 			tr.setVector(new Vector(vector_filename));
 		
@@ -581,6 +581,14 @@ int main(int argc, char ** argv) {
 			// release observers:
 			tr.releaseObservers();
 		}
+		
+		// release data input objects:
+		if ( tr.getVector() ) {
+			delete tr.getVector();
+		}
+		for ( int i = 0; i < tr.getNumRasters(); i++ ) {
+			delete tr.getRaster(i);
+		}
 	}
 	
 	Vector::end();
@@ -611,6 +619,10 @@ int main(int argc, char ** argv) {
 		}
 	}
 
+	// more final cleanup:
+	CPLPopErrorHandler();
+	geos::Unload::Release();	
+	
 	return res;
 }
 
