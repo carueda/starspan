@@ -2,7 +2,7 @@ starspan ChangeLog
 $Id$
                                     
 
-2005-04-28 (0.98)
+2005-04-28 (0.99)
 	Quadtree algorithm implemented for polygon rasterization:
 	New traverser/polyqt.cc.
 	Preliminary tests OK. The speedup over the flood-fill algorithm
@@ -17,7 +17,7 @@ $Id$
 	mksrcdist.sh: using my developer account to export from cvs
 	(currently anonymous access to casil is not working.)
 
-	Version released today: 0.98
+	Version released today: 0.99
 	
 2005-04-26 (0.98beta)
 	Changes committed.
