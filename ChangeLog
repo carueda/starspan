@@ -2,6 +2,11 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-04-28 (0.991)
+	Hack in starspan_myErrorHandler (starspan_util.cc) as a workaround
+	in current GDAL code which doesn't implement SetScale/SetOffset 
+	methods for some raster band types.
+	
 2005-04-28 (0.99)
 	Quadtree algorithm implemented for polygon rasterization:
 	New traverser/polyqt.cc.
