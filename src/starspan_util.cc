@@ -38,8 +38,8 @@ void starspan_myErrorHandler(CPLErr eErrClass, int err_no, const char *msg) {
 	// FIXME: this is a hack!!
 	// The strings are copied verbatim from gdalrasterband.cpp, 
 	// cvs snapshot at 2005-04-30 1pm approx)
-	if ( 0 == strcmp("SetScale() not supported on this raster band.")
-	||   0 == strcmp("SetOffset() not supported on this raster band.") ) {
+	if ( 0 == strcmp("SetScale() not supported on this raster band." , msg)
+	||   0 == strcmp("SetOffset() not supported on this raster band.", msg) ) {
 		// just a warning:
 		fprintf(stderr, "***Warning: %s\n", msg);
 		return;
