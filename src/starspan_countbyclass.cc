@@ -16,6 +16,8 @@
 
 using namespace std;
 
+// my prefix for verbose output:
+static const char* vprefix = "  [count-by-class]";
 
 /**
   * Creates fields and populates the table.
@@ -25,17 +27,17 @@ public:
 	Traverser& tr;
 	GlobalInfo* global_info;
 	Vector* vect;
-	FILE* file;
+	FILE* outfile;
 	bool OK;
 		
 	/**
 	  * Creates a stats calculator
 	  */
-	CountByClassObserver(Traverser& tr, FILE* f) : tr(tr), file(f) {
+	CountByClassObserver(Traverser& tr, FILE* f) : tr(tr), outfile(f) {
 		vect = tr.getVector();
 		global_info = 0;
 		OK = false;
-		assert(file);
+		assert(outfile);
 	}
 	
 	/**
@@ -49,10 +51,10 @@ public:
 	  * closes the file
 	  */
 	void end() {
-		if ( file ) {
-			fclose(file);
+		if ( outfile ) {
+			fclose(outfile);
 			cout<< "CountByClass: finished" << endl;
-			file = 0;
+			outfile = 0;
 		}
 	}
 
@@ -72,6 +74,10 @@ public:
 	void init(GlobalInfo& info) {
 		global_info = &info;
 
+		if ( globalOptions.verbose ) {
+			cout<< vprefix<< " init\n";
+		}
+
 		OK = false;   // but let's see ...
 		
 		OGRLayer* poLayer = vect->getLayer(0);
@@ -83,7 +89,7 @@ public:
 		//		
 		// write column headers:
 		//
-		fprintf(file, "FID,class,count\n");
+		fprintf(outfile, "FID,class,count\n");
 		
 		const unsigned num_bands = global_info->bands.size();
 		
@@ -125,13 +131,21 @@ public:
 		Stats::computeCounts(values, counters);
 
 		// report the counts:
+		if ( globalOptions.verbose ) {
+			cout<< vprefix<< " FID=" <<FID<< " pixels=" <<tr.getPixelSetSize()<< ":\n";
+		}
 		for ( map<int, int>::iterator it = counters.begin(); it != counters.end(); it++ ) {
 			const int class_ = it->first;
 			const int count = it->second;
 			
-			// add record to file:
-			fprintf(file, "%ld,%d,%d\n", FID, class_, count);
+			// add record to outfile:
+			fprintf(outfile, "%ld,%d,%d\n", FID, class_, count);
+
+			if ( globalOptions.verbose ) {
+				cout<< vprefix<< "   class=%d count=%d\n", class_, count);
+			}
 		}
+		fflush(outfile);
 	}
 };
 
@@ -145,13 +159,13 @@ Observer* starspan_getCountByClassObserver(
 	const char* filename
 ) {
 	// create output file
-	FILE* file = fopen(filename, "w");
-	if ( !file ) {
+	FILE* outfile = fopen(filename, "w");
+	if ( !outfile ) {
 		cerr<< "Couldn't create "<< filename << endl;
 		return 0;
 	}
 
-	return new CountByClassObserver(tr, file);	
+	return new CountByClassObserver(tr, outfile);	
 }
 		
 

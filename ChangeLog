@@ -5,9 +5,21 @@ $Id$
 2005-04-28 (0.991)
 	Hack in starspan_myErrorHandler (starspan_util.cc) as a workaround
 	in current GDAL code which doesn't implement SetScale/SetOffset 
-	methods for some raster band types.
+	methods for some raster band types.  
 	
-2005-04-28 (0.99)
+	Traverser code cleanup (traverser.h, traverser.cc):
+	Removed old methods for rasterization of polygons:
+		processValidPolygon_FF(geos_poly)
+		processValidPolygon_BB(geos_poly)
+	Versions containing those methods are:
+	    traverser.h,v 1.9
+		traverser.cc,v 1.10
+		
+	starspan_countbyclass.cc: verbose messages and flush for each
+	finished feature.
+	   
+	
+2005-04-28 (0.99 -released)
 	Quadtree algorithm implemented for polygon rasterization:
 	New traverser/polyqt.cc.
 	Preliminary tests OK. The speedup over the flood-fill algorithm

@@ -571,8 +571,6 @@ private:
 	void rasterize_poly_QT(_Rect& env, geos::Polygon* poly);
 	void rasterize_geometry_QT(_Rect& env, geos::Geometry* geom);
 	void dispatchRect_QT(_Rect& r);
-	void processValidPolygon_FF(geos::Polygon* geos_poly);
-	void processValidPolygon_BB(geos::Polygon* geos_poly);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
 	void processGeometryCollection(OGRGeometryCollection* coll);
