@@ -2,7 +2,7 @@ starspan ChangeLog
 $Id$
                                     
 
-2005-04-28 (0.992)
+2005-04-28 (0.993)
 	Hack in starspan_myErrorHandler (starspan_util.cc) as a workaround
 	in current GDAL code which doesn't implement SetScale/SetOffset 
 	methods for some raster band types.  
