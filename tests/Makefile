@@ -11,7 +11,7 @@ ALL_TESTS: init test_miniraster test_miniraster_strip
 	@echo "!!!!!!! $@ : OK !!!!!!!"
 
 init:
-	chmod +x $STARSPAN
+	chmod +x ${STARSPAN}
 	mkdir -p generated/
 
 test_miniraster:
