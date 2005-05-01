@@ -65,5 +65,5 @@ fi
 AC_SUBST(GDAL_INC GDAL_PREFIX)
 
 
-AC_OUTPUT(Makefile starspan)
+AC_OUTPUT([Makefile starspan])
 

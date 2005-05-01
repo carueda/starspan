@@ -17,6 +17,12 @@ $Id$
 		
 	starspan_countbyclass.cc: verbose messages and flush for each
 	finished feature.
+	
+	Note: configure doesn't set execution permission to script 
+	starspan. This flag is set by `make install' on destination.
+	For running the tests under tests/, I added a `chmod +x ../starspan'
+	to tests/Makefile. I discarded adding a `chmod +x starspan' to
+	configure.in (in AC_OUTPUT), as I'm not sure if that's portable.
 	   
 	
 2005-04-28 (0.99 -released)
