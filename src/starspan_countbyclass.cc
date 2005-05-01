@@ -142,7 +142,7 @@ public:
 			fprintf(outfile, "%ld,%d,%d\n", FID, class_, count);
 
 			if ( globalOptions.verbose ) {
-				cout<< vprefix<< "   class=%d count=%d\n", class_, count);
+				cout<< vprefix<< "   class=" <<class_<< " count=" <<count<< endl;
 			}
 		}
 		fflush(outfile);
