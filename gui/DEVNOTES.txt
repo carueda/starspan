@@ -1,0 +1,52 @@
+StarSpan GUI DEVNOTES
+Carlos A. Rueda
+$Id$
+
+This is an implementation of a GUI for StarSpan based on the GUIE tool.
+GUIE provides a graphical user interface to command-line, non-interactive 
+programs. Basically, this directory contains the GUIE specification 
+starspan.guie required by GUIE, and a mechanism based on Izpack to
+create a tailored installer. There are no dependencies on any of the
+starspan core system. The only dependency will occur at run time when 
+the user executes the command line from within the GUI; at that moment
+the GUIE system will call the executable `starspan.'
+
+Prerequisites
+	The GUIE jars: guie.jar and nanoxml.jar.
+	More info at: http://rtm.casil.ucdavis.edu/
+	
+	IzPack is used to create the installer.
+	http://izforge.com/izpack
+	
+	Apache Ant is used to compile and build the StarSpan GUI.
+	http://ant.apache.org
+	
+	End users will need a Java Runtime Environment to be able to run
+	the StarSpan GUI.
+
+Build
+	You may need to adjust some values in build.properties according
+	to location of prerequisites in your system.
+	
+	To create the installer: 
+		ant installer
+	The executable takes the name install-starspan-gui-${VERSION}.jar
+	
+	To test the installation:
+		ant install
+		
+Running:
+	Run DIR/bin/starspan-gui (unix), or DIR\bin\starspan-gui.bat (windows)
+	where DIR is the installation directory. A shortcut is created under
+	windows.
+	
+Status:
+	Since GUIE is still experimental... you get the idea.
+
+	
+Change log
+----------
+
+05/19/05 
+	First implementation. Already functional but preliminary.
+	
