@@ -17,16 +17,16 @@
 			</table>
 		</html> </tip>
 	
-		<filename name="vector-file"  required="false" prefix="--vector" label="Vector file"  width="32"  initialValue=""  fileext=""  filedescription="All files"   underline="true">
+		<filename name="vector-file"  required="false" prefix="--vector" label="Vector file"  width="40"  initialValue=""  fileext=""  filedescription="All files"   underline="true">
 			<tip> <html>
 				<p>Specify the input vector file</p>
 			</html> </tip>
 		</filename>
 		
-		<filename name="raster-files" required="false" prefix="--raster" label="Raster files"  width="32"  initialValue=""  fileext=""  filedescription="All files"  filemultiselection="true" underline="true">
+		<filename name="raster-files" required="false" prefix="--raster" label="Raster files" filemultiselection="true"  width="40"  height="4" initialValue=""  fileext=""  filedescription="All files"  underline="true">
 			<tip> <html>
-				<p>Specify the input raster files</p>
-				<p>Note that you can select multiple files</p>
+				<p>Specify the input raster files.</p>
+				<p>You can select multiple files</p>
 			</html> </tip>
 		</filename>
 		
@@ -255,9 +255,10 @@
 		
 		
 		<!-- STATS -->
-		<group axis="vertical" name="Stats" prefix="--stats" label="Stats generation" tip="Stats and summaries" underline="true" check="true">
+		<group axis="vertical" name="Stats"   tip="Stats and summaries" >
 			
-			<group axis="vertical" >
+			<group axis="vertical" name="Stats" label="Stats generation" prefix="--stats" underline="true" check="true">
+				<group>
 				<filename name="stats-file"  label="Stats file"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
 					<tip> <html>
 						   Specify the output <b>csv</b> file to be created
@@ -271,18 +272,18 @@
 					<option value="min" description="min" />
 					<option value="max" description="max" />
 			   </choice>
-	
+			   </group>
 			</group>
 			
 			<!-- count by class -->
-			<group axis="vertical" name="count-by-class-group" label="Count by class" underline="true"  check="true">
+			<group axis="vertical" name="count-by-class-group" prefix="--count-by-class" label="Count by class" underline="true"  check="true">
 				<tip> <html>
 					<table border="2">
 					<br>count-by-class generation</br>
 					</table>
 				</html> </tip>
 				
-				<filename name="count-by-class-file"  prefix="--count-by-class"  label="Count-by-class file"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
+				<filename name="count-by-class-file"  label="File"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
 					<tip> <html>
 						   Specify the output <b>csv</b> file to be created
 					</html> </tip>
@@ -387,7 +388,7 @@
 						<br>that provides a GUI for command-line, non-interactive programs.</br>
 						<br>As you fill in information, the GUIE will construct the</br>
 						<br>corresponding command line to be executed. Depending on</br>
-						<br>the given GUI specification (which is specific to every</br>
+						<br>the given GUI specification (which is specific to each</br>
 						<br>command line program), certain rules can be applied to</br>
 						<br>verify that required arguments are supplied. However,</br>
 						<br>complete verification will be performed by the command</br>
