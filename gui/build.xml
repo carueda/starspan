@@ -37,7 +37,7 @@
 			izPackDir="${izdir}/"/>
 	</target>
 
-	<target name="install">
+	<target name="install" description="Launches the installer">
 		<java jar="${dist}/install-starspan-gui-${VERSION}.jar" fork="true"/>
 	</target>
 
