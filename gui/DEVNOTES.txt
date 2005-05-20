@@ -48,5 +48,6 @@ Change log
 ----------
 
 05/19/05 
-	First implementation. Already functional but preliminary.
+	First implementation. Already functional but needs to be completed
+	perhaps involving changes is the core system itself.
 	

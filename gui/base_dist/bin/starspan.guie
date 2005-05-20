@@ -10,7 +10,7 @@
   <group name="StarSpan" prefix="starspan"  description="" axis="tabbed" >
 
 	<!-- Primary inputs -->
-	<group axis="vertical" name="Inputs" label="Primary inputs" >
+	<group axis="vertical" name="Inputs" label="Inputs" >
 		<tip> <html>
 			<table border="2">
 			<br>Specify the primary inputs for StarsPan</br>
@@ -192,7 +192,7 @@
 					</table>
 				</html> </tip>
 				
-				<filename name="csv-file"  prefix="--csv"  label="CSV file"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
+				<filename name="csv-file"  prefix="--csv"  label="File"  width="40"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
 					<tip> <html>
 						   Specify the output <b>csv</b> file to be created
 					</html> </tip>
@@ -211,7 +211,7 @@
 					</table>
 				</html> </tip>
 				
-				<filename name="update-csv-file"  prefix="--update-csv"  label="Existing CSV file"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
+				<filename name="update-csv-file"  prefix="--update-csv"  label="Existing file"  width="40"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
 					<tip> <html>
 						   Specify the existing <b>csv</b> file.
 					</html> </tip>
@@ -229,7 +229,7 @@
 					</table>
 				</html> </tip>
 				
-				<filename name="envi-file"  prefix="--envi"  label="Prefix"  width="40"  initialValue=""  fileext=""  filedescription=""  >
+				<filename name="envi-file"  prefix="--envi"  label="Filename prefix"  width="40"  initialValue=""  fileext=""  filedescription=""  >
 					<tip> <html>
 						   Prefix for names of files .img and .hdr to be created 
 					</html> </tip>
@@ -244,7 +244,7 @@
 					</table>
 				</html> </tip>
 				
-				<filename name="envisl-file"  prefix="--envisl"  label="Prefix"  width="40"  initialValue=""  fileext=""  filedescription=""  >
+				<filename name="envisl-file"  prefix="--envisl"  label="Filename prefix"  width="40"  initialValue=""  fileext=""  filedescription=""  >
 					<tip> <html>
 						   Prefix for names of files .img and .hdr to be created 
 					</html> </tip>
@@ -258,8 +258,7 @@
 		<group axis="vertical" name="Stats"   tip="Stats and summaries" >
 			
 			<group axis="vertical" name="Stats" label="Stats generation" prefix="--stats" underline="true" check="true">
-				<group>
-				<filename name="stats-file"  label="Stats file"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
+				<filename name="stats-file"  label="Stats file"  width="40"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
 					<tip> <html>
 						   Specify the output <b>csv</b> file to be created
 					</html> </tip>
@@ -272,7 +271,6 @@
 					<option value="min" description="min" />
 					<option value="max" description="max" />
 			   </choice>
-			   </group>
 			</group>
 			
 			<!-- count by class -->
@@ -283,7 +281,7 @@
 					</table>
 				</html> </tip>
 				
-				<filename name="count-by-class-file"  label="File"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
+				<filename name="count-by-class-file"  label="File"  width="40"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
 					<tip> <html>
 						   Specify the output <b>csv</b> file to be created
 					</html> </tip>
@@ -336,29 +334,26 @@
 		
 		<!-- calibration commands -->
 		<group axis="vertical" name="Calibration" prefix="--calbase" label="Calbase generation" tip="Calbase generation" underline="true" check="true">
+			<string  name="linkname" label="Link" width="6">
+				<tip> <html>
+					<p>Name of field to be used as link between myspeclib.csv and vector V (e.g. Cal_ID).</p>
+				</html> </tip>
+			</string>
 	
-			<group axis="vertical" >
-				<string  name="linkname" label="Link" width="6">
-					<tip> <html>
-						<p>Name of field to be used as link between myspeclib.csv and vector V (e.g. Cal_ID).</p>
-					</html> </tip>
-				</string>
-		
-				<filename name="calbase-file"  label="File"  width="20"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
-					<tip> <html>
-						<br>Specify the output <b>csv</b> file to be created containing</br>
-						<br>paired field-image values for each band in the rasters.</br>
-					</html> </tip>
-				</filename>
-	
-				<choice multiple="true" axis="horizontal" required="false" name="stats-which" label="Desired stats" tip="Specify the stats you want to compute">
-					<option value="avg" description="average" />
-					<option value="mode" description="mode" />
-					<option value="stdev" description="std deviation" />
-					<option value="min" description="min" />
-					<option value="max" description="max" />
-			   </choice>
-			</group>		
+			<filename name="calbase-file"  label="File"  width="40"  initialValue=""  fileext=".csv"  filedescription="CSV file"  >
+				<tip> <html>
+					<br>Specify the output <b>csv</b> file to be created containing</br>
+					<br>paired field-image values for each band in the rasters.</br>
+				</html> </tip>
+			</filename>
+
+			<choice multiple="true" axis="horizontal" required="false" name="stats-which" label="Desired stats" tip="Specify the stats you want to compute">
+				<option value="avg" description="average" />
+				<option value="mode" description="mode" />
+				<option value="stdev" description="std deviation" />
+				<option value="min" description="min" />
+				<option value="max" description="max" />
+		   </choice>
 		</group>
 
 		<!-- miscelaneous commands -->
