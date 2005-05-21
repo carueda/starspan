@@ -6,6 +6,8 @@ $Id$
 	PATH in starspan{.in} was not set to include GDAL and GEOS's bin/
 	directories. Fixed.
 	
+	todo: check proper environment to run tests 
+	
 2005-04-28 (0.993)
 	Hack in starspan_myErrorHandler (starspan_util.cc) as a workaround
 	in current GDAL code which doesn't implement SetScale/SetOffset 
