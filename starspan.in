@@ -6,11 +6,14 @@
 
 BINDIR=`dirname $0`
 
-# The proper starspan binary:
+# The proper StarSpan binary:
 STARSPAN2=$BINDIR/starspan2
 
 export LD_LIBRARY_PATH=@GDAL_PREFIX@/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=@GEOS_PREFIX@/lib:$LD_LIBRARY_PATH
+
+# mainly for --run command
+export PATH=@GDAL_PREFIX@/bin:@GEOS_PREFIX@/bin:$PATH
 
 # $JARS: the following jars should be present under this directory:
 #
@@ -54,7 +57,7 @@ starspan extended usage:
 
     starspan --run cmd args ...
         Runs a command under the same environment as that of the
-		actual starspan executable.
+		StarSpan system.
         E.g.  starspan --run ogrinfo -al a_vector_file 
 
 EOF
