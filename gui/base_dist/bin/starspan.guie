@@ -364,18 +364,19 @@
 		</group>
 			
 	</group>
-  
-	<group name="Help"  required="false" tip="Help" axis="tabbed"> 
+
+	<group name="Help"  required="false" tip="Help" axis="tabbed">
+	
 		<group name="StarSpan"  required="false" tip="Help message given by command-line program" 
 		 label="Help message given by command line: starspan --help">
-			<string style="textarea" width="35" height="12">
+			<string style="textarea" width="500" height="200">
 				<description>
 					<system>starspan --help</system>
 				</description> 
 			</string>
 		</group>
 		<group name="GUI"  required="false" tip="About this GUI">
-			<string style="textarea">
+			<string style="textarea" width="500" height="200">
 				<description>
 					<html>
 						<b>About this GUI</b>  
@@ -394,7 +395,7 @@
 			</string>
 		</group>
 	</group>
-	
+
   </group>
 </cmdlinespec>
 
