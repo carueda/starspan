@@ -47,11 +47,10 @@ static void usage(const char* msg) {
 		"USAGE:\n"
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
-		"      --raster <filenames>...\n"
 		"      --vector <filename>\n"
+		"      --raster {<filenames>... | @fieldname}\n"
 		"      --speclib <filename>\n"
 		"      --update-csv <filename>\n"
-		"      --raster_field <name>\n"
 		"      --raster_directory <directory>\n"
 		"      --csv <name>\n"
 		"      --envi <name>\n"
@@ -73,7 +72,7 @@ static void usage(const char* msg) {
 		"      --skip_invalid_polys \n"
 		"      --nodata <value> \n"
 		"      --buffer <distance> [<quadrantSegments>] \n"
-		"      --RID_as_given \n"
+		"      --RID {file | path | none}\n"
 		"      --progress [<value>] \n"
 		"      --report \n"
 		"      --verbose \n"
@@ -108,7 +107,7 @@ int main(int argc, char ** argv) {
 	globalOptions.noColRow = false;
 	globalOptions.noXY = false;
 	globalOptions.only_in_feature = false;
-	globalOptions.RID_as_given = false;
+	globalOptions.RID = "file";
 	globalOptions.report_summary = true;
 	globalOptions.nodata = 0.0;
 	globalOptions.bufferParams.given = false;
@@ -159,12 +158,20 @@ int main(int argc, char ** argv) {
 				usage("--vector specified twice");
 			vector_filename = argv[i];
 		}
+		
 		else if ( 0==strcmp("--raster", argv[i]) ) {
 			while ( ++i < argc && argv[i][0] != '-' ) {
-				raster_filenames.push_back(argv[i]);
+				const char* raster_filename = argv[i];
+				raster_filenames.push_back(raster_filename);
+				// check for field indication:
+				if ( raster_filename[0] == '@' )
+					raster_field_name = raster_filename + 1;
+				
+				if ( raster_field_name && raster_filenames.size() > 1 ) 
+					usage("--raster: only one element when indicating a @field");
 			}
 			if ( raster_filenames.size() == 0 )
-				usage("--raster: which raster files?");
+				usage("--raster: which raster files or @field indicator?");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
@@ -207,12 +214,6 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--csv: which name?");
 			csv_name = argv[i];
-		}
-		
-		else if ( 0==strcmp("--raster_field", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("--raster_field: which field name?");
-			raster_field_name = argv[i];
 		}
 		
 		else if ( 0==strcmp("--raster_directory", argv[i]) ) {
@@ -352,8 +353,13 @@ int main(int argc, char ** argv) {
 			globalOptions.only_in_feature = true;
 		}
 		
-		else if ( 0==strcmp("--RID_as_given", argv[i]) ) {
-			globalOptions.RID_as_given = true;
+		else if ( 0==strcmp("--RID", argv[i]) ) {
+			globalOptions.RID = argv[i];
+			if ( globalOptions.RID != "file"
+			&&   globalOptions.RID != "path"
+			&&   globalOptions.RID != "none" ) {
+				usage("--RID: expecting one of: file, path, none");
+			}
 		}
 		
 		else if ( 0==strcmp("--progress", argv[i]) ) {
@@ -397,17 +403,25 @@ int main(int argc, char ** argv) {
 
 	int res = 0;
 	
+	
+	// preliminary checks:
+	if ( raster_field_name && !csv_name ) {
+		usage("--csv command expected (as this is the only command\n"
+			"that currently processes the --raster @fieldname specification)"
+		);
+	}
+	
 	//
-	// dispatch commands that don't follow traverser pattern:
+	// dispatch commands with special processing:
 	//
 	if ( csv_name ) { 
 		if ( !vector_filename ) {
 			usage("--csv expects a vector input (use --vector)");
 		}
-		if ( raster_field_name && raster_filenames.size() > 0 ) {
-			usage("Only one of --raster_field or --raster please");
-		}
 		if ( raster_field_name ) {
+			if ( globalOptions.verbose ) {
+				cout<< "--csv: using field for raster input: " <<raster_field_name<< endl; 
+			}
 			res = starspan_csv_raster_field(
 				vector_filename,  
 				raster_field_name,
@@ -461,7 +475,7 @@ int main(int argc, char ** argv) {
 	}
 	else {
 		//
-		// traverser-based commands
+		// Dispatch commands with direct traverser-based mechanism.
 		//
 		
 		// the traverser object	

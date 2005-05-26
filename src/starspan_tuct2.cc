@@ -53,7 +53,10 @@ int starspan_tuct_2(
 	//
 	// write header:
 	//
-	calbase_file<< "FID," <<link_name<< ",RID,BandNumber,FieldBandValue";
+	calbase_file<< "FID," <<link_name;
+	if ( globalOptions.RID != "none" )
+		calbase_file<< ",RID";
+	calbase_file<< ",BandNumber,FieldBandValue";
 	for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 		calbase_file<< "," << *stat << "_ImageBandValue";
 	}
@@ -66,13 +69,15 @@ int starspan_tuct_2(
 		const char* raster_filename = raster_filenames[i];
 		Raster* rast = new Raster(raster_filename);
 		string RID(raster_filename);
-		if ( !globalOptions.RID_as_given ) {
+		if ( globalOptions.RID == "file" ) {
 			// simplify
 			size_t idx = RID.find_last_of("/:\\");
 			if ( idx != RID.npos ) {
 				RID.erase(0, idx+1);
 			}
 		}
+		// but RID will be used only if globalOptions.RID != "none".
+
 
 		int bands;
 		rast->getSize(NULL, NULL, &bands);
@@ -135,13 +140,12 @@ int starspan_tuct_2(
 						double fieldBandValue = atof(csv.getfield(bandNumber).c_str());
 
 						// write record
-						calbase_file 
-							<< FID             <<","
-							<< link_val        <<","
-							<< RID             <<","
-							<< bandNumber      <<","
-							<< fieldBandValue
-						;
+						calbase_file <<FID<< "," <<link_val<< "," ;
+						
+						if ( globalOptions.RID != "none" )
+							calbase_file <<RID<< ",";
+						
+						calbase_file <<bandNumber<< "," <<fieldBandValue ;
 						
 						for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 							double imageBandValue = 0.0;

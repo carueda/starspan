@@ -57,9 +57,12 @@ struct GlobalOptions {
 
 	bool only_in_feature;
 	
-	/** Make RID exactly as given in command line? 
-	  * If not, the simple filename is set as RID. */
-	bool RID_as_given;
+	/** Style for RID values in output.
+	  * "file" : the simple filename without path 
+	  * "path" : exactly as obtained from command line or field in vector 
+	  * "none" : no RID is included in output
+	  */
+	string RID;
 	
 	bool report_summary;
 	

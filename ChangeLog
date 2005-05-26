@@ -6,6 +6,13 @@ $Id$
 	Version set to 0.994
 	Some minor documentation updates.
 	
+	Removed: --RID_as_given
+	Added: --RID {file | path | none}
+		Style for RID values in output.
+			file : the simple filename without path 
+			path : exactly as obtained from command line or field in vector 
+			none : no RID is included in output
+	
 2005-05-21 (0.994)
 	PATH in starspan{.in} was not set to include GDAL and GEOS's bin/
 	directories. Fixed.
