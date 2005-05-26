@@ -1,16 +1,29 @@
-starspan news
+StarSpan news
 $Id$
 
-2005-03-23 (0.962beta)
-	New option --count-by-class
-	
-2005-02-26 (0.961beta)                  
-	Added option --separation <num-pixels> to include a	separation
-	between minirasters in strip. Feature request #200074.
-	
-	--report now also shows projection info for rasters.
-	
-2005-02-17 (0.94beta)
-	--mini_raster_strip implemented
-	
+# (5/19/05)
+An experimental GUI for StarSpan has been released.
 
+# (4/28/05)
+Significant improvements in polygon rasterization which
+makes this operation to run several times faster.
+
+# (4/8/05)
+Installation is now based on ``./configure; make; make
+install'' scheme.
+
+# (3/23/05)
+New --count-by-class command
+
+# (2/19/05)
+Option --buffer updated.
+New option --mini_raster_parity.
+Option --mr renamed to --mini_rasters.
+
+# (2/16/05)
+--mini_raster_strip implemented (0.94beta)
+
+# (2/4/05)
+Added option --nodata.
+Added a preliminary scheme for auto-tests.
+New --buffer option.

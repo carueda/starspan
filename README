@@ -1,30 +1,36 @@
-STARSPAN Readme
+StarSpan Readme
 
-About starspan 
--------------- 
-starspan is designed to bridge the raster and vector worlds of spatial
-analysis using fast algorithms for pixel level extraction from point
-and polygon data. The main purpose of starspan is to generate
-databases of pixel values (from one or a set of raster images) falling
-within points or polygons, and fusing them with the database
-attributes from the vector files. This allows a user to do statistical
-analysis of the pixel vs attribute data in any existing statistical
-package (the output of starspan is a CSV file) and can greatly speed
-up classification training and testing using many image analysis
-packages (e.g. ENVI, Imagine, PCI) by focusing the classification on
-only pixels with known attributes, not the entire image.
+StarSpan is designed to bridge the raster and vector worlds of spatial
+analysis using fast algorithms for pixel level extraction from
+geometry features (points, lines, polygons). StarSpan generates
+databases of extracted pixel values (from one or a set of raster
+images), fused with the database attributes from the vector files.
+This allows a user to do statistical analysis of the pixel vs.
+attribute data in many existing packages and can greatly speed up
+classification training and testing. See the documentation for more
+details about commands, operations, and options.
 
+This development has been possible thanks to California State
+Department of Boating and Waterways.
 
-Installing starspan
+StarSpan runs on any Unix flavor (including MacOs X and Windows via
+Cygwin) although it has been mainly tested on Linux and MacOS X.
+StarSpan's core program is run from the command line. An experimental
+Java-based graphical user interface (GUI) is also available.
+
+Installing StarSpan
 -------------------
-starspan requires the GDAL and GEOS libraries properly installed on 
+StarSpan requires the GDAL and GEOS libraries properly installed on 
 your system. For more details, see INSTALL.
 
-Status and documentation
-------------------------
+Status and documentation 
+------------------------ 
+This is an open source software project and you are welcome to use the
+tool and contribute to this ongoing project. Please read the copyright
+agreement (copyright.txt). We encourage feature requests and bug
+reports, and these can be posted on the gforge website at:
+http://casil.ucdavis.edu/projects/starspan/ 
 The main website is located at: http://starspan.casil.ucdavis.edu/
-Feature requests and bug reports can be posted on the gforge website
-at: http://casil.ucdavis.edu/projects/starspan/
 
 
 --------------------------------------------------------
