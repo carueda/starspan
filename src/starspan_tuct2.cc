@@ -70,11 +70,7 @@ int starspan_tuct_2(
 		Raster* rast = new Raster(raster_filename);
 		string RID(raster_filename);
 		if ( globalOptions.RID == "file" ) {
-			// simplify
-			size_t idx = RID.find_last_of("/:\\");
-			if ( idx != RID.npos ) {
-				RID.erase(0, idx+1);
-			}
+			starspan_simplify_filename(RID);
 		}
 		// but RID will be used only if globalOptions.RID != "none".
 

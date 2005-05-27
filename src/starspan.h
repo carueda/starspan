@@ -408,6 +408,14 @@ inline void starspan_extract_string_value(GDALDataType bandType, char* ptr, char
 }
 
 
+/** gets rid of a possible path in the name. */
+inline void starspan_simplify_filename(string& filename) {
+	size_t idx = filename.find_last_of("/:\\");
+	if ( idx != filename.npos ) {
+		filename.erase(0, idx+1);
+	}
+}
+
 
 #endif
 
