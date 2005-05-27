@@ -139,7 +139,7 @@ int main(int argc, char ** argv) {
 	const char* calbase_filename = 0;
 	
 	const char* raster_field_name = 0;
-	const char* raster_directory = ".";
+	const char* raster_directory = 0;
 
 	const char* dump_geometries_filename = NULL;
 	
@@ -175,6 +175,12 @@ int main(int argc, char ** argv) {
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
+		else if ( 0==strcmp("--raster_directory", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--raster_directory: which raster directory?");
+			raster_directory = argv[i];
+		}
+		
 		else if ( 0==strcmp("--speclib", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--speclib: which CSV file?");
@@ -214,12 +220,6 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--csv: which name?");
 			csv_name = argv[i];
-		}
-		
-		else if ( 0==strcmp("--raster_directory", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
-				usage("--raster_directory: which raster directory?");
-			raster_directory = argv[i];
 		}
 		
 		else if ( 0==strcmp("--stats", argv[i]) ) {
@@ -410,6 +410,9 @@ int main(int argc, char ** argv) {
 			"that currently processes the --raster @fieldname specification)"
 		);
 	}
+	if ( !raster_field_name && raster_directory ) {
+		usage("--raster_directory is only used with --raster @field");
+	}
 	
 	//
 	// dispatch commands with special processing:
@@ -422,6 +425,9 @@ int main(int argc, char ** argv) {
 			if ( globalOptions.verbose ) {
 				cout<< "--csv: using field for raster input: " <<raster_field_name<< endl; 
 			}
+			if ( !raster_directory )
+				raster_directory = ".";
+			
 			res = starspan_csv_raster_field(
 				vector_filename,  
 				raster_field_name,
