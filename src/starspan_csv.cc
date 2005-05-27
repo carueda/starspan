@@ -23,6 +23,7 @@ public:
 	OGRFeature* currentFeature;
 	vector<const char*>* select_fields;
 	const char* raster_filename;
+	string RID;  //  will be used only if globalOptions.RID != "none".
 	bool write_header;
 	FILE* file;
 	
@@ -43,7 +44,7 @@ public:
 	/**
 	  * If write_header is true, it creates first line with 
 	  * column headers:
-	  *    FID, fields-from-feature, [col,row,] [x,y,] RID, bands-from-raster
+	  *    FID, fields-from-feature, [col,row,] [x,y,] [RID,] bands-from-raster
 	  */
 	void init(GlobalInfo& info) {
 		global_info = &info;
@@ -74,8 +75,9 @@ public:
 				}
 			}
 			
-			// RID field header
-			fprintf(file, ",RID");
+			// RID column, if to be included
+			if ( globalOptions.RID != "none" )
+				fprintf(file, ",RID");
 			
 			// Create (col,row) fields, if so indicated
 			if ( !globalOptions.noColRow ) {
@@ -98,6 +100,12 @@ public:
 		}
 		
 		currentFeature = NULL;
+		if ( globalOptions.RID != "none" ) {
+			RID = raster_filename;
+			if ( globalOptions.RID == "file" ) {
+				starspan_simplify_filename(RID);
+			}
+		}
 	}
 	
 
@@ -152,7 +160,9 @@ public:
 		}
 
 		// add RID field
-		fprintf(file, ",%s", raster_filename);
+		if ( globalOptions.RID != "none" ) {
+			fprintf(file, ",%s", RID.c_str());
+		}
 		
 		
 		// add (col,row) fields

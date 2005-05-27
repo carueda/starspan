@@ -12,6 +12,8 @@ $Id$
 			file : the simple filename without path 
 			path : exactly as obtained from command line or field in vector 
 			none : no RID is included in output
+			
+	Updated: --csv now processing --RID
 	
 2005-05-21 (0.994)
 	PATH in starspan{.in} was not set to include GDAL and GEOS's bin/
