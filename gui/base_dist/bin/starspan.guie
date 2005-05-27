@@ -25,8 +25,17 @@
 		
 		<filename name="raster-files" required="false" prefix="--raster" label="Raster files" filemultiselection="true"  width="40"  height="4" initialValue=""  fileext=""  filedescription="All files"  underline="true">
 			<tip> <html>
-				<p>Specify the input raster files.</p>
-				<p>You can select multiple files</p>
+				<p>Specify the input raster files. You can select multiple files.</p>
+				<p>For some commands, you can specify the name of the attribute in the</p>
+				<p>vector datasource that gives the name of the raster to be processed.</p>
+				<p>In that case, use @ to indicate that attribute name, e.g., @imagename.</p>
+			</html> </tip>
+		</filename>
+		
+		<filename name="raster-directory"  required="false" prefix="--raster_directory" label="Raster directory"  width="35"  initialValue=""  fileext=""  filedescription="Directories"  fileselectionmode="directories-only" underline="true">
+			<tip> <html>
+				<p>Directory in which to find the raster files whose names are given</p>
+				<p>by a vector attribute specified by the indicator @ in the previous field.</p>
 			</html> </tip>
 		</filename>
 		
@@ -125,15 +134,20 @@
 					<br>all fields from vector will be extracted.</br>
 				</html> </tip>
 			</string>
-	
-			<flag name="RID-as-given" required="false" prefix="--RID_as_given" label="Raster ID as given?" underline="true">
+
+			<choice name="RID" required="false" prefix="--RID" label="RID" underline="true">
 				<tip> <html>
-					<p>Certain output commands include a field RID to identify the raster
-					<br>where pixel data are extracted from. By default, each RID is just the</br>
-					<br>raster filename without any path. With this option, the RID will be</br>
-					<br>exactly as given in the command line.</br></p>
+					<p>Certain output commands (--csv, --calbase) include a field RID to</p>
+					<p>identify the raster file from which pixel data are extracted. By</p>
+					<p>default, each RID is just the raster filename without any path. With</p>
+					<p>this option you can specify how to include this info in the output</p>
 				</html> </tip>
-			</flag>
+
+				<option value="" description="--specify if desired--" />
+				<option value="file" description="Include just simple name" />
+				<option value="path" description="Include given path" />
+				<option value="none" description="Do no include any value" />
+			</choice>
 			
 		</group>
 		

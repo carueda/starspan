@@ -47,6 +47,9 @@ Status:
 Change log
 ----------
 
+05/26/05
+	starspan.guie updates according to changes in core 0.994.
+	
 05/19/05 
 	First implementation. Already functional but needs to be completed
 	perhaps involving changes is the core system itself.
