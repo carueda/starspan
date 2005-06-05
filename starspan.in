@@ -73,30 +73,29 @@ elif [ "$1" == "--view_geometries" ]; then
 	shift
 	CP=$CLASSPATH
 	CP=$JARS/plotapplication.jar:$CP
-	java -Xmx256m -cp $CP ptolemy.plot.PlotApplication $*
+	java -Xmx256m -cp "$CP" ptolemy.plot.PlotApplication "$@"
 
 elif [ "$1" == "--test" ]; then
 	echo "[Launching JTS TopologyTestApp...]"
 	shift
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
-	java -Xmx256m -cp $CP com.vividsolutions.jtstest.testrunner.TopologyTestApp $*
+	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testrunner.TopologyTestApp "$@"
 
 elif [ "$1" == "--jts" ]; then
 	echo "[Launching JTSTestBuilder...]"
 	shift
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
-	java -Xmx256m -cp $CP com.vividsolutions.jtstest.testbuilder.JTSTestBuilder $*
+	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testbuilder.JTSTestBuilder "$@"
 
 elif [ "$1" == "--run" ]; then
 	shift
-	cmd=$*
-	echo "[Running $cmd]"
-	$cmd
+	echo "[Running " "$@" "]"
+	"$@"
 
 else
 	# call starspan2
-	$STARSPAN2 $*
+	$STARSPAN2 "$@"
 fi
 

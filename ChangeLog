@@ -2,6 +2,12 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-06-05 (0.994)
+	starspan.in: Fixed calls using the list of passed arguments; now
+	"$@" is used instead $*, which was wrong particularly to deal
+	with arguments containing spaces. Note also that just $@ 
+	(without the double quotes) won't work either.
+	
 2005-05-26 (0.994)
 	Version set to 0.994
 	Some minor documentation updates.
