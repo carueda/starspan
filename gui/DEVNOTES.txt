@@ -2,17 +2,17 @@ StarSpan GUI DEVNOTES
 Carlos A. Rueda
 $Id$
 
-This is an implementation of a GUI for StarSpan based on the GUIE tool.
-GUIE provides a graphical user interface to command-line, non-interactive 
-programs. Basically, this directory contains the GUIE specification 
-starspan.guie required by GUIE, and a mechanism based on Izpack to
+This is an implementation of a GUI for StarSpan based on the GuiE tool.
+GuiE provides a graphical user interface to command-line, non-interactive 
+programs. Basically, this directory contains the GuiE specification 
+starspan.guie required by GuiE, and a mechanism based on Izpack to
 create a tailored installer. There are no dependencies on any of the
 starspan core system. The only dependency will occur at run time when 
 the user executes the command line from within the GUI; at that moment
-the GUIE system will call the executable `starspan.'
+the GuiE system will call the executable `starspan.'
 
 Prerequisites
-	The GUIE jars: guie.jar and nanoxml.jar.
+	The GuiE jars: guie.jar and nanoxml.jar.
 	More info at: http://rtm.casil.ucdavis.edu/
 	
 	IzPack is used to create the installer.
@@ -41,12 +41,15 @@ Running:
 	windows.
 	
 Status:
-	Since GUIE is still experimental... you get the idea.
+	Since GuiE is still experimental... you get the idea.
 
 	
 Change log
 ----------
 
+06/06/05
+	starspan.guie rewritten according to new GuiE spec.
+	
 05/26/05
 	starspan.guie updates according to changes in core 0.994.
 	
