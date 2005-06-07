@@ -2,6 +2,10 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-06-06 (0.994)
+	- Added option --show-fields
+	- Elapsed time reported only if --verbose is given
+	
 2005-06-05 (0.994)
 	starspan.in: Fixed calls using the list of passed arguments; now
 	"$@" is used instead $*, which was wrong particularly to deal

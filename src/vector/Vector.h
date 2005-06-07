@@ -38,6 +38,9 @@ public:
 	// for debugging
 	void report(FILE* file);
 	
+	// report
+	void showFields(FILE* file);
+	
 private:
 	OGRDataSource* poDS;
 };

@@ -117,5 +117,22 @@ void Vector::report(FILE* file) {
 	}
 }
 
+void Vector::showFields(FILE* file) {
+	for( int iLayer = 0; iLayer < poDS->GetLayerCount(); iLayer++ ) {
+		OGRLayer* poLayer = poDS->GetLayer(iLayer);
+		if( poLayer == NULL ) {
+			fprintf(file, "FAILURE: Couldn't fetch advertised layer %d!\n", iLayer);
+			exit(1);
+		}
+		OGRFeatureDefn* poDefn = poLayer->GetLayerDefn();
+		for( int iAttr = 0; iAttr < poDefn->GetFieldCount(); iAttr++ ) {
+			OGRFieldDefn* poField = poDefn->GetFieldDefn( iAttr );
+			fprintf(file, "%s\n",
+				poField->GetNameRef()
+			);
+		}
+	}
+}
+
 
 

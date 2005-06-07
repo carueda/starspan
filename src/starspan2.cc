@@ -74,6 +74,7 @@ static void usage(const char* msg) {
 		"      --buffer <distance> [<quadrantSegments>] \n"
 		"      --RID {file | path | none}\n"
 		"      --progress [<value>] \n"
+		"      --show-fields \n"
 		"      --report \n"
 		"      --verbose \n"
 		"      --version\n"
@@ -116,8 +117,9 @@ int main(int argc, char ** argv) {
 	globalOptions.mini_raster_separation = 0;
 	
 	
-	bool report_elapsed_time = true;
+	bool report_elapsed_time = false;
 	bool do_report = false;
+	bool show_fields = false;
 	const char*  envi_name = NULL;
 	bool envi_image = true;
 	vector<const char*>* select_fields = NULL;
@@ -274,6 +276,9 @@ int main(int argc, char ** argv) {
 		else if ( 0==strcmp("--report", argv[i]) ) {
 			do_report = true;
 		}
+		else if ( 0==strcmp("--show-fields", argv[i]) ) {
+			show_fields = true;
+		}
 		
 		//
 		// OPTIONS
@@ -370,6 +375,7 @@ int main(int argc, char ** argv) {
 		
 		else if ( 0==strcmp("--verbose", argv[i]) ) {
 			globalOptions.verbose = true;
+			report_elapsed_time = true;
 		}
 		
 		else if ( 0==strcmp("--srs", argv[i]) ) {
@@ -584,6 +590,12 @@ int main(int argc, char ** argv) {
 				usage("--report: Please give at least one input file to report\n");
 			}
 			starspan_report(tr);
+		}
+		if ( show_fields ) {
+			if ( !tr.getVector() ) {
+				usage("--show-fields: Please provide the vector datasource\n");
+			}
+			tr.getVector()->showFields(stdout);
 		}
 		
 		//
