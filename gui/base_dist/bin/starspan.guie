@@ -15,8 +15,7 @@
 		<gui panel.axis="tabbed"/>
 		<choice numsel="+" name="Inputs">
 			<file id="V" prefix="--vector" name="Vector file">
-				<gui value="/home/carueda/cstars/prj/starspan/tests/data/vector/starspan_testln.shp" 
-				tip.text="Specify the input vector file" description="Vector files">
+				<gui tip.text="Specify the input vector file" description="Vector files">
 					<button name="View" action="view" tip.text="View general info about the file">
 						<view contents="`starspan --vector ${V} --report`" rows="20" cols="60"/>
 					</button>

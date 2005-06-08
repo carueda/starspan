@@ -47,9 +47,17 @@ Status:
 Change log
 ----------
 
-06/07/05
-	starspan.guie rewritten according to new GuiE spec.
-	A splash screen is now displayed.
+06/07/05 (version 0.1.2)
+
+	- starspan.guie rewritten according to new GuiE spec.
+	  A splash screen is now displayed.
+	
+	- New demonstration applet (based on new GuiE functionality).
+	  To prepare and upload applet files:
+	  	ant applet   # copies supporting files to applet/
+		scp -r applet/  crueda@casil.ucdavis.edu:/home/groups/starspan/htdocs/
+	  To test:
+	    mozilla http://starspan.casil.ucdavis.edu/applet/
 	
 05/26/05
 	starspan.guie updates according to changes in core 0.994.
