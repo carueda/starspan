@@ -3,7 +3,7 @@
 <guie>
 
 <gui>
-	<frame title="StarSpan" x="250" y="50" />
+	<frame title="StarSpan" splash="splash.png" x="250" y="50"/>
 	<panel axis="vertical"/>
 	<real width="6"/>
 	<integer width="6"/>
@@ -15,9 +15,10 @@
 		<gui panel.axis="tabbed"/>
 		<choice numsel="+" name="Inputs">
 			<file id="V" prefix="--vector" name="Vector file">
-				<gui tip.text="Specify the input vector file" description="Vector files">
+				<gui value="/home/carueda/cstars/prj/starspan/tests/data/vector/starspan_testln.shp" 
+				tip.text="Specify the input vector file" description="Vector files">
 					<button name="View" action="view" tip.text="View general info about the file">
-						<view contents="`starspan --vector ${V} --report`"/>
+						<view contents="`starspan --vector ${V} --report`" rows="20" cols="60"/>
 					</button>
 				</gui>
 			</file>
@@ -32,7 +33,7 @@
 						</html>
 					</tip>
 					<button name="View" action="view"  tip.text="View general info about the file">
-						<view contents="`starspan --raster ${R} --report`"/>
+						<view contents="`starspan --raster ${R} --report`" rows="20" cols="60"/>
 					</button>
 				</gui>
 			</file>
@@ -121,7 +122,7 @@
 				</gui>
 			</string>
 			<string prefix="--fields" name="Desired fields">
-				<gui width="16">
+				<gui width="30">
 					<tip text="@">
 						<html>
 						<p>Only the specified fields will be transferred from vector input to the output.</p>

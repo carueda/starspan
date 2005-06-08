@@ -47,8 +47,9 @@ Status:
 Change log
 ----------
 
-06/06/05
+06/07/05
 	starspan.guie rewritten according to new GuiE spec.
+	A splash screen is now displayed.
 	
 05/26/05
 	starspan.guie updates according to changes in core 0.994.
