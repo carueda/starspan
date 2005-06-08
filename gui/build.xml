@@ -21,7 +21,6 @@
 			<fileset dir="base_dist"/> 
 		</copy>
 		<copy file="${guie}" todir="${dist}/base_dist/bin"/>
-		<copy file="${nanoxml}" todir="${dist}/base_dist/bin"/>
 		<copy file="copyright.txt" todir="${dist}/base_dist/doc"/>
 		<copy file="izshortcut.xml" todir="${dist}/base_dist/lib"/>
 	</target>

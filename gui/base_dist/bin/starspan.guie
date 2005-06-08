@@ -7,7 +7,7 @@
 	<panel axis="vertical"/>
 	<real width="6"/>
 	<integer width="6"/>
-	<file width="30"/>
+	<file width="40"/>
 </gui>
 
 <cldef>
@@ -15,16 +15,25 @@
 		<gui panel.axis="tabbed"/>
 		<choice numsel="+" name="Inputs">
 			<file id="V" prefix="--vector" name="Vector file">
-				<gui tip.text="Specify the input vector file" description="Vector files"/>
+				<gui tip.text="Specify the input vector file" description="Vector files">
+					<button name="View" action="view" tip.text="View general info about the file">
+						<view contents="`starspan --vector ${V} --report`"/>
+					</button>
+				</gui>
 			</file>
-			<file prefix="--raster" name="Raster files">
-				<gui height="4" multi="true" description="Raster files" tip.text="@">
-					<html>
-					<p>Specify the input raster files. You can select multiple files.</p>
-					<p>For some commands, you can specify the name of the attribute in the</p>
-					<p>vector datasource that gives the name of the raster to be processed.</p>
-					<p>In that case, use @ to indicate that attribute name, e.g., @imagename.</p>
-					</html>
+			<file id="R" prefix="--raster" name="Raster files">
+				<gui height="4" multi="true" description="Raster files">
+					<tip text="@">
+						<html>
+						<p>Specify the input raster files. You can select multiple files.</p>
+						<p>For some commands, you can specify the name of the attribute in the</p>
+						<p>vector datasource that gives the name of the raster to be processed.</p>
+						<p>In that case, use @ to indicate that attribute name, e.g., @imagename.</p>
+						</html>
+					</tip>
+					<button name="View" action="view"  tip.text="View general info about the file">
+						<view contents="`starspan --raster ${R} --report`"/>
+					</button>
 				</gui>
 			</file>
 			<file prefix="--raster-directory" name="Raster directory">
@@ -362,25 +371,25 @@
 		<!-- An informative group -->
 		<sequence  name="Help" info="yes">
 			<gui panel.axis="tabbed"/>
-			<sequence name="starspan --help">
-				<gui tip.text="Help message given by starspan"/>
+			<sequence name="StarSpan">
+				<gui panel.border="starspan --help" tip.text="Help message given by starspan"/>
 				<string >
-					<gui height="22" width="40" value="`starspan --help`"/>
+					<gui height="22" width="64" value="`starspan --help`"/>
 				</string>
 			</sequence>
 			<sequence name="Raster formats">
 				<gui panel.border="Supported raster formats" tip.text="Supported raster formats"/>
 				<string >
-					<gui height="22" width="40" value="`starspan --run gdalinfo --formats`"/>
+					<gui height="22" width="64" value="`starspan --run gdalinfo --formats`"/>
 				</string>
 			</sequence>
 			<sequence name="Vector formats">
 				<gui panel.border="Supported vector formats" tip.text="Supported vector formats"/>
 				<string >
-					<gui height="22" width="40" value="`starspan --run ogrinfo --formats`"/>
+					<gui height="22" width="64" value="`starspan --run ogrinfo --formats`"/>
 				</string>
 			</sequence>
-			<sequence name="About">
+			<sequence name="GUI">
 				<gui tip.text="About this GUI"/>
 				<string>
 					<gui height="22" width="50" value="@aboutGuiE"/>
