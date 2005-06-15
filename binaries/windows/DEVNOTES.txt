@@ -1,0 +1,47 @@
+Win32 StarSpan DEVNOTES
+Carlos A. Rueda
+$Id$
+
+In this directory we create a binary distribution of StarSpan for Windows.
+
+Prerequisites
+	The GuiE library: guie.jar
+	http://guie.sf.net
+	
+	IzPack is used to create the installer.
+	http://izforge.com/izpack
+	
+	Apache Ant is used to build the system.
+	http://ant.apache.org
+	
+	End users will need a Java Runtime Environment to be able to run
+	the StarSpan GUI.
+
+Build
+	You may need to adjust some values in build.properties according
+	to location of prerequisites in your system.
+	
+	To create the installer: 
+		ant installer
+	The executable takes the name install-starspan-win32-${VERSION}.jar
+	
+	To test the installation:
+		ant install
+		
+Running:
+	After installation on a Windows machine, either use the file browser
+	to run DIR\bin\starspan-gui.bat, where DIR is the installation 
+	directory, or launch the shortcut created by the installer.
+	
+Status:
+	Experimental
+
+	
+Change log
+----------
+
+06/14/05 (version 0.1.0)
+
+	First version. See ../../BUILD.windows.txt
+	
+

@@ -1,0 +1,47 @@
+<!--
+	Build for StarSpan for Windows
+	Carlos A. Rueda
+	$Id$
+-->
+<project name="StarSpan" default="installer" >
+	<!-- load basic properties -->
+	<property file="build.properties"/>
+
+	<!-- Directory to put distribution -->
+	<property name="dist" value="${generated}/DIST"/>
+
+	<target name="init">
+		<tstamp/>
+		<echo message="VERSION = ${VERSION}"/>
+	</target>
+
+	<target name="prepare-inst" depends="init">
+		<delete dir="${dist}/base_dist"/>
+		<copy todir="${dist}/base_dist">
+			<fileset dir="base_dist"/> 
+		</copy>
+		<copy file="${guie}" todir="${dist}/base_dist/bin"/>
+		<copy file="copyright.txt" todir="${dist}/base_dist/doc"/>
+		<copy file="izshortcut.xml" todir="${dist}/base_dist/lib"/>
+	</target>
+
+	<target name="installer"  depends="prepare-inst"
+	 description="Makes an executable installer for StarSpan for Windows">
+		<taskdef name="izpack" classpath="${izdir}/lib/compiler.jar"
+			classname="com.izforge.izpack.ant.IzPackTask"/>
+		<izpack input="izinstall.xml"
+			output="${dist}/install-starspan-win32-${VERSION}.jar"
+			installerType="standard-kunststoff"
+			basedir="${dist}/base_dist"
+			izPackDir="${izdir}/"/>
+	</target>
+
+	<target name="install" description="Launches the installer">
+		<java jar="${dist}/install-starspan-win32-${VERSION}.jar" fork="true"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${generated}"/>
+	</target>
+
+</project>
