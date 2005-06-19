@@ -2,7 +2,10 @@ starspan ChangeLog
 $Id$
                                     
 
-2005-06-18
+2005-06-18 (0.995)
+	STARSPAN_VERSION only needs to be defined in one place: configure.in
+
+2005-06-18 (0.9941 - interim)
 	- CVS: removed generated files; new reconf script;
 	  mksrcdist.sh.in updated to create public distribution.
 	  
