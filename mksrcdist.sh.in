@@ -28,10 +28,13 @@ cvsroot=":ext:crueda@cvs.casil.ucdavis.edu:/cvsroot/starspan"
 (test "$dotag" != "y" || cvs -q tag $tag) &&\
 mkdir -p DISTDIR &&\
 cd DISTDIR &&\
+echo "Exporting $tag..." &&\
 cvs -d$cvsroot -q export -r $tag -d starspan-$VERSION starspan &&\
 cd starspan-$VERSION &&\
+echo "Reconfiguring..." &&\
 ./reconf &&\
 cd .. &&\
+echo "Packaging..." &&\
 tar cf starspan-$VERSION.tar starspan-$VERSION &&\
 gzip -9 starspan-$VERSION.tar &&\
 rm -rf starspan-$VERSION &&\
