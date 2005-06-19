@@ -13,10 +13,11 @@ details about commands, operations, and options.
 This development has been possible thanks to California State
 Department of Boating and Waterways.
 
-StarSpan runs on any Unix flavor (including MacOs X and Windows via
-Cygwin) although it has been mainly tested on Linux and MacOS X.
-StarSpan's core program is run from the command line. An experimental
-Java-based graphical user interface (GUI) is also available.
+StarSpan should compile and run on most Unix flavor (including MacOs X
+and Windows via MinGW) although it has been mainly tested on Linux and
+MacOS X. StarSpan's core program is run from the command line. An
+experimental Java-based graphical user interface (GUI) is also
+available.
 
 Installing StarSpan
 -------------------

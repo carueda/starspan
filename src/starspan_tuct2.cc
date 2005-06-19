@@ -17,7 +17,7 @@
   * implementation
   */
 int starspan_tuct_2(
-	const char* vector_filename,
+	Vector* vect,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
 	const char* link_name,
@@ -38,9 +38,6 @@ int starspan_tuct_2(
 		cerr<< "Couldn't create " << calbase_filename << endl;
 		return 1;
 	}
-
-	// open vector datasource:
-	Vector* vect = new Vector(vector_filename);
 
 	//
 	// Let's get to work
@@ -169,7 +166,6 @@ int starspan_tuct_2(
 		}
 		delete rast;
 	}
-	delete vect;
 
 	calbase_file.close();    
 	speclib_file.close();

@@ -72,7 +72,11 @@ int starspan_tuct_1(
 	}
 
 	// open vector datasource:
-	Vector* vect = new Vector(vector_filename);
+	Vector* vect = Vector::open(vector_filename));
+	if ( !vect ) {
+		fprintf(stderr, "Cannot open %s\n", vector_filename);
+		return 1;
+	}
 
 	//
 	// Let's get to work

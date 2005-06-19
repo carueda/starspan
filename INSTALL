@@ -5,7 +5,7 @@ Software prerequisites
 ----------------------
 The following libraries must be properly installed on your system
 before StarSpan can be compiled and installed:
-    * GEOS 2.1.1 or newer
+    * GEOS 2.1.2 or newer
     * GDAL 1.2.6 or newer
 
 For more details about these prerequisites, visit the StarSpan website
@@ -56,10 +56,10 @@ This option has been tested with version 5.1p2.
 --test
 --jts options:
 These options require:
-xerces.jar
-jts-1.4.0.jar
-jdom.jar
-JTS_Test.jar
-Acme.jar
+     xerces.jar
+     jts-1.4.0.jar
+     jdom.jar
+     JTS_Test.jar
+     Acme.jar
 Which can be downloaded from http://www.vividsolutions.com/jts/jtshome.htm
 This option has been tested with JTS 1.4

@@ -20,8 +20,9 @@ public:
 	// finishes this module
 	static int end(void);
 	
-	// Creates a vector object representing an existing file.
-	Vector(const char* filename);
+	/** Creates a vector object representing an existing file. 
+	  * Returns null if error */
+	static Vector* open(const char* filename);
 	
 	// destroys this vector.
 	~Vector();
@@ -42,6 +43,7 @@ public:
 	void showFields(FILE* file);
 	
 private:
+	Vector(OGRDataSource* ds);
 	OGRDataSource* poDS;
 };
 

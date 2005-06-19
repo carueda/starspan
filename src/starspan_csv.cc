@@ -205,7 +205,7 @@ public:
 // Each raster is processed independently
 //
 int starspan_csv(
-	const char* vector_filename,
+	Vector* vect,
 	vector<const char*> raster_filenames,
 	vector<const char*>* select_fields,
 	const char* csv_filename
@@ -246,14 +246,12 @@ int starspan_csv(
 		new_file = true;
 	}
 
-	Vector vect(vector_filename);
-
-	CSVObserver obs(&vect, select_fields, file);
+	CSVObserver obs(vect, select_fields, file);
 
 	Traverser tr;
 	tr.addObserver(&obs);
 
-	tr.setVector(&vect);
+	tr.setVector(vect);
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
 	if ( globalOptions.FID >= 0 )
@@ -262,7 +260,7 @@ int starspan_csv(
 	if ( globalOptions.progress ) {
 		tr.setProgress(globalOptions.progress_perc, cout);
 		cout << "Number of features: ";
-		long psize = vect.getLayer(0)->GetFeatureCount();
+		long psize = vect->getLayer(0)->GetFeatureCount();
 		if ( psize >= 0 )
 			cout << psize;
 		else

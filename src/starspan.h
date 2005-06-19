@@ -7,6 +7,10 @@
 #ifndef starspan_h
 #define starspan_h
 
+#include "config.h"
+
+#define STARSPAN_VERSION VERSION
+
 #include "common.h"           
 #include "Raster.h"           
 #include "Vector.h"       
@@ -14,8 +18,6 @@
 #include "Stats.h"       
 
 #include <cstdio>
-
-#define STARSPAN_VERSION "0.994"
 
 /////////////////////////////////////////////////////////////////////////////
 // services:
@@ -78,7 +80,7 @@ double** starspan_getFeatureStatsByField(
   *                   selected statistics for BandNumber in RID
   *                   example, avg_ImageBandValue.
   *
-  * @param vector_filename Vector datasource
+  * @param vect Vector datasource
   * @param raster_filenames rasters
   * @param speclib_filename spectral library file name
   * @param link_name Name of field to be used as link vector-speclib
@@ -88,7 +90,7 @@ double** starspan_getFeatureStatsByField(
   * @return 0 iff OK 
   */
 int starspan_tuct_2(
-	const char* vector_filename,
+	Vector* vect,
 	vector<const char*> raster_filenames,
 	const char* speclib_filename,
 	const char* link_name,
@@ -173,7 +175,7 @@ Observer* starspan_getCountByClassObserver(
   *     x,y:          pixel location in geographic coordinates
   *     {rast-bands}: bands from raster RID at corresponding location
   *
-  * @param vector_filename Vector datasource
+  * @param vect Vector datasource
   * @param raster_field_name Name of field containing the raster filename
   * @param raster_directory raster filenames are relative to this directory
   * @param select_fields desired fields from vector
@@ -182,7 +184,7 @@ Observer* starspan_getCountByClassObserver(
   * @return 0 iff OK 
   */
 int starspan_csv_raster_field(
-	const char* vector_filename,
+	Vector* vect,
 	const char* raster_field_name,
 	const char* raster_directory,
 	vector<const char*>* select_fields,
@@ -201,7 +203,7 @@ int starspan_csv_raster_field(
   *     x,y:          pixel location in geographic coordinates
   *     {rast-bands}: bands from raster RID at corresponding location
   *
-  * @param vector_filename Vector datasource
+  * @param vect Vector datasource
   * @param raster_filenames rasters
   * @param select_fields desired fields from vector
   * @param csv_filename output file name
@@ -209,7 +211,7 @@ int starspan_csv_raster_field(
   * @return 0 iff OK 
   */
 int starspan_csv(
-	const char* vector_filename,
+	Vector* vect,
 	vector<const char*> raster_filenames,
 	vector<const char*>* select_fields,
 	const char* csv_filename

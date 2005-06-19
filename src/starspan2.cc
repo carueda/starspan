@@ -409,8 +409,18 @@ int main(int argc, char ** argv) {
 
 	int res = 0;
 	
+	Vector* vect = 0;
 	
 	// preliminary checks:
+	
+	if ( vector_filename ) {
+		vect = Vector::open(vector_filename);
+		if ( !vect ) {
+			fprintf(stderr, "Cannot open %s\n", vector_filename);
+			return 1;
+		}
+	}
+
 	if ( raster_field_name && !csv_name ) {
 		usage("--csv command expected (as this is the only command\n"
 			"that currently processes the --raster @fieldname specification)"
@@ -424,7 +434,7 @@ int main(int argc, char ** argv) {
 	// dispatch commands with special processing:
 	//
 	if ( csv_name ) { 
-		if ( !vector_filename ) {
+		if ( !vect ) {
 			usage("--csv expects a vector input (use --vector)");
 		}
 		if ( raster_field_name ) {
@@ -435,7 +445,7 @@ int main(int argc, char ** argv) {
 				raster_directory = ".";
 			
 			res = starspan_csv_raster_field(
-				vector_filename,  
+				vect,  
 				raster_field_name,
 				raster_directory,
 				select_fields, 
@@ -444,7 +454,7 @@ int main(int argc, char ** argv) {
 		}
 		else if ( raster_filenames.size() > 0 ) {
 			res = starspan_csv(
-				vector_filename,  
+				vect,  
 				raster_filenames,
 				select_fields, 
 				csv_name
@@ -455,7 +465,7 @@ int main(int argc, char ** argv) {
 		}
 	}
 	else if ( calbase_filename ) {
-		if ( !vector_filename ) {
+		if ( !vect ) {
 			usage("--calbase expects a vector input (use --vector)");
 		}
 		if ( raster_filenames.size() == 0 ) {
@@ -465,7 +475,7 @@ int main(int argc, char ** argv) {
 			usage("--calbase expects a speclib input (use --speclib)");
 		}
 		res = starspan_tuct_2(
-			vector_filename,  
+			vect,  
 			raster_filenames,
 			speclib_filename,
 			callink_name,
@@ -477,7 +487,7 @@ int main(int argc, char ** argv) {
 		if ( !csv_name ) {
 			usage("--update-csv works with --csv. Please specify an existing CSV");
 		}
-		if ( vector_filename ) {
+		if ( vect ) {
 			usage("--update-csv does not expect a vector input");
 		}
 		if ( raster_filenames.size() == 0 ) {
@@ -505,8 +515,9 @@ int main(int argc, char ** argv) {
 	
 		tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 
-		if ( vector_filename )
-			tr.setVector(new Vector(vector_filename));
+		if ( vect ) {
+			tr.setVector(vect);
+		}
 		
 		for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {    
 			tr.addRaster(new Raster(raster_filenames[i]));

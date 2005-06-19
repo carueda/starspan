@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-static const char* vector_filename;
 static const char* raster_field_name;
 static const char* raster_directory;
 static string raster_filename;
@@ -245,31 +244,28 @@ static void process_feature() {
 ////////////////////////////////////////////////////////////////////////////////
 
 int starspan_csv_raster_field(
-	const char*          _vector_filename,
+	Vector*              vect,
 	const char*          _raster_field_name,
 	const char*          _raster_directory,
 	vector<const char*>* _select_fields,
 	const char*          _output_filename
 ) {
-	vector_filename =   _vector_filename;
 	raster_field_name = _raster_field_name;
 	raster_directory =  _raster_directory;
 	select_fields =     _select_fields;
 	output_filename =   _output_filename;
 
 
-
-	Vector vect(vector_filename);
-	if ( vect.getLayerCount() > 1 ) {
+	if ( vect->getLayerCount() > 1 ) {
 		cerr<< "Vector datasource with more than one layer: "
-		    << vect.getName()
+		    << vect->getName()
 			<< "\nOnly one layer expected.\n"
 		;
 		return 1;
 	}
-	layer = vect.getLayer(0);
+	layer = vect->getLayer(0);
 	if ( !layer ) {
-		cerr<< "Couldn't get layer from " << vect.getName()<< endl;
+		cerr<< "Couldn't get layer from " << vect->getName()<< endl;
 		return 1;
 	}
 	layer->ResetReading();
@@ -284,7 +280,7 @@ int starspan_csv_raster_field(
 	if ( globalOptions.FID >= 0 ) {
 		currentFeature = layer->GetFeature(globalOptions.FID);
 		if ( !currentFeature ) {
-			cerr<< "FID " <<globalOptions.FID<< " not found in " <<vect.getName()<< endl;
+			cerr<< "FID " <<globalOptions.FID<< " not found in " <<vect->getName()<< endl;
 			exit(1);
 		}
 		process_feature();
@@ -319,6 +315,7 @@ int starspan_csv_raster_field(
 			cout << endl;
 		}
 	}	
+	
 	return 0;
 }
 

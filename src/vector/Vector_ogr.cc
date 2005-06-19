@@ -79,12 +79,18 @@ static void ReportOnLayer(int iLayer, FILE* file, OGRLayer* poLayer) {
 }
 
 
-Vector::Vector(const char* pszDataSource) {
-	poDS = OGRSFDriverRegistrar::Open(pszDataSource);
-    if( poDS == NULL ) {
-        fprintf(stderr, "Unable to open datasource `%s'\n", pszDataSource);
-		exit(1);
-	}
+Vector* Vector::open(const char* pszDataSource) {
+	OGRDataSource* ds = OGRSFDriverRegistrar::Open(pszDataSource);
+    if( ds == NULL ) {
+        fprintf(stderr, "Vector::open: Unable to open datasource `%s'\n", pszDataSource);
+		return 0;
+	};
+	
+	return new Vector(ds);
+}
+	
+Vector::Vector(OGRDataSource* ds) {
+	poDS = ds;
 }
 
 Vector::~Vector() {
