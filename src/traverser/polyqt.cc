@@ -46,36 +46,57 @@ void Traverser::processValidPolygon_QT(geos::Polygon* geos_poly) {
 	rasterize_poly_QT(env, geos_poly);
 }
 
-// implicitily does a quadtree-like scan:
+// 
+// rasterize_geometry_QT and rasterize_poly_QT are mutually recursive
+// functions that implicitily do a quadtree-like scan:
+//
 void Traverser::rasterize_poly_QT(_Rect& e, geos::Polygon* i) {
 	if ( i == NULL || e.empty() )
 		return;
-	
-	const double pix_area = fabs(pix_x_size*pix_y_size);
-	const double pixelProportion_times_pix_area = pixelProportion * pix_area;
-
 
 	// compare envelope and intersection areas: 
 	double area_e = e.area();
 	double area_i = i->getArea();
 	
-	// Sometimes I get that, say, 182 > 182 is true, so put
-	// here a small epsilon:
-	if ( area_i > area_e + 10e-6 ) {
-		cerr<< "--Internal error: area_i=" <<area_i<< " > area_e=" <<area_e<< endl;
-		return;
-	}
+	// because of subtleties of comparing floating point numbers, 
+	// add an epsilon:
+	assert( area_i < area_e + 10e-6 ) ;
 
-	if ( area_i >= area_e - pixelProportion_times_pix_area ) {
+	
+	//
+	// If the area of intersection is at least the area of the whole
+	// envelope minus a fraction dependent on the pixel proportion,
+	// then all pixels in envelope are to be included in the intersection:
+	//
+	if ( area_i >= area_e - (pix_abs_area - pixelProportion_times_pix_abs_area) ) {
 		// all pixels in e are to be reported:
 		dispatchRect_QT(e);
 		return;
 	}
 	
-	if ( area_i < pixelProportion_times_pix_area ) { 
-		// do nothing (we can safely discard the whole rectangle).
-		return;
+	//	
+	// if pixelProportion > 0.0 we can check if the area of intersection
+	// is too small compared to the minimum required by that pixel proportion:
+	if ( pixelProportion > 0.0 ) {
+		if ( area_i < pixelProportion_times_pix_abs_area ) { 
+			// do nothing (we can safely discard the whole envelope).
+			return;
+		}
 	}
+	else {  
+		// pixelProportion == 0.0: means that just the intersection 
+		// (i != null) will be enough condition to include the envelope 
+		// when this is just a pixel:
+		if ( e.cols == e.rows && e.rows == 1 ) {
+			dispatchRect_QT(e);
+			return;
+		}
+	}
+	
+	//
+	// In other cases, we just recur to each of the children in the
+	// quadtree decomposition:
+	//
 	
 	_Rect e_ul = e.upperLeft();
 	geos::Geometry* i_ul = e_ul.intersect(i);

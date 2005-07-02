@@ -110,7 +110,8 @@ void Traverser::addRaster(Raster* raster) {
 		rasts[0]->getSize(&width, &height, NULL);
 		rasts[0]->getCoordinates(&x0, &y0, &x1, &y1);
 		rasts[0]->getPixelSize(&pix_x_size, &pix_y_size);
-
+		pix_abs_area = fabs(pix_x_size*pix_y_size);
+		
 		// create a geometry for raster envelope:
 		OGRLinearRing raster_ring;
 		raster_ring.addPoint(x0, y0);
@@ -727,7 +728,10 @@ void Traverser::traverse() {
 	
 	// assuming biggest data type we assign enough memory:
 	bandValues_buffer = new double[globalInfo.bands.size()];
-		
+
+	// for polygon rasterization:
+	pixelProportion_times_pix_abs_area = pixelProportion * pix_abs_area;
+
 	//
 	// notify observers about initialization of process
 	//

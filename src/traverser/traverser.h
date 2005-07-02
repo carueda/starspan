@@ -457,10 +457,13 @@ private:
 		}
 		
 		inline _Rect lowerRight() {
+			if ( cols <= 1 && rows <= 1 )
+				return _Rect(tr, x, y, 0, 0);  // empty
+			
 			int cols2 = (cols >> 1);
 			int rows2 = (rows >> 1);
 			double x2 = x + cols2 * tr->pix_x_size; 
-			double y2 = y + rows2 * tr->pix_y_size; 
+			double y2 = y + rows2 * tr->pix_y_size;
 			return _Rect(tr, x2, y2, cols - cols2, rows - rows2);
 		}
 		
@@ -507,6 +510,8 @@ private:
 	int width, height;
 	double x0, y0, x1, y1;
 	double pix_x_size, pix_y_size;
+	double pix_abs_area;
+	double pixelProportion_times_pix_abs_area;
 	OGREnvelope raster_env;
 	size_t minimumBandBufferSize;
 	double* bandValues_buffer;

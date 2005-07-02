@@ -2,6 +2,18 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-07-01 (0.995)
+	- Traverser: Put some variables as instance member to avoid
+	  recomputation: pix_abs_area, pixelProportion_times_pix_abs_area.
+	  
+	- Traverser::rasterize_poly_QT revisited:
+		- all-discard case is now under the condition that pixelProportion > 0.0. 
+		- Fixed comparison in condition to include the whole envelope
+		- Traverser.h _Rect.lowerRight() fixed bug which generated the
+		  same rectangle representing a single pixel
+		These changes also fix bug #200097.
+	  
+	
 2005-06-18 (0.995)
 	STARSPAN_VERSION only needs to be defined in one place: configure.in
 
