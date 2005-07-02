@@ -121,7 +121,7 @@
 				</gui>
 			</string>
 			<string prefix="--fields" name="Desired fields">
-				<gui width="30">
+				<gui width="30" multi="true">
 					<tip text="@">
 						<html>
 						<p>Only the specified fields will be transferred from vector input to the output.</p>

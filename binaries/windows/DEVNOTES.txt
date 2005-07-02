@@ -40,6 +40,10 @@ Status:
 Change log
 ----------
 
+07/01/05 (version 0.1.1)
+	Bug #200096 fixed: Using GuiE 0.2.5 and setting multi="true" for
+	--fields in starspan.guie.
+
 06/14/05 (version 0.1.0)
 
 	First version. See ../../BUILD.windows.txt
