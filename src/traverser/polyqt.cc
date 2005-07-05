@@ -167,8 +167,7 @@ void Traverser::dispatchRect_QT(_Rect& r) {
 		double y = r.y + i * pix_y_size; 
 		for ( int j = 0; j < r.cols; j++ ) {
 			double x = r.x + j * pix_x_size;
-			EPixel colrow(col + j, row + i);
-			dispatchPixel(colrow, x, y);
+			dispatchPixel(col + j, row + i, x, y);
 		}
 	}
 }

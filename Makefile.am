@@ -28,6 +28,7 @@ starspan2_SOURCES =	\
 	src/stats/Stats.cc \
 	src/traverser/traverser.cc \
 	src/traverser/polyqt.cc \
+	src/traverser/pixset.cc \
 	src/util/Progress.cc \
 	src/vector/Vector_ogr.cc
 

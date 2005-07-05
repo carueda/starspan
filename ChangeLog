@@ -2,6 +2,23 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-07-04 (0.996)
+	Refactoring on management of set of visited pixels (pixset) with
+	the goal of optimizing memory usage in the case of big features:
+
+	Traverser.h declares new classes PixSet and PixSet::Iterator 
+	New source file: pixset.cc
+	
+	PixSet abstracts the operations on a set of pixel locations and
+	PixSet::Iterator provides a means to scan the contained locations
+	in the set (I have followed the Java style for the iterator
+	instead of the C++ one).
+	
+	The first implementation of PixSet and PixSet::Iterator is based 
+	on the set<EPixel> structure as in the previous version; this is
+	a preliminary test before using a different approach.
+	
+	
 2005-07-01 (0.995)
 	- Traverser: Put some variables as instance member to avoid
 	  recomputation: pix_abs_area, pixelProportion_times_pix_abs_area.

@@ -213,9 +213,13 @@ int Traverser::getPixelIntegerValuesInBand(
 	}
 	
 	GDALRasterBand* band = globalInfo.bands[band_index-1];
-	for ( set<EPixel>::iterator colrow = pixset.begin(); colrow != pixset.end(); colrow++ ) {
-		int col = colrow->col;
-		int row = colrow->row;
+//	for ( set<EPixel>::iterator colrow = pixset.begin(); colrow != pixset.end(); colrow++ ) {
+//		int col = colrow->col;
+//		int row = colrow->row;
+	PixSet::Iterator* iter = pixset.iterator();
+	while ( iter->hasNext() ) {
+		int col, row;
+		iter->next(&col, &row);
 		int value = 0;
 		if ( col < 0 || col >= width || row < 0 || row >= height ) {
 			// nothing:  keep the 0 value
@@ -238,6 +242,7 @@ int Traverser::getPixelIntegerValuesInBand(
 		}
 		list.push_back(value);
 	}
+	delete iter;
 	return 0;
 }
 
@@ -251,9 +256,13 @@ int Traverser::getPixelDoubleValuesInBand(
 	}
 	
 	GDALRasterBand* band = globalInfo.bands[band_index-1];
-	for ( set<EPixel>::iterator colrow = pixset.begin(); colrow != pixset.end(); colrow++ ) {
-		int col = colrow->col;
-		int row = colrow->row;
+//	for ( set<EPixel>::iterator colrow = pixset.begin(); colrow != pixset.end(); colrow++ ) {
+//		int col = colrow->col;
+//		int row = colrow->row;
+	PixSet::Iterator* iter = pixset.iterator();
+	while ( iter->hasNext() ) {
+		int col, row;
+		iter->next(&col, &row);
 		double value = 0.0;
 		if ( col < 0 || col >= width || row < 0 || row >= height ) {
 			// nothing:  keep the 0.0 value
@@ -276,6 +285,7 @@ int Traverser::getPixelDoubleValuesInBand(
 		}
 		list.push_back(value);
 	}
+	delete iter;
 	return 0;
 }
 
@@ -297,8 +307,7 @@ void Traverser::pixelFound(double x, double y) {
 	}
 	
 	// check this location has not been processed
-	EPixel colrow(col, row);
-	if ( pixset.find(colrow) != pixset.end() ) {
+	if ( pixset.contains(col, row) ) {
 		return;
 	}
 	
@@ -319,7 +328,7 @@ void Traverser::pixelFound(double x, double y) {
 		(*obs)->addPixel(event);
 	
 	// keep track of processed pixels
-	pixset.insert(colrow);
+	pixset.insert(col, row);
 }
 
 //

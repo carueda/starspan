@@ -47,6 +47,37 @@ class EPixel {
 
 
 /**
+  * Set of visited pixels in feature currently being processed
+  */
+class PixSet {
+	set<EPixel> _set;
+
+public:
+	class Iterator {
+		friend class PixSet;
+		
+		PixSet* ps;
+		set<EPixel>::iterator colrow;
+		
+		Iterator(PixSet* ps);
+	public:
+		~Iterator();
+		bool hasNext();
+		void next(int *col, int *row);
+	};
+
+	PixSet();
+	~PixSet();
+	
+	void insert(int col, int row);
+	int size();
+	bool contains(int col, int row);
+	void clear();
+	Iterator* iterator();
+};
+
+
+/**
   * Info passed in observer#init(info)
   */
 struct GlobalInfo {
@@ -378,12 +409,12 @@ public:
 		return pixset.size();
 	}
 	
-	/**
+	/**                                
 	  * True if pixel at [col,row] has been already visited
 	  * according to current feature.
 	  */
 	inline bool pixelVisited(int col, int row) {
-		return pixset.find(EPixel(col, row)) != pixset.end() ;
+		return pixset.contains(col, row);
 	}
 	
 	/** summary results for each traversal */
@@ -543,18 +574,18 @@ private:
 	// Return:
 	//   -1: [col,row] out of raster extension
 	//   0:  [col,row] dispached and added to pixset
-	inline int dispatchPixel(EPixel& colrow, double x, double y) {
-		if ( colrow.col < 0 || colrow.col >= width  ||  colrow.row < 0 || colrow.row >= height ) {
+	inline int dispatchPixel(int col, int row, double x, double y) {
+		if ( col < 0 || col >= width  ||  row < 0 || row >= height ) {
 			return -1;
 		}
 		
-		TraversalEvent event(colrow.col, colrow.row, x, y);
+		TraversalEvent event(col, row, x, y);
 		summary.num_processed_pixels++;
 		
 		// if at least one observer is not simple...
 		if ( notSimpleObserver ) {
 			// get also band values
-			getBandValuesForPixel(colrow.col, colrow.row);
+			getBandValuesForPixel(col, row);
 			event.bandValues = bandValues_buffer;
 		}
 		
@@ -563,7 +594,7 @@ private:
 			(*obs)->addPixel(event);
 		
 		// keep track of processed pixels
-		pixset.insert(colrow);
+		pixset.insert(col, row);
 		return 0;
 	}
 	
@@ -587,8 +618,8 @@ private:
 	void pixelFound(double x, double y);
 
 	// set of visited pixels:
-	set<EPixel> pixset;
-
+	PixSet pixset;
+                                    
 	ostream* progress_out;
 	double progress_perc;
 	bool verbose;
