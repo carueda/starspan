@@ -213,9 +213,6 @@ int Traverser::getPixelIntegerValuesInBand(
 	}
 	
 	GDALRasterBand* band = globalInfo.bands[band_index-1];
-//	for ( set<EPixel>::iterator colrow = pixset.begin(); colrow != pixset.end(); colrow++ ) {
-//		int col = colrow->col;
-//		int row = colrow->row;
 	PixSet::Iterator* iter = pixset.iterator();
 	while ( iter->hasNext() ) {
 		int col, row;
@@ -256,9 +253,6 @@ int Traverser::getPixelDoubleValuesInBand(
 	}
 	
 	GDALRasterBand* band = globalInfo.bands[band_index-1];
-//	for ( set<EPixel>::iterator colrow = pixset.begin(); colrow != pixset.end(); colrow++ ) {
-//		int col = colrow->col;
-//		int row = colrow->row;
 	PixSet::Iterator* iter = pixset.iterator();
 	while ( iter->hasNext() ) {
 		int col, row;
