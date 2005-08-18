@@ -2,6 +2,17 @@ starspan ChangeLog
 $Id$
                                     
 
+2005-08-17 (0.996)
+	- mksrcdist.sh: set DISTDIR to /tmp/DISTDIR-starspan/
+	  The problem was that ./reconf on the exported contents was not
+	  creating the files depcomp, missing, and install-sh, required
+	  for a successfull ./configure; make; ... on the user machine.
+	  It seems the reason is that automake finds those files in ../ or
+	  ../../ and then doesn't create new copies. I looked for an
+	  option to force automake to create those files but didn't find
+	  any; so a simple solution is to create the distribution in a
+	  different directory not descending from this one.
+	
 2005-07-04 (0.996)
 	Refactoring on management of set of visited pixels (pixset) with
 	the goal of optimizing memory usage in the case of big features:

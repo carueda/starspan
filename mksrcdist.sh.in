@@ -25,19 +25,22 @@ read dotag
 # but that's not working, so I'll be using my developer account for now:)
 cvsroot=":ext:crueda@cvs.casil.ucdavis.edu:/cvsroot/starspan"
 
+DISTDIR=/tmp/DISTDIR-starspan/
+
 (test "$dotag" != "y" || cvs -q tag $tag) &&\
-mkdir -p DISTDIR &&\
-cd DISTDIR &&\
+mkdir -p $DISTDIR &&\
+cd $DISTDIR &&\
 echo "Exporting $tag..." &&\
 cvs -d$cvsroot -q export -r $tag -d starspan-$VERSION starspan &&\
 cd starspan-$VERSION &&\
 echo "Reconfiguring..." &&\
 ./reconf &&\
+test -f missing && test -f install-sh && test -f depcomp &&\
 cd .. &&\
 echo "Packaging..." &&\
 tar cf starspan-$VERSION.tar starspan-$VERSION &&\
 gzip -9 starspan-$VERSION.tar &&\
 rm -rf starspan-$VERSION &&\
 ls -l &&\
-echo "Done."
+echo "Done. Check contents of $DISTDIR"
 
