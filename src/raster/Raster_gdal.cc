@@ -109,6 +109,18 @@ void Raster::toColRow(double x, double y, int *col, int *row) {
 }
 
 
+unsigned Raster::getBandValuesBufferSize() {
+	unsigned bufsize = 0;
+	int bands;
+	getSize(0, 0, &bands);
+	for ( int i = 0; i < bands; i++ ) {
+		GDALRasterBand* band = (GDALRasterBand*) GDALGetRasterBand(hDataset, i+1);
+		GDALDataType bandType = band->GetRasterDataType();
+		bufsize += GDALGetDataTypeSize(bandType) >> 3;
+	}
+	return bufsize;
+}
+
 void* Raster::getBandValuesForPixel(int col, int row) {
 	assert(bandValues_buffer);
 	

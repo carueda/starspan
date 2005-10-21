@@ -52,6 +52,12 @@ public:
 	void getPixelSize(double *pix_x_size, double *pix_y_size);
 
 	/**
+	  * Returns the size in byte of the internal buffer used to store
+	  * the values obtained by getBandValuesForPixel.
+	  */
+	unsigned getBandValuesBufferSize();
+
+	/**
 	  * Returns a pointer to an internal buffer containing the values of all
 	  * bands of this raster at the specified location.
 	  * NULL is returned if (col,row) is invalid.

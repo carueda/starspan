@@ -130,6 +130,7 @@ GDALDatasetH starspan_subset_raster(
 			exit( 1 );
 		}
 
+		fprintf(stdout, "---------exportToWkt\n"); fflush(stdout);
 		char* wkt;
 		oOutputSRS.exportToWkt(&wkt);
 		fprintf(stdout, "---------Setting given projection (wkt)\n");
