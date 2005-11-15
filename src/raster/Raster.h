@@ -36,6 +36,9 @@ public:
 	Raster(const char* filename);
 	
 	// Creates a raster object representing a new raster file.
+	Raster(const char* filename, int width, int height, int bands, GDALDataType type);
+	
+	// Creates a raster object representing a new raster file of type GDT_Byte.
 	Raster(const char* filename, int width, int height, int bands);
 	
 	
@@ -65,6 +68,24 @@ public:
 	void* getBandValuesForPixel(int col, int row);
 
 	/**
+	  * Reads band values for a given pixel.
+	  * Returns a pointer to the GIVEN buffer containing the values of all
+	  * bands of this raster at the specified location.
+	  * NULL is returned if (col,row) is invalid.
+	  * buffer MUST BE big enough according to the desired output type.
+	  */
+	void* getBandValuesForPixel(int col, int row, GDALDataType bufferType, void* buffer);
+
+	/**
+	  * Writes band values for a given pixel.
+	  * Returns a pointer to the GIVEN buffer containing the values of all
+	  * bands of this raster at the specified location.
+	  * NULL is returned if (col,row) is invalid.
+	  * buffer MUST BE big enough according to the desired output type.
+	  */
+	void* setBandValuesForPixel(int col, int row, GDALDataType bufferType, void* buffer);
+
+	/**
 	  * Gets the values corresponding to a given list of pixel
 	  * locations from a given band.
 	  * @param band_index Desired band. Note that 1 corresponds to the first band
@@ -82,6 +103,13 @@ public:
 	  */
 	void toColRow(double x, double y, int *col, int *row);
 
+	/**
+	  * (x,y) to (col,row) conversion, where the upper left corner of (col,row)
+	  * is closest to the given (x,y).
+	  * Returned location (col,row) could be outside this raster extension.
+	  */
+	void toClosestColRow(double x, double y, int *col, int *row);
+
 	// closes this raster.
 	~Raster();
 	
@@ -96,6 +124,7 @@ private:
 	double* bandValues_buffer;
 	
 	void report_corner(FILE* file,const char*,int,int);
+	void _create(const char* filename, int width, int height, int bands, GDALDataType type);
 };
 
 #endif

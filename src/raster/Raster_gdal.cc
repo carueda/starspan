@@ -20,8 +20,7 @@ int Raster::end() {
 	return 0;
 }
 
-
-Raster::Raster(const char* filename, int width, int height, int bands) {
+void Raster::_create(const char* filename, int width, int height, int bands, GDALDataType type) {
 	const char *pszFormat = "ENVI";
     GDALDriver* hDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
 	if( hDriver == NULL ) {
@@ -34,7 +33,7 @@ Raster::Raster(const char* filename, int width, int height, int bands) {
 	hDataset = hDriver->Create(
 		filename, 
 		width, height, bands, 
-		GDT_Byte, 
+		type, 
         papszOptions 
 	);
 	
@@ -51,6 +50,15 @@ Raster::Raster(const char* filename, int width, int height, int bands) {
     }
 	
 	bandValues_buffer = new double[bands];
+}
+
+Raster::Raster(const char* filename, int width, int height, int bands, GDALDataType type) {
+	_create(filename, width, height, bands, type);
+}
+
+
+Raster::Raster(const char* filename, int width, int height, int bands) { 
+	_create(filename, width, height, bands, GDT_Byte);
 }
 
 	
@@ -108,6 +116,16 @@ void Raster::toColRow(double x, double y, int *col, int *row) {
 	*row = (int) floor( (y - y0) / pix_y_size );
 }
 
+void Raster::toClosestColRow(double x, double y, int *col, int *row) {
+	double pix_x_size = adfGeoTransform[1];
+	double pix_y_size = adfGeoTransform[5];
+	double x0, y0;
+	geo_corner(adfGeoTransform,0, 0, &x0, &y0);
+	*col = (int) round( (x - x0) / pix_x_size );
+	*row = (int) round( (y - y0) / pix_y_size );
+}
+
+
 
 unsigned Raster::getBandValuesBufferSize() {
 	unsigned bufsize = 0;
@@ -155,6 +173,76 @@ void* Raster::getBandValuesForPixel(int col, int row) {
 	}
 	
 	return bandValues_buffer;
+}
+
+void* Raster::getBandValuesForPixel(int col, int row, GDALDataType bufferType, void* buffer) {
+	assert(buffer);
+	
+	int width, height, bands;
+	getSize(&width, &height, &bands);
+	if ( col < 0 || col >= width || row < 0 || row >= height ) {
+		return NULL;
+	}
+	
+	char* ptr = (char*) buffer;
+	const int bufferTypeSize = GDALGetDataTypeSize(bufferType) >> 3;
+	for ( int i = 0; i < bands; i++ ) {
+		GDALRasterBand* band = (GDALRasterBand*) GDALGetRasterBand(hDataset, i+1);
+	
+		int status = band->RasterIO(
+			GF_Read,
+			col, row,
+			1, 1,             // nXSize, nYSize
+			ptr,              // pData
+			1, 1,             // nBufXSize, nBufYSize
+			bufferType,       // eBufType
+			0, 0              // nPixelSpace, nLineSpace
+		);
+		
+		if ( status != CE_None ) {
+			fprintf(stdout, "Error reading band value, status= %d\n", status);
+			exit(1);
+		}
+		
+		ptr += bufferTypeSize;
+	}
+	
+	return buffer;
+}
+
+void* Raster::setBandValuesForPixel(int col, int row, GDALDataType bufferType, void* buffer) {
+	assert(buffer);
+	
+	int width, height, bands;
+	getSize(&width, &height, &bands);
+	if ( col < 0 || col >= width || row < 0 || row >= height ) {
+		return NULL;
+	}
+	
+	char* ptr = (char*) buffer;
+	const int bufferTypeSize = GDALGetDataTypeSize(bufferType) >> 3;
+	for ( int i = 0; i < bands; i++ ) {
+		GDALRasterBand* band = (GDALRasterBand*) GDALGetRasterBand(hDataset, i+1);
+	
+		int status = band->RasterIO(
+			GF_Write,
+			col, row,
+			1, 1,             // nXSize, nYSize
+			ptr,              // pData
+			1, 1,             // nBufXSize, nBufYSize
+			bufferType,       // eBufType
+			0, 0              // nPixelSpace, nLineSpace
+		);
+		
+		if ( status != CE_None ) {
+			fprintf(stdout, "Error writing band value, status= %d\n", status);
+			exit(1);
+		}
+		
+		ptr += bufferTypeSize;
+	}
+	
+	return buffer;
 }
 
 int Raster::getPixelDoubleValuesInBand(
