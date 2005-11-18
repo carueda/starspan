@@ -1,6 +1,8 @@
 starspan ChangeLog
 $Id$
-                                    
+        
+2005-11-17
+	tests/misc/LFS/: new code to test LFS
 
 2005-08-18 (0.997)
 	- 0.997 created to synchronize the whole thing. 

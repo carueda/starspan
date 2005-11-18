@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 	off_t incr = atol(argv[2]);
 	off_t size = 2147483647 + incr;
 	cout<< "  seeking one byte before size: " << size-1 << endl;
-	fseek(file, size-1, SEEK_SET);
+	fseeko(file, size-1, SEEK_SET);
 	cout<< "  writing a byte "<< endl;
 	fputc('\0', file);
 
