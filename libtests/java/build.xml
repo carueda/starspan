@@ -7,7 +7,7 @@
 	<!-- Base dir for generated files -->
 	<property name="generated" value="../../_GENERATED/starspan"/>
 
-	<property name="baselib"  value="../../_GENERATED/starspan/lib"/>
+	<property name="baselib"  value="../../../_GENERATED/starspan/lib"/>
 
 	<!-- External required libraries -->
 	<property name="envifile"  value="${baselib}/envifile.jar"/>
