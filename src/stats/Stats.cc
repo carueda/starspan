@@ -13,11 +13,15 @@
 #include <cmath>  // sqrt
 
 
-void Stats::compute(vector<int>& values) {
+void Stats::compute(vector<int>& values, int nodata) {
 	//
 	// Note that stats that require only a first pass are always computed.
 	//
 	
+	unsigned total_pixels = values.size();
+	
+	// Remove nodata values from the vector
+	values.erase(remove(values.begin(), values.end(), nodata), values.end());
 	
 	// initialize result:
 	for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
@@ -27,20 +31,22 @@ void Stats::compute(vector<int>& values) {
 	const unsigned num_values = values.size();
 	if ( num_values == 0 )
 		return;
+
+	result[NULLS] = total_pixels - num_values;
 	
 	result[MIN] = result[MAX] = values[0];
 
 	for ( unsigned i = 0; i < num_values; i++ ) {
 		const int value = values[i];
 
-		// cumulate
-		result[SUM] += value;
-		
+        	// cumulate
+        	result[SUM] += value;
+	
 		// min and max:
 		// min
 		if ( result[MIN] > value ) 
 			result[MIN] = value; 
-		
+	
 		// max
 		if ( result[MAX] < value ) 
 			result[MAX] = value; 
@@ -91,6 +97,26 @@ void Stats::compute(vector<int>& values) {
 		
 		result[MODE] = best_value;
 	}
+
+	if ( include[MEDIAN] ) {
+		sort(values.begin(), values.end()); 
+		int sample_size = values.size();
+		double median;
+		double middle_position_one;
+		double middle_position_two;
+
+  		if ((sample_size % 2) == 0){ //even
+			middle_position_one = (sample_size /2);
+			middle_position_two = (sample_size /2)+1;
+			median = (values[int(middle_position_one-1)] + values[int(middle_position_two-1)])/2.0;
+
+		} else if ((sample_size % 2) != 0) { //odd
+				middle_position_one = (sample_size /2)+1;
+				median = values[int(middle_position_one-1)];
+		}
+	        result[MEDIAN] = median;
+	}
+
 }
 
 void Stats::computeCounts(vector<int>& values, map<int,int>& count) {
@@ -106,12 +132,16 @@ void Stats::computeCounts(vector<int>& values, map<int,int>& count) {
 }
 
 
-void Stats::compute(vector<double>& values) {
+void Stats::compute(vector<double>& values, double nodata) {
 	//
 	// Note that stats that require only a first pass are always computed.
 	//
-	
-	
+
+	unsigned total_pixels = values.size();
+
+	// Remove nodata values from the vector
+	values.erase(remove(values.begin(), values.end(), nodata), values.end());
+
 	// initialize result:
 	for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 		result[i] = 0.0;
@@ -121,6 +151,7 @@ void Stats::compute(vector<double>& values) {
 	if ( num_values == 0 )
 		return;
 	
+	result[NULLS] = total_pixels - num_values;
 	result[MIN] = result[MAX] = values[0];
 	
 	for ( unsigned i = 0; i < num_values; i++ ) {
@@ -128,7 +159,7 @@ void Stats::compute(vector<double>& values) {
 
 		// cumulate
 		result[SUM] += value;
-		
+	
 		// min and max:
 		// min
 		if ( result[MIN] > value ) 
@@ -195,6 +226,24 @@ void Stats::compute(vector<double>& values) {
 		}
 		
 		result[MODE] = atof(best_str.c_str());
+	}
+
+	if ( include[MEDIAN] ) {
+		sort(values.begin(), values.end()); 
+		int sample_size = values.size();
+		double median;
+		double middle_position_one;
+		double middle_position_two;
+
+  		if ((sample_size % 2) == 0){  //even
+			middle_position_one = (sample_size /2);
+			middle_position_two = (sample_size /2)+1;
+			median = (values[int(middle_position_one-1)] + values[int(middle_position_two-1)])/2.0;
+		} else if ((sample_size % 2) != 0) {  //odd
+				middle_position_one = (sample_size /2)+1;
+				median = values[int(middle_position_one-1)];
+		}
+	        result[MEDIAN] = median;
 	}
 }
 

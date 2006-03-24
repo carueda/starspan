@@ -25,6 +25,8 @@ enum {
 	VAR,     // sample variance
 	STDEV,   // std deviation = sqrt(VAR)
 	MODE,    // mode
+	MEDIAN,  // median
+	NULLS,   // number of nodata values
 	
 	TOT_RESULTS  // do not use
 };
@@ -53,12 +55,12 @@ public:
 	/**
 	  * compute those stats s where include[s] == true.
 	  */
-	void compute(vector<int>& values); 
+	void compute(vector<int>& values, int nodata); 
 	
 	/**
 	  * compute those stats s where include[s] == true.
 	  */
-	void compute(vector<double>& values); 
+	void compute(vector<double>& values, double nodata); 
 	
 	/**
 	  * Utility method to count the number of occurrences of each value.
