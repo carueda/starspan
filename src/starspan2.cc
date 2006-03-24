@@ -55,7 +55,7 @@ static void usage(const char* msg) {
 		"      --csv <name>\n"
 		"      --envi <name>\n"
 		"      --envisl <name> \n"
-		"      --stats outfile.csv {avg|mode|stdev|min|max}...\n"
+		"      --stats outfile.csv {avg|mode|stdev|min|max|sum|median|nulls}...\n"
 		"      --count-by-class outfile.csv \n"
 		"      --calbase <link> <filename> [<stats>...]\n"
 		"      --in   \n"

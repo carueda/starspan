@@ -75,6 +75,12 @@ public:
 				stats.include[MIN] = true;
 			else if ( 0 == strcmp(*stat, "max") )
 				stats.include[MAX] = true;
+			else if ( 0 == strcmp(*stat, "sum") )
+				stats.include[SUM] = true;
+			else if ( 0 == strcmp(*stat, "median") )
+				stats.include[MEDIAN] = true;
+			else if ( 0 == strcmp(*stat, "nulls") )
+				stats.include[NULLS] = true;
 			else {
 				cerr<< "Unrecognized stats " << *stat<< endl;
 				exit(1);
@@ -198,7 +204,11 @@ public:
 			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 				values.clear();
 				tr.getPixelIntegerValuesInBand(j+1, values);
-				stats.compute(values);
+				if (!globalOptions.nodata) {
+					double nodata = global_info->bands[j]->GetNoDataValue();
+					globalOptions.nodata = nodata;
+				} 
+				stats.compute(values, int(globalOptions.nodata));
 				for ( int i = 0; i < TOT_RESULTS; i++ ) {
 					result_stats[i][j] = stats.result[i]; 
 				}
@@ -209,7 +219,11 @@ public:
 			for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 				values.clear();
 				tr.getPixelDoubleValuesInBand(j+1, values);
-				stats.compute(values);
+				if (!globalOptions.nodata) {
+					double nodata = global_info->bands[j]->GetNoDataValue();
+					globalOptions.nodata = nodata;
+				} 
+				stats.compute(values, globalOptions.nodata);
 				for ( int i = 0; i < TOT_RESULTS; i++ ) {
 					result_stats[i][j] = stats.result[i]; 
 				}
@@ -256,6 +270,21 @@ public:
 				else if ( 0 == strcmp(*stat, "max") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
 						fprintf(file, ",%f", result_stats[MAX][j]);
+					}
+				}
+				else if ( 0 == strcmp(*stat, "sum") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[SUM][j]);
+					}
+				}
+				else if ( 0 == strcmp(*stat, "median") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%f", result_stats[MEDIAN][j]);
+					}
+				}
+				else if ( 0 == strcmp(*stat, "nulls") ) {
+					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
+						fprintf(file, ",%d", int(result_stats[NULLS][j]) );
 					}
 				}
 				else {
