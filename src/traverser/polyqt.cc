@@ -59,8 +59,8 @@ void Traverser::rasterize_poly_QT(_Rect& e, geos::Polygon* i) {
 	double area_i = i->getArea();
 	
 	// because of subtleties of comparing floating point numbers, 
-	// add an epsilon:
-	assert( area_i < area_e + 10e-6 ) ;
+	// add an epsilon relative to the value:
+	assert( area_i <= area_e * 1.0001 ) ;
 
 	
 	//
