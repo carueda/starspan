@@ -1,5 +1,15 @@
 starspan ChangeLog
 $Id$
+
+2006-3-25: perrygeo
+      - configure.in to version 0.998
+      - src/tranverser/polyqt.cc : relative epsilon instead of constant
+
+2006-03-24:  perrygeo
+      - Exposed the SUM statistic
+      - Removed NoData/Null Values from the stats calculations
+      - Calculate two new stats: MEDIAN and NULLS (ie number of nodata
+	values)
         
 2005-11-17
 	tests/misc/LFS/: new code to test LFS
