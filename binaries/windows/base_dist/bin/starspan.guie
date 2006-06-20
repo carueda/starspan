@@ -286,6 +286,8 @@
 					</gui>
 				</file>
 			</choice>
+			
+
 			<choice numsel="*"  name="Miniraster">
 				<sequence>
 					<gui panel.border="Extract minirasters" tip.text="@">
@@ -317,7 +319,7 @@
 							</html>
 						</gui>
 					</file>
-					<choice numsel="?">
+					<choice numsel="*">
 						<integer prefix="--separation">
 							<gui tip.text="@">
 								<html>
@@ -327,7 +329,23 @@
 						</integer>
 					</choice>
 				</sequence>
+				<literal prefix="--in" name="Nullify pixels not contained in geometry feature">
+					<gui tip.text="@">
+						<html>
+						<p>pixels not contained in the geometry feature are nullified in the resulting mini raster</p>
+						</html>
+					</gui>
+				</literal>
+				<string prefix="--mini_raster_parity" name="Miniraster parity">
+					<gui width="10" tip.text="@">
+						<html>
+						<p>Use one of <b>even</b>, <b>odd</b>, or @<i>field</i>.</p>
+						</html>
+					</gui>
+				</string>
 			</choice>
+
+			
 			<choice numsel="*"  name="Calibration">
 				<sequence prefix="--calbase">
 					<gui panel.border="Generate calbase" tip.text="@">

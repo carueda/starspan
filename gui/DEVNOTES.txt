@@ -47,6 +47,8 @@ Status:
 Change log
 ----------
 
+06/19/06
+	Miniraster section in starspan.gui was no OK: fixed.
 06/05/06
 	--in and --mini_raster_strip options added to GUI spec starspan.guie
 	Release not created yet.
