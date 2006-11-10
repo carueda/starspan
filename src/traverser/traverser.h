@@ -240,9 +240,21 @@ public:
 	void setVector(Vector* vector);
 
 	/**
+	  * Sets the vector datasource.
+	  * (eventually this would become addVector)
+	  * @param v vector datadource
+	  */
+	void setLayerNum(int vector_layernum);
+
+	/**
 	  * Gets the vector associated to this traverser.
 	  */
 	Vector* getVector(void) { return vect; }
+	
+	/**
+	  * Gets the layernumber for the vector associated to this traverser.
+	  */
+	int getLayerNum(void) { return layernum; }
 	
 	/**
 	  * Adds a raster.
@@ -528,6 +540,7 @@ private:
 	};
 	
 	Vector* vect;
+	int layernum;
 	vector<Raster*> rasts;
 	vector<Observer*> observers;
 	bool notSimpleObserver;

@@ -85,6 +85,10 @@ void Traverser::setVector(Vector* vector) {
 	vect = vector;
 }
 
+void Traverser::setLayerNum(int vector_layernum) {
+	layernum = vector_layernum;
+}
+
 
 //
 //
@@ -709,15 +713,16 @@ void Traverser::traverse() {
 	}
 	//
 	// Only first layer (0) is processed (which assumes only one layer exists)
-	//
-	if ( vect->getLayerCount() > 1 ) {
-		cerr<< "Vector datasource with more than one layer: "
-		    << vect->getName()
-			<< "\nOnly one layer expected.\n"
-		;
-		return;
-	}
-	OGRLayer* layer = vect->getLayer(0);
+	// 
+	//if ( vect->getLayerCount() > 1 ) {
+	//	cerr<< "Vector datasource with more than one layer: "
+	//	    << vect->getName()
+	//		<< "\nOnly one layer expected.\n"
+	//	;
+	//	return;
+	//}
+	
+	OGRLayer* layer = vect->getLayer(layernum);
 	if ( !layer ) {
 		cerr<< "Couldn't get layer from " << vect->getName()<< endl;
 		return;

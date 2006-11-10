@@ -248,7 +248,8 @@ int starspan_csv_raster_field(
 	const char*          _raster_field_name,
 	const char*          _raster_directory,
 	vector<const char*>* _select_fields,
-	const char*          _output_filename
+	const char*          _output_filename,
+	int                  layernum
 ) {
 	raster_field_name = _raster_field_name;
 	raster_directory =  _raster_directory;
@@ -256,14 +257,15 @@ int starspan_csv_raster_field(
 	output_filename =   _output_filename;
 
 
-	if ( vect->getLayerCount() > 1 ) {
-		cerr<< "Vector datasource with more than one layer: "
-		    << vect->getName()
-			<< "\nOnly one layer expected.\n"
-		;
-		return 1;
-	}
-	layer = vect->getLayer(0);
+	//if ( vect->getLayerCount() > 1 ) {
+	//	cerr<< "Vector datasource with more than one layer: "
+	//	    << vect->getName()
+	//		<< "\nOnly one layer expected.\n"
+	//	;
+	//	return 1;
+	//}
+	
+	layer = vect->getLayer(layernum);
 	if ( !layer ) {
 		cerr<< "Couldn't get layer from " << vect->getName()<< endl;
 		return 1;

@@ -66,9 +66,10 @@ public:
 	void init(GlobalInfo& info) { 
 		global_info = &info;
 
-		OGRLayer* poLayer = vect->getLayer(0);
+                int layernum = tr.getLayerNum();
+		OGRLayer* poLayer = vect->getLayer(layernum);
 		if ( !poLayer ) {
-			fprintf(stderr, "Couldn't fetch layer 0\n");
+			fprintf(stderr, "Couldn't fetch layer \n");
 			exit(1);
 		}
 

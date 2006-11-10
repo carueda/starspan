@@ -48,6 +48,7 @@ static void usage(const char* msg) {
 		"  starspan <inputs/commands/options>...\n"
 		"\n"
 		"      --vector <filename>\n"
+		"      --layer <layername>     (optional; defaults to first layer in vector dataset)\n"
 		"      --raster {<filenames>... | @fieldname}\n"
 		"      --speclib <filename>\n"
 		"      --update-csv <filename>\n"
@@ -134,6 +135,8 @@ int main(int argc, char ** argv) {
 	const char* jtstest_filename = NULL;
 	
 	const char* vector_filename = 0;
+	const char* vector_layername = 0;
+	int vector_layernum = 0;
 	vector<const char*> raster_filenames;
 	
 	const char* speclib_filename = 0;
@@ -155,10 +158,18 @@ int main(int argc, char ** argv) {
 		//
 		if ( 0==strcmp("--vector", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("--vector: which vector file?");
+				usage("--vector: which vector dataset?");
 			if ( vector_filename )
 				usage("--vector specified twice");
 			vector_filename = argv[i];
+		}
+		
+		else if ( 0==strcmp("--layer", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--layer: which layer within the vector dataset?");
+			if ( vector_layername )
+				usage("--layer specified twice");
+			vector_layername = argv[i];
 		}
 		
 		else if ( 0==strcmp("--raster", argv[i]) ) {
@@ -418,6 +429,22 @@ int main(int argc, char ** argv) {
 		if ( !vect ) {
 			fprintf(stderr, "Cannot open %s\n", vector_filename);
 			return 1;
+		}  
+
+		// 
+		// get the layer number for the given layer name 
+		// if not specified or there is only a single layer, use the first layer 
+		//
+		if ( vector_layername && vect->getLayerCount() != 1 ) { 
+			for ( unsigned i = 0; i < vect->getLayerCount(); i++ ) {    
+				if ( 0 == strcmp(vector_layername, 
+						 vect->getLayer(i)->GetLayerDefn()->GetName()) ) {
+					vector_layernum = i;
+				}
+			}
+		}
+		else {
+		       vector_layernum = 0; 
 		}
 	}
 
@@ -449,7 +476,8 @@ int main(int argc, char ** argv) {
 				raster_field_name,
 				raster_directory,
 				select_fields, 
-				csv_name
+				csv_name,
+				vector_layernum
 			);
 		}
 		else if ( raster_filenames.size() > 0 ) {
@@ -457,7 +485,8 @@ int main(int argc, char ** argv) {
 				vect,  
 				raster_filenames,
 				select_fields, 
-				csv_name
+				csv_name,
+				vector_layernum
 			);
 		}
 		else {
@@ -517,6 +546,7 @@ int main(int argc, char ** argv) {
 
 		if ( vect ) {
 			tr.setVector(vect);
+			tr.setLayerNum(vector_layernum);
 		}
 		
 		for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {    

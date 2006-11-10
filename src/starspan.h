@@ -180,6 +180,7 @@ Observer* starspan_getCountByClassObserver(
   * @param raster_directory raster filenames are relative to this directory
   * @param select_fields desired fields from vector
   * @param csv_filename output file name
+  * @param layernum layer number within the vector datasource
   *
   * @return 0 iff OK 
   */
@@ -188,7 +189,8 @@ int starspan_csv_raster_field(
 	const char* raster_field_name,
 	const char* raster_directory,
 	vector<const char*>* select_fields,
-	const char* csv_filename
+	const char* csv_filename,
+	int layernum
 );
 
 
@@ -207,6 +209,7 @@ int starspan_csv_raster_field(
   * @param raster_filenames rasters
   * @param select_fields desired fields from vector
   * @param csv_filename output file name
+  * @param layernum layer number within the vector datasource
   *
   * @return 0 iff OK 
   */
@@ -214,7 +217,8 @@ int starspan_csv(
 	Vector* vect,
 	vector<const char*> raster_filenames,
 	vector<const char*>* select_fields,
-	const char* csv_filename
+	const char* csv_filename,
+	int layernum
 );
 
 

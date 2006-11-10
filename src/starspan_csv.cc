@@ -26,15 +26,16 @@ public:
 	string RID;  //  will be used only if globalOptions.RID != "none".
 	bool write_header;
 	FILE* file;
+	int layernum;
 	
 	/**
 	  * Creates a csv creator
 	  */
-	CSVObserver(Vector* vect, vector<const char*>* select_fields, FILE* f)
-	: vect(vect), select_fields(select_fields), file(f)
+	CSVObserver(Vector* vect, vector<const char*>* select_fields, FILE* f, int layernum)
+	: vect(vect), select_fields(select_fields), file(f), layernum(layernum)
 	{
 		global_info = 0;
-		poLayer = vect->getLayer(0);
+		poLayer = vect->getLayer(layernum);
 		if ( !poLayer ) {
 			fprintf(stderr, "Couldn't fetch layer 0\n");
 			exit(1);
@@ -208,7 +209,8 @@ int starspan_csv(
 	Vector* vect,
 	vector<const char*> raster_filenames,
 	vector<const char*>* select_fields,
-	const char* csv_filename
+	const char* csv_filename,
+	int layernum
 ) {
 	FILE* file;
 	bool new_file = false;
@@ -246,12 +248,13 @@ int starspan_csv(
 		new_file = true;
 	}
 
-	CSVObserver obs(vect, select_fields, file);
+	CSVObserver obs(vect, select_fields, file, layernum);
 
 	Traverser tr;
 	tr.addObserver(&obs);
 
 	tr.setVector(vect);
+	tr.setLayerNum(layernum);
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
 	if ( globalOptions.FID >= 0 )
@@ -260,7 +263,7 @@ int starspan_csv(
 	if ( globalOptions.progress ) {
 		tr.setProgress(globalOptions.progress_perc, cout);
 		cout << "Number of features: ";
-		long psize = vect->getLayer(0)->GetFeatureCount();
+		long psize = vect->getLayer(layernum)->GetFeatureCount();
 		if ( psize >= 0 )
 			cout << psize;
 		else

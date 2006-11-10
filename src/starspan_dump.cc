@@ -219,7 +219,9 @@ Observer* starspan_dump(
 		cerr<< "vector datasource expected\n";
 		return 0;
 	}
-	OGRLayer* layer = tr.getVector()->getLayer(0);
+
+	int layernum = tr.getLayerNum();
+	OGRLayer* layer = tr.getVector()->getLayer(layernum);
 	if ( !layer ) {
 		cerr<< "warning: No layer 0 found\n";
 		return 0;

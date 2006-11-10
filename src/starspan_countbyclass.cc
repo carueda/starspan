@@ -80,9 +80,10 @@ public:
 
 		OK = false;   // but let's see ...
 		
-		OGRLayer* poLayer = vect->getLayer(0);
+                int layernum = tr.getLayerNum();
+		OGRLayer* poLayer = vect->getLayer(layernum);
 		if ( !poLayer ) {
-			cerr<< "Couldn't fetch layer 0" << endl;
+			cerr<< "Couldn't fetch layer" << endl;
 			return;
 		}
 		
