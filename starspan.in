@@ -33,7 +33,7 @@ export PATH=@GDAL_PREFIX@/bin:@GEOS_PREFIX@/bin:$PATH
 #
 JARS=$BINDIR/starspan.jars/
 
-function usage() {
+usage() {
 	cat << EOF
 
 starspan extended usage:
@@ -64,32 +64,32 @@ EOF
 	return;
 }
 
-if [ "$1" == "--xhelp" ]; then
+if [ "$1" = "--xhelp" ]; then
 	usage
 	exit
 
-elif [ "$1" == "--view_geometries" ]; then
+elif [ "$1" = "--view_geometries" ]; then
 	echo "[Launching ptplot...]"
 	shift
 	CP=$CLASSPATH
 	CP=$JARS/plotapplication.jar:$CP
 	java -Xmx256m -cp "$CP" ptolemy.plot.PlotApplication "$@"
 
-elif [ "$1" == "--test" ]; then
+elif [ "$1" = "--test" ]; then
 	echo "[Launching JTS TopologyTestApp...]"
 	shift
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testrunner.TopologyTestApp "$@"
 
-elif [ "$1" == "--jts" ]; then
+elif [ "$1" = "--jts" ]; then
 	echo "[Launching JTSTestBuilder...]"
 	shift
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testbuilder.JTSTestBuilder "$@"
 
-elif [ "$1" == "--run" ]; then
+elif [ "$1" = "--run" ]; then
 	shift
 	echo "[Running " "$@" "]"
 	"$@"
