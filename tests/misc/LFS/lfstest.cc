@@ -5,6 +5,8 @@
 // $Id$ 
 //
 
+#include "lfs.h"
+
 #include "gdal.h"           
 #include "gdal_priv.h"
 #include "ogr_srs_api.h"
@@ -17,11 +19,11 @@ using namespace std;
 
 
 static const char* raster_filename = "BIGRASTER";
-static const off_t cols = 46341;
-static const off_t lins = 46341;
-static const off_t size = cols * lins; // == 2147488281
-static const off_t position = (off_t) 1 << 31;  // == 2147483648 
-static const off_t difference = size - position; 
+static const my_OFF_T cols = 46341;
+static const my_OFF_T lins = 46341;
+static const my_OFF_T size = cols * lins; // == 2147488281
+static const my_OFF_T position = (my_OFF_T) 1 << 31;  // == 2147483648 
+static const my_OFF_T difference = size - position; 
 
 
 static long col = 41707;
@@ -38,8 +40,8 @@ static void create_large_raster(void) {
 	cerr<< " Size = " <<size<< endl;
 	
 	cerr<< "  seeking to 2^31 position" << endl;
-	cerr<< "  which is col,row = " <<((off_t)1 << 31)%46341<< "," <<46340<< endl;
-	MY_SEEK(file, position, SEEK_SET); 
+	cerr<< "  which is col,row = " <<((my_OFF_T)1 << 31)%46341<< "," <<46340<< endl;
+	my_FSEEK(file, position, SEEK_SET); 
 	
 	cerr<< "Completing size with " <<difference<< " ones" <<endl;
 	for ( int i = 0; i < difference; i++ ) {
