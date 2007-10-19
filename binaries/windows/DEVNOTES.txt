@@ -20,9 +20,11 @@ Build
 		libgeos_c-1.dll
 		libgeos-2.dll
 		libgdal-1.dll
-		ogrinfo.exe
+		ogrinfo.exe (*)
 		gdalinfo.exe
 		starspan2.exe
+
+	[(*) Originally created without extension--manually added]
 
 	- Check the values in build.properties according to location of 
 	  prerequisites in your system.
@@ -52,6 +54,7 @@ Change log
 		  the jar: base_dist/bin/guie.jar
 		- Using IzPack 3.10.2
 		- build.{properties|xml} adjusted accordingly
+		- Added base_dist/img/splashi.png
 
 
 
