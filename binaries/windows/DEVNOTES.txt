@@ -5,28 +5,32 @@ $Id$
 In this directory we create a binary distribution of StarSpan for Windows.
 
 Prerequisites
-	The GuiE library: guie.jar
-	http://guie.sf.net
+	Apache Ant is used to build the system.
+	http://ant.apache.org
 	
 	IzPack is used to create the installer.
 	http://izforge.com/izpack
-	
-	Apache Ant is used to build the system.
-	http://ant.apache.org
 	
 	End users will need a Java Runtime Environment to be able to run
 	the StarSpan GUI.
 
 Build
-	You may need to adjust some values in build.properties according
-	to location of prerequisites in your system.
+	- Once you have built the windows binaries, manually copy them
+	  in base_dist/bin/. The required files are:
+		libgeos_c-1.dll
+		libgeos-2.dll
+		libgdal-1.dll
+		ogrinfo.exe
+		gdalinfo.exe
+		starspan2.exe
+
+	- Check the values in build.properties according to location of 
+	  prerequisites in your system.
 	
-	To create the installer: 
+	- Create the installer: 
 		ant installer
 	The executable takes the name install-starspan-win32-${VERSION}.jar
 	
-	To test the installation:
-		ant install
 		
 Running:
 	After installation on a Windows machine, either use the file browser
@@ -39,6 +43,18 @@ Status:
 	
 Change log
 ----------
+
+10/19/07 (version 0.2.0)
+	Build adjustments according to new progress on creating the
+	binaries with LFS:
+		- guie.jar (0.2.5) included as part of the base distribution:
+		  I created guie.jar from the distro in guie.sf.net and copied
+		  the jar: base_dist/bin/guie.jar
+		- Using IzPack 3.10.2
+		- build.{properties|xml} adjusted accordingly
+
+
+
 
 07/01/05 (version 0.1.1)
 	Bug #200096 fixed: Using GuiE 0.2.5 and setting multi="true" for

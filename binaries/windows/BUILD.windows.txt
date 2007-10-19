@@ -1,6 +1,12 @@
 BUILD on windows
 $Id$
 
+2007-10-19
+	- Windows version with LFS is now successful
+	TODO: update this notes accordingly.
+
+
+
 2005-06-13
 	Now attempting under MinGW: MSYS 1.0.10  MinGW 4.1.0
 	
