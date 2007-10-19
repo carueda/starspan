@@ -8,10 +8,10 @@
 //
 
 
-#if defined mingw32
+#if defined mingw32 || defined WIN32
 	#define OFF_T off64_t
 	#define FSEEK fseeko64
-	const char* logmsg = "mingw32 detected: Using off64_t and fseeko64";
+	const char* logmsg = "windows env detected: Using off64_t and fseeko64";
 #else
 	#define OFF_T off_t
 	#define FSEEK fseeko
