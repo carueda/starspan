@@ -1,35 +1,56 @@
 //
+//  A simple program to create a BIG file.
+//  $Id$
+//
 //    g++ -D_FILE_OFFSET_BITS=64 -Wall create_file.cc -o create_file
+//    ./create_file BIG 10
+//    # should create a file with size 2147483647 + 10 = 2147483657 bytes
 //
-//  This program creates a file with a given size
-//  See usage message
-//
+
+
+#if defined mingw32
+	#define OFF_T off64_t
+	#define FSEEK fseeko64
+	const char* logmsg = "mingw32 detected: Using off64_t and fseeko64";
+#else
+	#define OFF_T off_t
+	#define FSEEK fseeko
+	const char* logmsg = "Using off_t and fseeko";
+#endif
 
 #include <cstdio>
 #include <iostream>
 using namespace std;
 
+
 int main(int argc, char** argv) {
 	if ( argc != 3 ) {
-		cerr<< " USAGE:  create_file  filename  size_incr\n";
-		cerr<< "     filename will be 2147483647 + size_incr bytes size\n";
+		cerr<< " USAGE:   ./create_file  filename  size_incr" << endl
+		    << "     filename will be 2147483647 + size_incr bytes size" << endl
+		    << " Example: ./create_file  BIG  10" << endl
+		    << "   should create a file with size 2147483657" << endl;
 		return 1;
 	}
 	const char* filename = argv[1];
+	OFF_T incr = atol(argv[2]);
+
+	cout<< "  " << logmsg << endl;
+	cout<< "  sizeof(OFF_T) = " << sizeof(OFF_T) << endl;
+
 	FILE* file = fopen(filename, "w");
 	if ( !file ) {
 		cerr<< " could not create " << filename << endl;
 		return 1;
 	}
-	off_t incr = atol(argv[2]);
-	off_t size = 2147483647 + incr;
+	OFF_T size = (OFF_T) 2147483647 + incr;
 	cout<< "  seeking one byte before size: " << size-1 << endl;
-	fseeko(file, size-1, SEEK_SET);
+	FSEEK(file, size-1, SEEK_SET);
 	cout<< "  writing a byte "<< endl;
-	fputc('\0', file);
+	fputc('\1', file);
 
 	cout<< "  closing.\n";
 	fclose(file);
 	cout<< "  done.\n";
+	cout<< "  File size should be: " << size << endl;
 	return 0;
 }
