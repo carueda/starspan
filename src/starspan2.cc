@@ -524,6 +524,21 @@ int main(int argc, char ** argv) {
 		}
 		res = starspan_update_csv(update_csv_name, raster_filenames, csv_name);
 	}
+	else if ( do_report ) {
+		bool done = vect || raster_filenames.size() > 0;
+		if ( vect ) {
+			starspan_report_vector(vect);
+		}
+		for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+			Raster* rast = new Raster(raster_filenames[i]);
+			starspan_report_raster(rast);
+			delete rast;
+		}
+
+		if ( !done ) {
+			usage("--report: Please give at least one input file to report\n");
+		}
+	}
 	else {
 		//
 		// Dispatch commands with direct traverser-based mechanism.

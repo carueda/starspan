@@ -319,7 +319,9 @@ Observer* starspan_getMiniRasterStripObserver(
 /////////////////////////////////////////////////////////////////////////////
 // misc and supporting utilities:
 
-/** aux routine for reporting */ 
+/** aux routines for reporting */
+void starspan_report_vector(Vector* vect);
+void starspan_report_raster(Raster* rast);
 void starspan_report(Traverser& tr);
 
 void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env);

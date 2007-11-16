@@ -27,6 +27,25 @@ void starspan_report(Traverser& tr) {
 	}
 }
 
+// aux routine for reporting 
+void starspan_report_vector(Vector* vect) {
+	if ( vect ) {
+		fprintf(stdout, "\n----------------VECTOR--------------\n");
+		vect->report(stdout);
+	}
+}
+
+// aux routine for reporting 
+void starspan_report_raster(Raster* rast) {
+	if ( rast ) {
+		fprintf(stdout, "\n----------------RASTER--------------\n");
+		rast->report(stdout);
+	}
+}
+
+
+
+
 
 void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env) {
 	fprintf(file, "%s %.3f %.3f %.3f %.3f\n", msg, env.MinX, env.MinY, env.MaxX, env.MaxY);

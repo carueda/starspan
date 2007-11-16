@@ -1,6 +1,9 @@
 starspan ChangeLog
 $Id$
 
+2007-11-16: carlos rueda
+	- --report too restrictive about inputs: fixed. 
+	
 2006-3-25: perrygeo
       - configure.in to version 0.998
       - src/tranverser/polyqt.cc : relative epsilon instead of constant
