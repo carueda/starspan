@@ -641,12 +641,6 @@ int main(int argc, char ** argv) {
 	
 		// the following don't use Observer scheme;  
 		// just call corresponding functions:	
-		if ( do_report ) {
-			if ( tr.getNumRasters() == 0 && !tr.getVector() ) {
-				usage("--report: Please give at least one input file to report\n");
-			}
-			starspan_report(tr);
-		}
 		if ( show_fields ) {
 			if ( !tr.getVector() ) {
 				usage("--show-fields: Please provide the vector datasource\n");

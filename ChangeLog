@@ -1,7 +1,10 @@
 starspan ChangeLog
 $Id$
 
-2007-11-16: carlos rueda
+2007-11-16: Carlos Rueda
+	** Starting version 1.0.xx **
+
+	- configure.in to version 1.0.01	
 	- --report too restrictive about inputs: fixed. 
 	
 2006-3-25: perrygeo
