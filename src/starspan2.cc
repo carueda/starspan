@@ -117,7 +117,7 @@ int main(int argc, char ** argv) {
 	globalOptions.mini_raster_parity = "";
 	globalOptions.mini_raster_separation = 0;
 	
-	
+
 	bool report_elapsed_time = false;
 	bool do_report = false;
 	bool show_fields = false;
@@ -148,8 +148,9 @@ int main(int argc, char ** argv) {
 
 	const char* dump_geometries_filename = NULL;
 	
-	//
-	// collect arguments  -- TODO: use getopt later on
+	
+	// ---------------------------------------------------------------------
+	// collect arguments
 	//
 	for ( int i = 1; i < argc; i++ ) {
 		
@@ -356,10 +357,20 @@ int main(int argc, char ** argv) {
 		}
 		
 		else if ( 0==strcmp("--fields", argv[i]) ) {
-			if ( !select_fields )
+			if ( !select_fields ) {
 				select_fields = new vector<const char*>();
+			}
+			// the special name "none" will indicate not fields at all:
+			bool none = false;
 			while ( ++i < argc && argv[i][0] != '-' ) {
-				select_fields->push_back(argv[i]);
+				const char* str = argv[i];
+				none = none || 0==strcmp(str, "none");
+				if ( !none ) {
+					select_fields->push_back(str);
+				}
+			}
+			if ( none ) {
+				select_fields->clear();
 			}
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
@@ -370,6 +381,9 @@ int main(int argc, char ** argv) {
 		}
 		
 		else if ( 0==strcmp("--RID", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' ) {
+				usage("--RID: what raster ID?");
+			}
 			globalOptions.RID = argv[i];
 			if ( globalOptions.RID != "file"
 			&&   globalOptions.RID != "path"
@@ -409,6 +423,7 @@ int main(int argc, char ** argv) {
 			usage("invalid arguments");
 		}
 	}
+	// ---------------------------------------------------------------------
 	
 	CPLPushErrorHandler(starspan_myErrorHandler);
 

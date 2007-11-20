@@ -1,6 +1,11 @@
 starspan ChangeLog
 $Id$
 
+2007-11-19
+   	- Option --fields now also accepts "none"
+	- Fixed argument check for --RID
+	
+	
 2007-11-16: Carlos Rueda
 	** Starting version 1.0.xx **
 
