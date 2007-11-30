@@ -37,7 +37,7 @@ public:
 		global_info = 0;
 		poLayer = vect->getLayer(layernum);
 		if ( !poLayer ) {
-			fprintf(stderr, "Couldn't fetch layer 0\n");
+			fprintf(stderr, "Couldn't fetch layer %d\n", layernum);
 			exit(1);
 		}
 	}

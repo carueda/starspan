@@ -125,6 +125,34 @@ int starspan_tuct_1(
 
 
 
+/** Stats calculation one multiple rasters.
+  * Generates a CSV file with the following columns:
+  *     FID, {vect-attrs}, RID, numPixels, S1_Band1, S1_Band2 ..., S2_Band1, S2_Band2 ...
+  * where:
+  *     FID:          feature ID as given by OGRFeature#GetFID()
+  *     {vect-attrs}: attributes from vector
+  *     RID:          Name of raster from which band values are extracted
+  *     numPixels     Number of pixels in feature
+  *     <s>_Band<b>   statistic s for band b 
+  *
+  * @param vect Vector datasource
+  * @param raster_filenames rasters
+  * @param select_stats List of desired statistics
+  * @param select_fields desired fields from vector
+  * @param csv_filename output file name
+  * @param layernum layer number within the vector datasource
+  *
+  * @return 0 iff OK 
+  */
+int starspan_stats(
+	Vector* vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> select_stats,
+	vector<const char*>* select_fields,
+	const char* csv_filename,
+	int layernum
+);
+
 /**
   * Gets an observer that computes statistics for each FID.
   *

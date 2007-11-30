@@ -1,6 +1,16 @@
 starspan ChangeLog
 $Id$
 
+2007-11-30
+	- --stats now accepts multiple rasters; each one processed at a time
+	- NOTE about the call observer->intersectionFound(OGRFeature* feature)
+	  in Traverser::process_feature:
+		Particularly in the case of a GeometryCollection, it might be the
+		case that this feature is found to be an intersecting one even though
+		that no pixel will be found to be intersecting. Observers may in general
+		want to confirm the actual intersection by looking at the number of pixels
+		that are reported to be intersected.
+	
 2007-11-19
    	- Option --fields now also accepts "none"
 	- Fixed argument check for --RID

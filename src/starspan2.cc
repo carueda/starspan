@@ -508,6 +508,23 @@ int main(int argc, char ** argv) {
 			usage("--csv expects at least a raster input (use --raster)");
 		}
 	}
+	
+	else if ( stats_name ) {
+		//Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
+		//if ( obs )
+		//	tr.addObserver(obs);
+		
+		res = starspan_stats(
+			vect,  
+			raster_filenames,     
+			select_stats,
+			select_fields, 
+			stats_name,
+			vector_layernum
+		);
+		
+	}
+	
 	else if ( calbase_filename ) {
 		if ( !vect ) {
 			usage("--calbase expects a vector input (use --vector)");
@@ -604,12 +621,6 @@ int main(int argc, char ** argv) {
 		//	
 		// COMMANDS
 		//
-		
-		if ( stats_name ) {
-			Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
-			if ( obs )
-				tr.addObserver(obs);
-		}
 		
 		if ( count_by_class_name ) {
 			Observer* obs = starspan_getCountByClassObserver(tr, count_by_class_name);

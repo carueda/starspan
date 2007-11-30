@@ -17,6 +17,11 @@
 using namespace std;
 
 
+/*
+	11/29/07 trying to follow similiar scheme as in starspan_csv:
+		process each raster individually ... INCOMPLETE
+*/
+
 /**
   * Creates fields and populates the table.
   */
@@ -28,8 +33,8 @@ public:
 	FILE* file;
 	vector<const char*> select_stats;
 	vector<const char*>* select_fields;
-	// is there a previous feature to be finalized?
-	bool previous;
+	const char* raster_filename;
+	string RID;  //  will be used only if globalOptions.RID != "none".
 	
 	// if all bands are of integral type, then tr.getPixelIntegerValuesInBand
 	// is used; else tr.getPixelDoubleValuesInBand is used.
@@ -38,12 +43,16 @@ public:
 	Stats stats;
 	double* result_stats[TOT_RESULTS];
 	
+	bool write_header;
+	bool closeFile;
 	bool releaseStats;
-	
-	// last processed FID
-	long last_FID;
-	
+
+	// NULL if no pending feature to be processed
+	OGRFeature* last_feature;	
 		
+	// last processed FID (this value "survives" last_feature)
+	long last_FID;
+
 	/**
 	  * Creates a stats calculator
 	  */
@@ -53,16 +62,23 @@ public:
 	{
 		vect = tr.getVector();
 		global_info = 0;
-		previous = false;
 		for ( unsigned i = 0; i < TOT_RESULTS; i++ ) {
 			result_stats[i] = 0;
 			stats.include[i] = false;
 		}
+		
+		// by default, write the header in init()
+		write_header = true;
+		
+		// by default, close the file in end()
+		closeFile = true;
+
 		// by default, result_stats arrays (to be allocated in init())
 		// get released in end():
 		releaseStats = true;
 
 		last_FID = -1;
+		last_feature = 0;
 		
 		for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 			if ( 0 == strcmp(*stat, "avg") )
@@ -96,11 +112,13 @@ public:
 	}
 	
 	/**
-	  * finalizes current feature if any; closes the file
+	  * finalizes current feature if any; 
+	  * closes the file if closeFile is true;
+	  * releases the result_stats arrays if releaseStats is true
 	  */
 	void end() {
 		finalizePreviousFeatureIfAny();
-		if ( file ) {
+		if ( closeFile && file ) {
 			fclose(file);
 			cout<< "Stats: finished" << endl;
 			file = 0;
@@ -126,8 +144,9 @@ public:
 	}
 
 	/**
-	  * Creates first line with column headers:
-	  *    FID, numPixels, S1_Band1, S1_Band2 ..., S2_Band1, S2_Band2 ...
+	  * If write_header is true, it creates first line with 
+	  * column headers:
+	  *    FID, {vect-attrs}, RID, numPixels, S1_Band1, S1_Band2 ..., S2_Band1, S2_Band2 ...
 	  * where S# is each desired statistics
 	  */
 	void init(GlobalInfo& info) {
@@ -136,14 +155,14 @@ public:
 		int layernum = tr.getLayerNum();
 		OGRLayer* poLayer = vect->getLayer(layernum);
 		if ( !poLayer ) {
-			cerr<< "Couldn't fetch layer" << endl;
+			cerr<< "Couldn't fetch layer " <<layernum<<  endl;
 			exit(1);
 		}
 
 		//		
 		// write column headers:
 		//
-		if ( file ) {
+		if ( write_header && file ) {
 			// Create FID field
 			fprintf(file, "FID");
 	
@@ -165,6 +184,10 @@ public:
 				}
 			}
 			
+			
+			// RID column, if to be included
+			if ( globalOptions.RID != "none" )
+				fprintf(file, ",RID");
 			
 			// Create numPixels field
 			fprintf(file, ",numPixels");
@@ -192,6 +215,14 @@ public:
 				break;
 			}
 		}		
+		
+		// prepare RID
+		if ( globalOptions.RID != "none" ) {
+			RID = raster_filename;
+			if ( globalOptions.RID == "file" ) {
+				starspan_simplify_filename(RID);
+			}
+		}
 	}
 	
 
@@ -236,12 +267,54 @@ public:
 	  * dispatches finalization of previous feature
 	  */
 	void finalizePreviousFeatureIfAny(void) {
-		if ( !previous )
+		if ( !last_feature )
 			return;
+		
+		
+		if ( 0 == tr.getPixelSetSize() ) {
+			if ( globalOptions.verbose ) {
+				cout<< "No intersecting pixels actually found for previous FID: " <<last_feature->GetFID()<< endl;
+			}
+			delete last_feature;
+			last_feature = 0;
+			return;
+		}	
 		
 		computeResults();
  
+
+
 		if ( file ) {
+			// Add FID value:
+			fprintf(file, "%ld", last_feature->GetFID());
+	
+			// add attribute fields from source feature to record:
+			if ( select_fields ) {
+				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
+					const int i = last_feature->GetFieldIndex(*fname);
+					if ( i < 0 ) {
+						cerr<< endl << "\tField `" <<*fname<< "' not found" << endl;
+						exit(1);
+					}
+					const char* str = last_feature->GetFieldAsString(i);
+					fprintf(file, ",%s", str);
+				}
+			}
+			else {
+				// all fields
+				int last_feature_field_count = last_feature->GetFieldCount();
+				for ( int i = 0; i < last_feature_field_count; i++ ) {
+					const char* str = last_feature->GetFieldAsString(i);
+					fprintf(file, ",%s", str);
+				}
+			}
+			
+			// add RID field
+			if ( globalOptions.RID != "none" ) {
+				fprintf(file, ",%s", RID.c_str());
+			}
+			
+			
 			// Add numPixels value:
 			fprintf(file, ",%d", tr.getPixelSetSize());
 			
@@ -295,50 +368,20 @@ public:
 			}
 			fprintf(file, "\n");
 		}
-		previous = false;
+		delete last_feature;
+		last_feature = 0;
 	}
 
 	/**
-	  * dispatches aggregation of current feature and prepares for next
+	  * dispatches pending feature if any, and prepares for the next
 	  */
 	void intersectionFound(OGRFeature* feature) {
 		finalizePreviousFeatureIfAny();
 		
 		// keep track of last FID processed:
 		last_FID = feature->GetFID();
-
-		//
-		// start info for new feature:
-		//
 		
-		if ( file ) {
-			// Add FID value:
-			fprintf(file, "%ld", feature->GetFID());
-	
-			// add attribute fields from source feature to record:
-			if ( select_fields ) {
-				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
-					const int i = feature->GetFieldIndex(*fname);
-					if ( i < 0 ) {
-						cerr<< endl << "\tField `" <<*fname<< "' not found" << endl;
-						exit(1);
-					}
-					const char* str = feature->GetFieldAsString(i);
-					fprintf(file, ",%s", str);
-				}
-			}
-			else {
-				// all fields
-				int feature_field_count = feature->GetFieldCount();
-				for ( int i = 0; i < feature_field_count; i++ ) {
-					const char* str = feature->GetFieldAsString(i);
-					fprintf(file, ",%s", str);
-				}
-			}
-		}
-		
-		// rest of record will be done by finalizePreviousFeatureIfAny
-		previous = true;
+		last_feature = feature->Clone();
 	}
 	
 	
@@ -440,5 +483,110 @@ double** starspan_getFeatureStatsByField(
 	tr.releaseObservers();
 	
 	return result_stats;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Each raster is processed independently
+//
+int starspan_stats(
+	Vector* vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> select_stats,
+	vector<const char*>* select_fields,
+	const char* csv_filename,
+	int layernum
+) {
+	FILE* file;
+	bool new_file = false;
+	
+	// if file exists, append new rows. Otherwise create file.
+	file = fopen(csv_filename, "r+");
+	if ( file ) {
+		if ( globalOptions.verbose )
+			fprintf(stdout, "Appending to existing file %s\n", csv_filename);
+
+		fseek(file, 0, SEEK_END);
+
+		// check that new data will start in a new line:
+		// if last character is not '\n', then write a '\n':
+		// (This check will make the output more robust in case
+		// the previous information is not properly aligned, eg.
+		// when the previous generation was killed for some reason.)
+		long endpos = ftell(file);
+		if ( endpos > 0 ) {
+			fseek(file, endpos -1, SEEK_SET);
+			char c;
+			if ( 1 == fread(&c, sizeof(c), 1, file) ) {
+				if ( c != '\n' )
+					fputc('\n', file);    // add a new line
+			}
+		}
+	}
+	else {
+		// create output file
+		file = fopen(csv_filename, "w");
+		if ( !file) {
+			fprintf(stderr, "Cannot create %s\n", csv_filename);
+			return 1;
+		}
+		new_file = true;
+	}
+
+	Traverser tr;
+	tr.setVector(vect);
+	tr.setLayerNum(layernum);
+
+	if ( globalOptions.pix_prop >= 0.0 )
+		tr.setPixelProportion(globalOptions.pix_prop);
+	if ( globalOptions.FID >= 0 )
+		tr.setDesiredFID(globalOptions.FID);
+	tr.setVerbose(globalOptions.verbose);
+	if ( globalOptions.progress ) {
+		tr.setProgress(globalOptions.progress_perc, cout);
+		cout << "Number of features: ";
+		long psize = vect->getLayer(layernum)->GetFeatureCount();
+		if ( psize >= 0 )
+			cout << psize;
+		else
+			cout << "(not known in advance)";
+		cout<< endl;
+	}
+	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
+	
+
+	StatsObserver obs(tr, file, select_stats, select_fields);
+	obs.closeFile = false;
+	tr.addObserver(&obs);
+
+
+	Raster* rasters[raster_filenames.size()];
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		rasters[i] = new Raster(raster_filenames[i]);
+	}
+	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
+		obs.raster_filename = raster_filenames[i];
+		obs.write_header = new_file && i == 0;
+		tr.removeRasters();
+		tr.addRaster(rasters[i]);
+		
+		tr.traverse();
+
+		if ( globalOptions.report_summary ) {
+			tr.reportSummary();
+		}
+	}
+	
+	fclose(file);
+	
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+		delete rasters[i];
+	}
+	
+	return 0;
 }
 

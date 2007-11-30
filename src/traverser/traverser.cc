@@ -649,6 +649,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 		}
 		goto done;
 	}
+
 	summary.num_intersecting_features++;
 
 	if ( verbose ) {
@@ -658,11 +659,17 @@ void Traverser::process_feature(OGRFeature* feature) {
 	}
 	
 	//
-	// notify observers about this feature
+	// Notify observers about this feature:
+	// NOTE: Particularly in the case of a GeometryCollection, it might be the
+	// case that this feature is found to be an intersecting one even though
+	// that no pixel will be found to be intersecting. Observers may in general
+	// want to confirm the actual intersection by looking at the number of pixels
+	// that are reported to be intersected.
 	// 
-	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
 		(*obs)->intersectionFound(feature);
-
+	}
+	
 	pixset.clear();
 	try {
 		processGeometry(intersection_geometry, true);
@@ -674,10 +681,11 @@ void Traverser::process_feature(OGRFeature* feature) {
 	}
 
 	//
-	// notify observers processing of this feature has finished
+	// notify observers that processing of this feature has finished
 	// 
-	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
 		(*obs)->intersectionEnd(feature);
+	}
 
 done:
 	delete intersection_geometry;
@@ -711,20 +719,10 @@ void Traverser::traverse() {
 		cerr<< "traverser: No raster datasets were specified!\n";
 		return;
 	}
-	//
-	// Only first layer (0) is processed (which assumes only one layer exists)
-	// 
-	//if ( vect->getLayerCount() > 1 ) {
-	//	cerr<< "Vector datasource with more than one layer: "
-	//	    << vect->getName()
-	//		<< "\nOnly one layer expected.\n"
-	//	;
-	//	return;
-	//}
 	
 	OGRLayer* layer = vect->getLayer(layernum);
 	if ( !layer ) {
-		cerr<< "Couldn't get layer from " << vect->getName()<< endl;
+		cerr<< "Couldn't get layer " <<layernum<< " from " << vect->getName()<< endl;
 		return;
 	}
 	layer->ResetReading();
@@ -743,10 +741,11 @@ void Traverser::traverse() {
 	//
 	// notify observers about initialization of process
 	//
-	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
 		(*obs)->init(globalInfo);
+	}
 
-    OGRFeature* feature;
+	OGRFeature* feature;
 	
 	//
 	// Was a specific FID given?
@@ -820,8 +819,9 @@ void Traverser::traverse() {
 	//
 	// notify observers about finalization of process
 	//
-	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ )
+	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
 		(*obs)->end();
+	}
 
 	delete[] bandValues_buffer;
 	bandValues_buffer = 0;
