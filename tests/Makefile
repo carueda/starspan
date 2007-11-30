@@ -5,15 +5,42 @@
 
 STARSPAN=../starspan
 
-.PHONY: test init test_miniraster test_miniraster_strip
+.PHONY: test init test_csv test_stats test_miniraster test_miniraster_strip
 
-ALL_TESTS: init test_miniraster test_miniraster_strip
+ALL_TESTS: init test_csv test_stats test_miniraster test_miniraster_strip
 	@echo "!!!!!!! $@ : OK !!!!!!!"
 
 init:
-	chmod +x ${STARSPAN}
+	$(shell if [ ! -x ${STARSPAN} ]; then chmod +x ${STARSPAN}; fi)
 	mkdir -p generated/
 
+test_csv:
+	mkdir -p generated/csv/
+	rm -f generated/csv/*.csv
+	$(shell if [ -f expected/csv/myoutput.csv.gz ]; then gunzip expected/csv/myoutput.csv.gz; fi)
+	${STARSPAN} \
+		--vector data/vector/starspan_testply.shp \
+		--raster data/raster/starspan[1-3]raster.img \
+		--csv generated/csv/myoutput.csv \
+	diff expected/csv/myoutput.csv generated/csv/myoutput.csv
+	@echo "$@ : OK"
+	@echo
+	
+test_stats:
+	mkdir -p generated/stats/
+	rm -f generated/stats/*.csv
+	$(shell if [ -f expected/stats/myoutput.csv.gz ]; then gunzip expected/stats/myoutput.csv.gz; fi)
+	${STARSPAN} \
+		--verbose \
+		--fields none \
+		--vector data/vector/starspan_testply.shp \
+		--raster data/raster/starspan[1-3]raster.img \
+		--nodata 0 \
+		--stats generated/stats/myoutput.csv avg mode stdev min max sum median nulls
+	diff expected/stats/myoutput.csv generated/stats/myoutput.csv
+	@echo "$@ : OK"
+	@echo
+	
 test_miniraster:
 	mkdir -p generated/miniraster/
 	${STARSPAN} \
