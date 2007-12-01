@@ -1,7 +1,7 @@
 starspan ChangeLog
 $Id$
 
-2007-11-30
+2007-11-30 (1.0.02)
 	- --stats now accepts multiple rasters; each one processed at a time
 	- NOTE about the call observer->intersectionFound(OGRFeature* feature)
 	  in Traverser::process_feature:
