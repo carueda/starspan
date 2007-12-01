@@ -36,6 +36,7 @@ Traverser::Traverser() {
 	verbose = false;
 	logstream = 0;
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
+	debug_use_spatial_filter = getenv("STARSPAN_USE_SPATIAL_FILTER") != 0;
 	skip_invalid_polys = false;
 
 	bufferParams.given = false;
@@ -790,6 +791,16 @@ void Traverser::traverse() {
 	// else: process each feature in vector datasource:
 	//
 	else {
+		
+		if ( debug_use_spatial_filter ) {
+			cout<< "Using spatial filter (under testing)" <<endl;
+			double minX = raster_env.MinX;
+			double minY = raster_env.MinY; 
+			double maxX = raster_env.MaxX; 
+			double maxY = raster_env.MaxY; 
+			layer->SetSpatialFilterRect(minX, minY, maxX, maxY);
+		}
+		
 		Progress* progress = 0;
 		if ( progress_out ) {
 			long psize = layer->GetFeatureCount();

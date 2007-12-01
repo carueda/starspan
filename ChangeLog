@@ -1,6 +1,12 @@
 starspan ChangeLog
 $Id$
 
+2007-12-01
+	- Testing the use of spatial filter to get features:
+		STARSPAN_USE_SPATIAL_FILTER=1 starspan ...
+	  under tests/, for example:
+	  	make STARSPAN=starspan STARSPAN_USE_SPATIAL_FILTER=1 test_csv
+	
 2007-11-30 (1.0.02)
 	- --stats now accepts multiple rasters; each one processed at a time
 	- NOTE about the call observer->intersectionFound(OGRFeature* feature)

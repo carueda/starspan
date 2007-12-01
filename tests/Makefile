@@ -21,7 +21,7 @@ test_csv:
 	${STARSPAN} \
 		--vector data/vector/starspan_testply.shp \
 		--raster data/raster/starspan[1-3]raster.img \
-		--csv generated/csv/myoutput.csv \
+		--csv generated/csv/myoutput.csv
 	diff expected/csv/myoutput.csv generated/csv/myoutput.csv
 	@echo "$@ : OK"
 	@echo
