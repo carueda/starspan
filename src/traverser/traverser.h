@@ -638,7 +638,7 @@ private:
 	bool verbose;
 	ostream* logstream;
 	bool debug_dump_polys;
-	bool debug_use_spatial_filter;
+	bool debug_no_spatial_filter;
 	bool skip_invalid_polys;
 	
 	geos::WKTWriter wktWriter;

@@ -1,6 +1,23 @@
-starspan ChangeLog
+StarSpan ChangeLog
 $Id$
 
+2007-12-03 (1.0.03) Performance inprovement with spatial filter.
+	- traverser.cc: Spatial filtering is now used by default. In case no 
+	spatial	filtering is desired, define the environment variable 
+	STARSPAN_NO_SPATIAL_FILTER.
+		
+	Performance comparison with the --stats command on the following inputs:
+	  vector: /proj/delta/gis/field_work/field_data/200706/data3/all_teams_nudged.shp 
+	  64 rasters: /proj/delta/raster/hymap/base/ref1_geo3/200706/*_ort
+	  
+	   Rasters with intersecting pixels: 47
+	Rasters with No intersecting pixels: 17
+	
+	'time' reported:            real        user     system      
+	   With spatial filter:    133.63      76.34    16:35.81 
+	     No spatial filter:  20m10.507s  5m55.868s  1m23.537s
+	In this case the improvement gives a ~10 times speedup!
+	
 2007-12-01
 	- Testing the use of spatial filter to get features:
 		STARSPAN_USE_SPATIAL_FILTER=1 starspan ...

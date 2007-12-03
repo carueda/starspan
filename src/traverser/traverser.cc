@@ -36,7 +36,7 @@ Traverser::Traverser() {
 	verbose = false;
 	logstream = 0;
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
-	debug_use_spatial_filter = getenv("STARSPAN_USE_SPATIAL_FILTER") != 0;
+	debug_no_spatial_filter = getenv("STARSPAN_NO_SPATIAL_FILTER") != 0;
 	skip_invalid_polys = false;
 
 	bufferParams.given = false;
@@ -792,8 +792,10 @@ void Traverser::traverse() {
 	//
 	else {
 		
-		if ( debug_use_spatial_filter ) {
-			cout<< "Using spatial filter (under testing)" <<endl;
+		if ( debug_no_spatial_filter ) {
+			cout<< "*** Spatial filtering disabled ***" <<endl;
+		}
+		else {
 			double minX = raster_env.MinX;
 			double minY = raster_env.MinY; 
 			double maxX = raster_env.MaxX; 
