@@ -729,7 +729,7 @@ int main(int argc, char ** argv) {
 
 	// more final cleanup:
 	CPLPopErrorHandler();
-	geos::Unload::Release();	
+	Unload::Release();	
 	
 	return res;
 }

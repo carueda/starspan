@@ -1,6 +1,18 @@
 StarSpan ChangeLog
 $Id$
 
+2007-12-10 (1.0.04)
+	- Changes to compile StarSpan against GEOS 3.x.x
+	  See GEOS_VERSION_MAJOR-conditioned code in:
+	  	traverser.h, traverser.cc
+	  Other various changes consisted in dropping the geos::* namespace,
+	  which is now handled in traverser.h
+	  
+	  NOTE: Successfully tested against 3.0.0rc3 on various machines but
+	  was unsuccessful against 3.0.0rc4 (latest at this date): an error
+	  at link time relate with not finding destructor ~Coordinate or
+	  something liket that.
+	  
 2007-12-03 (1.0.03) Performance inprovement with spatial filter.
 	- traverser.cc: Spatial filtering is now used by default. In case no 
 	spatial	filtering is desired, define the environment variable 

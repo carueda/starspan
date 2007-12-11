@@ -25,6 +25,18 @@
 
 using namespace std;
 
+#if GEOS_VERSION_MAJOR < 3
+	using namespace geos;
+	
+	#define EXC_STRING(ex) (ex)->toString()
+#else
+	using namespace geos;
+	using namespace geos::util;
+	using namespace geos::geom;
+	
+	#define EXC_STRING(ex) (ex)->what()
+#endif
+
 
 /**
   * Pixel location.
@@ -170,20 +182,20 @@ public:
 };
 
 
-extern geos::GeometryFactory* global_factory;
-extern const geos::CoordinateSequenceFactory* global_cs_factory;
+extern GeometryFactory* global_factory;
+extern const CoordinateSequenceFactory* global_cs_factory;
 
 // create pixel polygon
-inline geos::Polygon* create_pix_poly(double x0, double y0, double x1, double y1) {
-	geos::CoordinateSequence *cl = new geos::DefaultCoordinateSequence();
-	cl->add(geos::Coordinate(x0, y0));
-	cl->add(geos::Coordinate(x1, y0));
-	cl->add(geos::Coordinate(x1, y1));
-	cl->add(geos::Coordinate(x0, y1));
-	cl->add(geos::Coordinate(x0, y0));
-	geos::LinearRing* pixLR = global_factory->createLinearRing(cl);
-	vector<geos::Geometry *>* holes = NULL;
-	geos::Polygon *poly = global_factory->createPolygon(pixLR, holes);
+inline Polygon* create_pix_poly(double x0, double y0, double x1, double y1) {
+	CoordinateSequence *cl = new DefaultCoordinateSequence();
+	cl->add(Coordinate(x0, y0));
+	cl->add(Coordinate(x1, y0));
+	cl->add(Coordinate(x1, y1));
+	cl->add(Coordinate(x0, y1));
+	cl->add(Coordinate(x0, y0));
+	LinearRing* pixLR = global_factory->createLinearRing(cl);
+	vector<Geometry *>* holes = NULL;
+	Polygon *poly = global_factory->createPolygon(pixLR, holes);
 	return poly;
 }
 
@@ -510,26 +522,26 @@ private:
 			return _Rect(tr, x2, y2, cols - cols2, rows - rows2);
 		}
 		
-		inline geos::Geometry* intersect(geos::Polygon* p) {
+		inline Geometry* intersect(Polygon* p) {
 			if ( empty() )
 				return 0;
 			
-			geos::Polygon* poly = create_pix_poly(x, y, x2(), y2());
-			geos::Geometry* inters = 0;
+			Polygon* poly = create_pix_poly(x, y, x2(), y2());
+			Geometry* inters = 0;
 			try {
 				inters = p->intersection(poly);
 			}
-			catch(geos::TopologyException* ex) {
-				cerr<< "TopologyException: " << ex->toString()<< endl;
+			catch(TopologyException* ex) {
+				cerr<< "TopologyException: " << EXC_STRING(ex) << endl;
 				if ( tr->debug_dump_polys ) {
 					cerr<< "pix_poly = " << tr->wktWriter.write(poly) << endl;
 					cerr<< "geos_poly = " << tr->wktWriter.write(p) << endl;
 				}
 			}
-			catch(geos::GEOSException* ex) {
-				cerr<< "geos::GEOSException: " << ex->toString()<< endl;
+			catch(GEOSException* ex) {
+				cerr<< "GEOSException: " << EXC_STRING(ex) << endl;
 				if ( tr->debug_dump_polys ) {
-					geos::WKTWriter wktWriter;
+					WKTWriter wktWriter;
 					cerr<< "pix_poly = " << tr->wktWriter.write(poly) << endl;
 					cerr<< "geos_poly = " << tr->wktWriter.write(p) << endl;
 				}
@@ -615,10 +627,10 @@ private:
 	void processMultiPoint(OGRMultiPoint*);
 	void processLineString(OGRLineString* linstr);
 	void processMultiLineString(OGRMultiLineString* coll);
-	void processValidPolygon(geos::Polygon* geos_poly);
-	void processValidPolygon_QT(geos::Polygon* geos_poly);
-	void rasterize_poly_QT(_Rect& env, geos::Polygon* poly);
-	void rasterize_geometry_QT(_Rect& env, geos::Geometry* geom);
+	void processValidPolygon(Polygon* geos_poly);
+	void processValidPolygon_QT(Polygon* geos_poly);
+	void rasterize_poly_QT(_Rect& env, Polygon* poly);
+	void rasterize_geometry_QT(_Rect& env, Geometry* geom);
 	void dispatchRect_QT(_Rect& r);
 	void processPolygon(OGRPolygon* poly);
 	void processMultiPolygon(OGRMultiPolygon* mpoly);
@@ -641,7 +653,7 @@ private:
 	bool debug_no_spatial_filter;
 	bool skip_invalid_polys;
 	
-	geos::WKTWriter wktWriter;
+	WKTWriter wktWriter;
 
 	// buffer parameters
 	BufferParams bufferParams;

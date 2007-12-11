@@ -27,8 +27,8 @@ inline void swap_if_greater(int& a, int&b) {
 
 
 // processValidPolygon_QT: Quadtree algorithm
-void Traverser::processValidPolygon_QT(geos::Polygon* geos_poly) {
-	const geos::Envelope* intersection_env = geos_poly->getEnvelopeInternal();
+void Traverser::processValidPolygon_QT(Polygon* geos_poly) {
+	const Envelope* intersection_env = geos_poly->getEnvelopeInternal();
 	
 	// get envelope corners in pixel coordinates:
 	int minCol, minRow, maxCol, maxRow;
@@ -50,7 +50,7 @@ void Traverser::processValidPolygon_QT(geos::Polygon* geos_poly) {
 // rasterize_geometry_QT and rasterize_poly_QT are mutually recursive
 // functions that implicitily do a quadtree-like scan:
 //
-void Traverser::rasterize_poly_QT(_Rect& e, geos::Polygon* i) {
+void Traverser::rasterize_poly_QT(_Rect& e, Polygon* i) {
 	if ( i == NULL || e.empty() )
 		return;
 
@@ -99,28 +99,28 @@ void Traverser::rasterize_poly_QT(_Rect& e, geos::Polygon* i) {
 	//
 	
 	_Rect e_ul = e.upperLeft();
-	geos::Geometry* i_ul = e_ul.intersect(i);
+	Geometry* i_ul = e_ul.intersect(i);
 	if ( i_ul ) {		
 		rasterize_geometry_QT(e_ul, i_ul);
 		delete i_ul;
 	}
 	
 	_Rect e_ur = e.upperRight();
-	geos::Geometry* i_ur = e_ur.intersect(i);
+	Geometry* i_ur = e_ur.intersect(i);
 	if ( i_ur ) {		
 		rasterize_geometry_QT(e_ur, i_ur);
 		delete i_ur;
 	}
 
 	_Rect e_ll = e.lowerLeft();
-	geos::Geometry* i_ll = e_ll.intersect(i);
+	Geometry* i_ll = e_ll.intersect(i);
 	if ( i_ll ) {		
 		rasterize_geometry_QT(e_ll, i_ll);
 		delete i_ll;
 	}
 
 	_Rect e_lr = e.lowerRight();
-	geos::Geometry* i_lr = e_lr.intersect(i);
+	Geometry* i_lr = e_lr.intersect(i);
 	if ( i_lr ) {		
 		rasterize_geometry_QT(e_lr, i_lr);
 		delete i_lr;
@@ -128,21 +128,21 @@ void Traverser::rasterize_poly_QT(_Rect& e, geos::Polygon* i) {
 }
 
 // implicitily does a quadtree-like scan:
-void Traverser::rasterize_geometry_QT(_Rect& e, geos::Geometry* i) {
+void Traverser::rasterize_geometry_QT(_Rect& e, Geometry* i) {
 	if ( i == NULL || e.empty() )
 		return;
-	geos::GeometryTypeId type = i->getGeometryTypeId();
+	GeometryTypeId type = i->getGeometryTypeId();
 	switch ( type ) {
-		case geos::GEOS_POLYGON:
-			rasterize_poly_QT(e, (geos::Polygon*) i);
+		case GEOS_POLYGON:
+			rasterize_poly_QT(e, (Polygon*) i);
 			break;
 			
-		case geos::GEOS_MULTIPOLYGON:
-		case geos::GEOS_GEOMETRYCOLLECTION: {
-			geos::GeometryCollection* gc = (geos::GeometryCollection*) i; 
+		case GEOS_MULTIPOLYGON:
+		case GEOS_GEOMETRYCOLLECTION: {
+			GeometryCollection* gc = (GeometryCollection*) i; 
 			for ( int j = 0; j < gc->getNumGeometries(); j++ ) {
-				geos::Geometry* g = (geos::Geometry*) gc->getGeometryN(j);
-				rasterize_geometry_QT(e, (geos::Polygon*) g);
+				Geometry* g = (Geometry*) gc->getGeometryN(j);
+				rasterize_geometry_QT(e, (Polygon*) g);
 			}
 			break;
 		}

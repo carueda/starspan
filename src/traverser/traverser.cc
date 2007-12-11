@@ -15,6 +15,10 @@
 // for polygon processing:
 #include "geos/opPolygonize.h"
 
+#if GEOS_VERSION_MAJOR >= 3
+	using namespace geos::operation::polygonize;
+#endif
+
 
 Traverser::Traverser() {
 	vect = 0;
@@ -387,17 +391,17 @@ void Traverser::processMultiLineString(OGRMultiLineString* coll) {
 
 
 //
-// processValidPolygon(geos::Polygon* geos_poly): Process a valid polygon.
+// processValidPolygon(Polygon* geos_poly): Process a valid polygon.
 // Direct call to processValidPolygon_QT(geos_poly).
 //
-void Traverser::processValidPolygon(geos::Polygon* geos_poly) {
+void Traverser::processValidPolygon(Polygon* geos_poly) {
 	processValidPolygon_QT(geos_poly);
 }
 
 
 // To avoid some OGR overhead, I use GEOS directly.
-geos::GeometryFactory* global_factory = new geos::GeometryFactory();
-const geos::CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordinateSequenceFactory();
+GeometryFactory* global_factory = new GeometryFactory();
+const CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordinateSequenceFactory();
 
 	
 //
@@ -406,7 +410,7 @@ const geos::CoordinateSequenceFactory* global_cs_factory = global_factory->getCo
 // included.  
 //
 void Traverser::processPolygon(OGRPolygon* poly) {
-	geos::Polygon* geos_poly = (geos::Polygon*) poly->exportToGEOS();
+	Polygon* geos_poly = (Polygon*) poly->exportToGEOS();
 	if ( geos_poly->isValid() ) {
 		processValidPolygon(geos_poly);
 	}
@@ -426,17 +430,17 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				summary.num_polys_with_internal_ring++;
 			} 
 			else {
-				const geos::LineString* lines = geos_poly->getExteriorRing();
+				const LineString* lines = geos_poly->getExteriorRing();
 				// get noded linestring:
-				geos::Geometry* noded = 0;
+				Geometry* noded = 0;
 				const int num_points = lines->getNumPoints();
-				const geos::CoordinateSequence* coordinates = lines->getCoordinatesRO();
+				const CoordinateSequence* coordinates = lines->getCoordinatesRO();
 				for ( int i = 1; i < num_points; i++ ) {
-					vector<geos::Coordinate>* subcoordinates = new vector<geos::Coordinate>();
+					vector<Coordinate>* subcoordinates = new vector<Coordinate>();
 					subcoordinates->push_back(coordinates->getAt(i-1));
 					subcoordinates->push_back(coordinates->getAt(i));
-					geos::CoordinateSequence* cs = global_cs_factory->create(subcoordinates);
-					geos::LineString* ln = global_factory->createLineString(cs);
+					CoordinateSequence* cs = global_cs_factory->create(subcoordinates);
+					LineString* ln = global_factory->createLineString(cs);
 					
 					if ( !noded )
 						noded = ln;
@@ -448,11 +452,11 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				
 				if ( noded ) {
 					// now, polygonize:
-					geos::Polygonizer polygonizer;
+					Polygonizer polygonizer;
 					polygonizer.add(noded);
 					
 					// and process generated sub-polygons:
-					vector<geos::Polygon*>* polys = polygonizer.getPolygons();
+					vector<Polygon*>* polys = polygonizer.getPolygons();
 					if ( polys ) {
 						summary.num_polys_exploded++;
 						summary.num_sub_polys += polys->size();
@@ -613,9 +617,9 @@ void Traverser::process_feature(OGRFeature* feature) {
 		try {
 			buffered_geometry = feature_geometry->Buffer(distance, quadrantSegments);
 		}
-		catch(geos::GEOSException* ex) {
+		catch(GEOSException* ex) {
 			cerr<< ">>>>> FID: " << feature->GetFID()
-				<< "  GEOSException: " << ex->toString()<< endl;
+				<< "  GEOSException: " << EXC_STRING(ex) << endl;
 			return;
 		}
 		if ( !buffered_geometry ) {
@@ -638,9 +642,9 @@ void Traverser::process_feature(OGRFeature* feature) {
 	try {
 		intersection_geometry = globalInfo.rasterPoly.Intersection(feature_geometry);
 	}
-	catch(geos::GEOSException* ex) {
+	catch(GEOSException* ex) {
 		cerr<< ">>>>> FID: " << feature->GetFID()
-		    << "  GEOSException: " << ex->toString()<< endl;
+		    << "  GEOSException: " << EXC_STRING(ex) << endl;
 		goto done;
 	}
 
