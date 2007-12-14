@@ -77,6 +77,9 @@ struct GlobalOptions {
 	
 	/** separation in pixels between minirasters in strip */
 	int mini_raster_separation;
+	
+	/** separator for CSV files */
+	string delimiter;
 };
 
 extern GlobalOptions globalOptions;

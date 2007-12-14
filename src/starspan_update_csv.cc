@@ -67,6 +67,8 @@ int starspan_update_csv(
 		}
 	}
 
+	const string delimiter = globalOptions.delimiter;
+	
 	// create output file
 	ofstream out_file(out_csv_filename, ios::out);
 	if ( !out_file ) {
@@ -81,8 +83,9 @@ int starspan_update_csv(
 	for ( unsigned i = 0; i < num_existing_fields; i++ ) {
 		string field = csv.getfield(i);
 		cout << "Creating field: " << field << endl;
-		if ( i > 0 )
-			out_file << ",";
+		if ( i > 0 ) {
+			out_file << delimiter;
+		}
 		out_file << field;
 	}
 
@@ -103,12 +106,12 @@ int starspan_update_csv(
 			char field_name[1024];
 			sprintf(field_name, "Band_%d_%s", b+1, rast_name);
 			cout<< "Creating field: " <<field_name<<endl;
-			out_file << "," << field_name;
+			out_file << delimiter << field_name;
 			next_field_index++;
 		}
 	}
 	// end column headers
-	out_file << "\n";
+	out_file << endl;
 	
 	
 	//
@@ -124,8 +127,9 @@ int starspan_update_csv(
 		//
 		for ( unsigned i = 0; i < num_existing_fields; i++ ) {
 			string field = csv.getfield(i);
-			if ( i > 0 )
-				out_file << ",";
+			if ( i > 0 ) {
+				out_file << delimiter;
+			}
 			out_file << field;
 		}
 		
@@ -178,7 +182,7 @@ int starspan_update_csv(
 					GDALDataType bandType = band->GetRasterDataType();
 
 					double val = starspan_extract_double_value(bandType, ptr);
-					out_file << "," << val;
+					out_file << delimiter << val;
 
 					int bandTypeSize = GDALGetDataTypeSize(bandType) >> 3;
 					ptr += bandTypeSize;

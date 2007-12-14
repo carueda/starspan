@@ -1,6 +1,14 @@
 StarSpan ChangeLog
 $Id$
 
+2007-12-13 (1.0.05)
+	- FR #200332: Added --delimiter option, now used in:
+	    function              command
+	    -------------------   ------------
+	    starspan_csv          --csv
+	    starspan_stats        --stats
+	    starspan_update_csv   --update-csv
+	
 2007-12-10 (1.0.04)
 	- Changes to compile StarSpan against GEOS 3.x.x
 	  See GEOS_VERSION_MAJOR-conditioned code in:

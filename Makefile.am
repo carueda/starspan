@@ -22,6 +22,7 @@ starspan2_SOURCES =	\
 	src/starspan_dump.cc \
 	src/starspan_tuct2.cc \
 	src/csv/Csv.cc \
+	src/csv/CsvOutput.cc \
 	src/jts/jts.cc \
 	src/raster/Raster_gdal.cc \
 	src/rasterizers/LineRasterizer.cc \

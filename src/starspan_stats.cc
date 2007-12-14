@@ -8,6 +8,7 @@
 #include "starspan.h"           
 #include "traverser.h"       
 #include "Stats.h"       
+#include "Csv.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -16,11 +17,6 @@
 
 using namespace std;
 
-
-/*
-	11/29/07 trying to follow similiar scheme as in starspan_csv:
-		process each raster individually ... INCOMPLETE
-*/
 
 /**
   * Creates fields and populates the table.
@@ -52,6 +48,9 @@ public:
 		
 	// last processed FID (this value "survives" last_feature)
 	long last_FID;
+	
+	CsvOutput csvOut;
+
 
 	/**
 	  * Creates a stats calculator
@@ -159,17 +158,23 @@ public:
 			exit(1);
 		}
 
+		csvOut.setFile(file);
+		csvOut.setSeparator(globalOptions.delimiter);
+		csvOut.startLine();
+		
 		//		
 		// write column headers:
 		//
 		if ( write_header && file ) {
 			// Create FID field
-			fprintf(file, "FID");
+			csvOut.addString("FID");
+			//fprintf(file, "FID");
 	
 			// Create fields:
 			if ( select_fields ) {
 				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
-					fprintf(file, ",%s", *fname);
+					csvOut.addString(*fname);
+					//fprintf(file, ",%s", *fname);
 				}
 			}
 			else {
@@ -180,25 +185,31 @@ public:
 				for ( int i = 0; i < feature_field_count; i++ ) {
 					OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
 					const char* pfield_name = poField->GetNameRef();
-					fprintf(file, ",%s", pfield_name);
+					csvOut.addString(pfield_name);
+					//fprintf(file, ",%s", pfield_name);
 				}
 			}
 			
 			
 			// RID column, if to be included
-			if ( globalOptions.RID != "none" )
-				fprintf(file, ",RID");
+			if ( globalOptions.RID != "none" ) {
+				csvOut.addString("RID");
+				//fprintf(file, ",RID");
+			}
 			
 			// Create numPixels field
-			fprintf(file, ",numPixels");
+			csvOut.addString("numPixels");
+			//fprintf(file, ",numPixels");
 			
 			// Create fields for bands
 			for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 				for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
-					fprintf(file, ",%s_Band%d", *stat, i+1);
+					csvOut.addField("%s_Band%d", *stat, i+1);
+					//fprintf(file, ",%s_Band%d", *stat, i+1);
 				}
-			}		
-			fprintf(file, "\n");
+			}	
+			csvOut.endLine();
+			//fprintf(file, "\n");
 		}
 		
 		// allocate space for all possible results
@@ -286,7 +297,8 @@ public:
 
 		if ( file ) {
 			// Add FID value:
-			fprintf(file, "%ld", last_feature->GetFID());
+			csvOut.addField("%ld", last_feature->GetFID());
+			//fprintf(file, "%ld", last_feature->GetFID());
 	
 			// add attribute fields from source feature to record:
 			if ( select_fields ) {
@@ -297,7 +309,8 @@ public:
 						exit(1);
 					}
 					const char* str = last_feature->GetFieldAsString(i);
-					fprintf(file, ",%s", str);
+					csvOut.addString(str);
+					//fprintf(file, ",%s", str);
 				}
 			}
 			else {
@@ -305,60 +318,71 @@ public:
 				int last_feature_field_count = last_feature->GetFieldCount();
 				for ( int i = 0; i < last_feature_field_count; i++ ) {
 					const char* str = last_feature->GetFieldAsString(i);
-					fprintf(file, ",%s", str);
+					csvOut.addString(str);
+					//fprintf(file, ",%s", str);
 				}
 			}
 			
 			// add RID field
 			if ( globalOptions.RID != "none" ) {
-				fprintf(file, ",%s", RID.c_str());
+				csvOut.addString(RID);
+				//fprintf(file, ",%s", RID.c_str());
 			}
 			
 			
 			// Add numPixels value:
-			fprintf(file, ",%d", tr.getPixelSetSize());
+			csvOut.addField("%d", tr.getPixelSetSize());
+			//fprintf(file, ",%d", tr.getPixelSetSize());
 			
 			// report desired results:
 			// (desired list is traversed to keep order according to column headers)
 			for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 				if ( 0 == strcmp(*stat, "avg") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[AVG][j]);
+						csvOut.addField("%f", result_stats[AVG][j]);
+						//fprintf(file, ",%f", result_stats[AVG][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "mode") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[MODE][j]);
+						csvOut.addField("%f", result_stats[MODE][j]);
+						//fprintf(file, ",%f", result_stats[MODE][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "stdev") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[STDEV][j]);
+						csvOut.addField("%f", result_stats[STDEV][j]);
+						//fprintf(file, ",%f", result_stats[STDEV][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "min") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[MIN][j]);
+						csvOut.addField("%f", result_stats[MIN][j]);
+						//fprintf(file, ",%f", result_stats[MIN][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "max") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[MAX][j]);
+						csvOut.addField("%f", result_stats[MAX][j]);
+						//fprintf(file, ",%f", result_stats[MAX][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "sum") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[SUM][j]);
+						csvOut.addField("%f", result_stats[SUM][j]);
+						//fprintf(file, ",%f", result_stats[SUM][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "median") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%f", result_stats[MEDIAN][j]);
+						csvOut.addField("%f", result_stats[MEDIAN][j]);
+						//fprintf(file, ",%f", result_stats[MEDIAN][j]);
 					}
 				}
 				else if ( 0 == strcmp(*stat, "nulls") ) {
 					for ( unsigned j = 0; j < global_info->bands.size(); j++ ) {
-						fprintf(file, ",%d", int(result_stats[NULLS][j]) );
+						csvOut.addField("%d", int(result_stats[NULLS][j]) );
+						//fprintf(file, ",%d", int(result_stats[NULLS][j]) );
 					}
 				}
 				else {
@@ -366,7 +390,8 @@ public:
 					exit(1);
 				}
 			}
-			fprintf(file, "\n");
+			csvOut.endLine();
+			//fprintf(file, "\n");
 		}
 		delete last_feature;
 		last_feature = 0;

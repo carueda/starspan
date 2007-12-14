@@ -37,4 +37,61 @@ class Csv {	// read and parse comma-separated values
 	string::size_type advquoted(const string& line, string& fld, int);
 };
 
+
+/**
+ * Helper class to write out CSV values.
+ * @author Carlos Rueda
+ */
+class CsvOutput {
+
+  public:
+  	/**
+	 * Creates an instance with (stdout, ",", "\"") as default parameters.
+	 */
+	CsvOutput(string sep = ",", string quote = "\"") :   
+		file(stdout), separator(sep), quote(quote), numFields(0) {}
+		
+	void setFile(FILE* f) {
+		file = f;
+	}
+
+	void setSeparator(string sep) {
+		separator = sep;
+	}
+
+	void setQuote(string q) {
+		quote = q;
+	}
+
+	/**
+	 * Starts a new line.
+	 * Make sure you call endLine() first if fields have already been written.
+	 * @return this
+	 */
+	CsvOutput& startLine();
+	
+	/**
+	 * Adds a field to the current line.
+	 * @return this
+	 */
+	CsvOutput& addString(string field);
+	
+	/**
+	 * Adds a formated field to the current line.
+	 * @return this
+	 */
+	CsvOutput& addField(const char* fmt, ...);
+	
+	/** 
+	 * Writes a line feed.
+	 */
+	void endLine(void);
+	
+  private:
+	FILE* file;
+	string separator;
+	string quote;
+	int numFields;
+};
+
 #endif

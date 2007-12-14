@@ -74,6 +74,7 @@ static void usage(const char* msg) {
 		"      --nodata <value> \n"
 		"      --buffer <distance> [<quadrantSegments>] \n"
 		"      --RID {file | path | none}\n"
+		"      --delimiter <separator>\n"
 		"      --progress [<value>] \n"
 		"      --show-fields \n"
 		"      --report \n"
@@ -116,6 +117,7 @@ int main(int argc, char ** argv) {
 	globalOptions.bufferParams.quadrantSegments = "1";
 	globalOptions.mini_raster_parity = "";
 	globalOptions.mini_raster_separation = 0;
+	globalOptions.delimiter = ",";
 	
 
 	bool report_elapsed_time = false;
@@ -390,6 +392,13 @@ int main(int argc, char ** argv) {
 			&&   globalOptions.RID != "none" ) {
 				usage("--RID: expecting one of: file, path, none");
 			}
+		}
+		
+		else if ( 0==strcmp("--delimiter", argv[i]) ) {
+			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 ) {
+				usage("--delimiter: what separator?");
+			}
+			globalOptions.delimiter = argv[i];
 		}
 		
 		else if ( 0==strcmp("--progress", argv[i]) ) {

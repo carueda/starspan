@@ -5,8 +5,9 @@
 // $Id$
 //
 
-#include "starspan.h"           
-#include "traverser.h"       
+#include "starspan.h"
+#include "traverser.h"
+#include "Csv.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -27,6 +28,7 @@ public:
 	bool write_header;
 	FILE* file;
 	int layernum;
+	CsvOutput csvOut;
 	
 	/**
 	  * Creates a csv creator
@@ -49,6 +51,10 @@ public:
 	  */
 	void init(GlobalInfo& info) {
 		global_info = &info;
+		
+		csvOut.setFile(file);
+		csvOut.setSeparator(globalOptions.delimiter);
+		csvOut.startLine();
 
 		if ( write_header ) {
 			//		
@@ -56,12 +62,12 @@ public:
 			//
 	
 			// Create FID field
-			fprintf(file, "FID");
+			csvOut.addString("FID");
 			
 			// Create fields:
 			if ( select_fields ) {
 				for ( vector<const char*>::const_iterator fname = select_fields->begin(); fname != select_fields->end(); fname++ ) {
-					fprintf(file, ",%s", *fname);
+					csvOut.addString(*fname);
 				}
 			}
 			else {
@@ -72,32 +78,31 @@ public:
 				for ( int i = 0; i < feature_field_count; i++ ) {
 					OGRFieldDefn* poField = poDefn->GetFieldDefn(i);
 					const char* pfield_name = poField->GetNameRef();
-					fprintf(file, ",%s", pfield_name);
+					csvOut.addString(pfield_name);
 				}
 			}
 			
 			// RID column, if to be included
-			if ( globalOptions.RID != "none" )
-				fprintf(file, ",RID");
+			if ( globalOptions.RID != "none" ) {
+				csvOut.addString("RID");
+			}
 			
 			// Create (col,row) fields, if so indicated
 			if ( !globalOptions.noColRow ) {
-				fprintf(file, ",col");
-				fprintf(file, ",row");
+				csvOut.addString("col").addString("row");
 			}
 			
 			// Create (x,y) fields, if so indicated
 			if ( !globalOptions.noXY ) {
-				fprintf(file, ",x");
-				fprintf(file, ",y");
+				csvOut.addString("x").addString("y");
 			}
 			
 			// Create fields for bands
 			for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
-				fprintf(file, ",Band%d", i+1);
+				csvOut.addField("Band%d", i+1);
 			}
 			
-			fprintf(file, "\n");
+			csvOut.endLine();
 		}
 		
 		currentFeature = NULL;
@@ -129,9 +134,11 @@ public:
 		//
 		// Add field values to new record:
 		//
+		
+		csvOut.startLine();
 
 		// Add FID value:
-		fprintf(file, "%ld", currentFeature->GetFID());
+		csvOut.addField("%ld", currentFeature->GetFID());
 		
 		// add attribute fields from source currentFeature to record:
 		if ( select_fields ) {
@@ -142,10 +149,7 @@ public:
 					exit(1);
 				}
 				const char* str = currentFeature->GetFieldAsString(i);
-				if ( strchr(str, ',') )
-					fprintf(file, ",\"%s\"", str);   // quote string
-				else
-					fprintf(file, ",%s", str);
+				csvOut.addString(str);
 			}
 		}
 		else {
@@ -153,27 +157,24 @@ public:
 			int feature_field_count = currentFeature->GetFieldCount();
 			for ( int i = 0; i < feature_field_count; i++ ) {
 				const char* str = currentFeature->GetFieldAsString(i);
-				if ( strchr(str, ',') )
-					fprintf(file, ",\"%s\"", str);   // quote string
-				else
-					fprintf(file, ",%s", str);
+				csvOut.addString(str);
 			}
 		}
 
 		// add RID field
 		if ( globalOptions.RID != "none" ) {
-			fprintf(file, ",%s", RID.c_str());
+			csvOut.addString(RID);
 		}
 		
 		
 		// add (col,row) fields
 		if ( !globalOptions.noColRow ) {
-			fprintf(file, ",%d,%d", col, row);
+			csvOut.addField("%d", col).addField("%d", row);
 		}
 		
 		// add (x,y) fields
 		if ( !globalOptions.noXY ) {
-			fprintf(file, ",%.3f,%.3f", ev.pixel.x, ev.pixel.y);
+			csvOut.addField("%.3f", ev.pixel.x).addField("%.3f", ev.pixel.y);
 		}
 		
 		// add band values to record:
@@ -184,12 +185,12 @@ public:
 			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
 			
 			starspan_extract_string_value(bandType, ptr, value);
-			fprintf(file, ",%s", value);
+			csvOut.addString(value);
 			
 			// move to next piece of data in buffer:
 			ptr += typeSize;
 		}
-		fprintf(file, "\n");
+		csvOut.endLine();
 	}
 
 	/**
