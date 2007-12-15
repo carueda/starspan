@@ -21,13 +21,16 @@ int starspan_update_csv(
 	vector<const char*> raster_filenames,
 	const char* out_csv_filename
 ) {
+	// the delimiter is assumed on the input file
+	const string delimiter = globalOptions.delimiter;
+	
 	// open input file
 	ifstream in_file(in_csv_filename);
 	if ( !in_file ) {
 		cerr<< "Couldn't open " <<in_csv_filename<< endl;
 		return 1;
 	}
-	Csv csv(in_file);
+	Csv csv(in_file, delimiter);
 	string line;
 	if ( !csv.getline(line) ) {
 		in_file.close();
@@ -57,18 +60,16 @@ int starspan_update_csv(
 	}
 	
 	if ( x_field_index < 0 || y_field_index < 0 ) {
-		cout<< "Warning: No fields 'x' and/or 'y' not present in " <<in_csv_filename<<endl;
+		cout<< "Warning: No fields 'x' and/or 'y' are present in " <<in_csv_filename<<endl;
 		cout<< "         Will try with col,row fields ...\n";
 		use_xy = false;
 		if ( col_field_index < 0 || row_field_index < 0 ) {
 			in_file.close();
-			cout<< "No fields 'col' and/or 'row' present in " <<in_csv_filename<<endl;
+			cout<< "No fields 'col' and/or 'row' are present in " <<in_csv_filename<<endl;
 			return 1;
 		}
 	}
 
-	const string delimiter = globalOptions.delimiter;
-	
 	// create output file
 	ofstream out_file(out_csv_filename, ios::out);
 	if ( !out_file ) {

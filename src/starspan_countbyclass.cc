@@ -8,6 +8,7 @@
 #include "starspan.h"           
 #include "traverser.h"       
 #include "Stats.h"       
+#include "Csv.h"       
 
 #include <iostream>
 #include <cstdlib>
@@ -30,8 +31,10 @@ public:
 	FILE* outfile;
 	bool OK;
 		
+	CsvOutput csvOut;
+
 	/**
-	  * Creates a stats calculator
+	  * Creates a counter by class.
 	  */
 	CountByClassObserver(Traverser& tr, FILE* f) : tr(tr), outfile(f) {
 		vect = tr.getVector();
@@ -87,11 +90,6 @@ public:
 			return;
 		}
 		
-		//		
-		// write column headers:
-		//
-		fprintf(outfile, "FID,class,count\n");
-		
 		const unsigned num_bands = global_info->bands.size();
 		
 		if ( num_bands > 1 ) {
@@ -110,6 +108,17 @@ public:
 			return;
 		}
 
+		csvOut.setFile(outfile);
+		csvOut.setSeparator(globalOptions.delimiter);
+		csvOut.startLine();
+
+		//		
+		// write column headers:
+		//
+		csvOut.addString("FID").addString("class").addString("count");
+		csvOut.endLine();
+		//fprintf(outfile, "FID,class,count\n");
+		
 		// now, all seems OK to continue processing		
 		OK = true;
 	}
@@ -140,7 +149,10 @@ public:
 			const int count = it->second;
 			
 			// add record to outfile:
-			fprintf(outfile, "%ld,%d,%d\n", FID, class_, count);
+			csvOut.startLine();
+			csvOut.addField("%ld", FID).addField("%d", class_).addField("%d", count);
+			csvOut.endLine();
+			//fprintf(outfile, "%ld,%d,%d\n", FID, class_, count);
 
 			if ( globalOptions.verbose ) {
 				cout<< vprefix<< "   class=" <<class_<< " count=" <<count<< endl;

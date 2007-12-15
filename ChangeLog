@@ -1,13 +1,17 @@
 StarSpan ChangeLog
 $Id$
 
-2007-12-13 (1.0.05)
+2007-12-14 (1.0.05)
 	- FR #200332: Added --delimiter option, now used in:
-	    function              command
-	    -------------------   ------------
-	    starspan_csv          --csv
-	    starspan_stats        --stats
-	    starspan_update_csv   --update-csv
+	    function                           command
+	    -------------------                ------------
+	    starspan_csv                       --csv
+	    starspan_stats                     --stats
+	    starspan_update_csv                --update-csv
+	    starspan_getCountByClassObserver   --count-by-class
+	    
+	  In --update-csv, the given delimiter is used for reading in the given 
+	  input CSV file and to generate the new CSV file. 
 	
 2007-12-10 (1.0.04)
 	- Changes to compile StarSpan against GEOS 3.x.x
