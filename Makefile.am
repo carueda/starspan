@@ -10,6 +10,7 @@ EXTRA_DIST   = starspan
 
 starspan2_SOURCES =	\
 	src/starspan2.cc \
+	src/starspan_csv_dup_pixel.cc \
 	src/starspan_stats.cc \
 	src/starspan_countbyclass.cc \
 	src/starspan_update_csv.cc \

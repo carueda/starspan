@@ -251,6 +251,21 @@ int starspan_csv(
 
 
 
+/**
+ * FR 350112 Duplicate pixel handling.
+ *
+ * @param dupPixelModes modes
+ */
+int starspan_csv_dup_pixel(
+	Vector* vect,
+	vector<const char*> raster_filenames,
+	vector<const char*>* select_fields,
+	const char* csv_filename,
+	int layernum,
+	vector<DupPixelMode>& dupPixelModes
+);
+
+
 /** Generates ENVI output
   * @param tr Data traverser
   * @param select_fields desired fields

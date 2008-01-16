@@ -8,6 +8,8 @@
 #define starspan_common_h
 
 #include <string>
+#include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -31,6 +33,22 @@ struct BufferParams {
 	string quadrantSegments;
 };
 
+
+/** Class for dupplicate pixel modes.  */
+struct DupPixelMode {
+	string code;
+	double arg;
+	
+	DupPixelMode(string code, double arg) :
+		code(code), arg(arg) {
+	}
+	
+	string toString() {
+		ostringstream ostr;
+		ostr << code << " " << arg;
+		return ostr.str();
+	}
+};
 
 /** Options that might be used by different services.
   * This comes in handy while the tool gets more stabilized.
@@ -80,6 +98,10 @@ struct GlobalOptions {
 	
 	/** separator for CSV files */
 	string delimiter;
+	
+	
+	/** Given duplicate pixel modes. Empty if not given. */
+	vector<DupPixelMode> dupPixelModes;
 };
 
 extern GlobalOptions globalOptions;

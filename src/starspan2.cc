@@ -16,7 +16,6 @@ static bool show_dev_options = false;
 
 GlobalOptions globalOptions;
 
-
 // prints a help message
 static void usage(const char* msg) {
 	if ( msg ) { 
@@ -65,6 +64,9 @@ static void usage(const char* msg) {
 		"      --mini_raster_parity {even | odd | @<field>} \n"
 		"      --separation <num-pixels> \n"
 		"\n"
+		"      --duplicate_pixel <mode> ...\n"
+		"             <mode>: distance | direction <angle> | ignore_nodata\n"
+		"             (note: ignore_nodata not implemented yet.)\n"
 		"      --fields <field1> <field2> ... <fieldn>\n"
 		"      --pixprop <minimum-pixel-proportion>\n"
 		"      --noColRow \n"
@@ -92,6 +94,13 @@ static void usage(const char* msg) {
 	
 	exit(0);
 }
+
+// prints a help message
+static void usage_string(string& msg) {
+	const char* m = msg.c_str();
+	usage(m);
+}
+
 
 ///////////////////////////////////////////////////////////////
 // main test program
@@ -195,6 +204,39 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--raster_directory: which raster directory?");
 			raster_directory = argv[i];
+		}
+		else if ( 0==strcmp("--duplicate_pixel", argv[i]) ) {
+			while ( ++i < argc && argv[i][0] != '-' ) {
+				string dup_code = argv[i];
+				double dup_arg = 0;
+				if ( dup_code == "direction" ) {
+					// need angle argument:
+					if ( ++i < argc && argv[i][0] != '-' ) {
+						dup_arg = atof(argv[i]);
+					}
+					else {
+						usage("direction: missing angle parameter");
+					}
+				}
+				else if ( dup_code == "distance" ) {
+					// OK.
+				}
+				else if ( dup_code == "ignore_nodata" ) {
+					// OK.
+				}
+				else {
+					string msg = string("--duplicate_pixel: unrecognized mode: ") +dup_code;
+					usage_string(msg);
+				}
+				globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, dup_arg));
+			}
+			if ( globalOptions.dupPixelModes.size() == 0 ) {
+				usage("--duplicate_pixel: specify at least one mode");
+			}
+			
+			if ( i < argc && argv[i][0] == '-' ) { 
+				--i;
+			}
 		}
 		
 		else if ( 0==strcmp("--speclib", argv[i]) ) {
@@ -481,6 +523,19 @@ int main(int argc, char ** argv) {
 		usage("--raster_directory is only used with --raster @field");
 	}
 	
+	if ( globalOptions.dupPixelModes.size() > 0 ) {
+		if ( globalOptions.verbose ) {
+			cout<< "--duplicate_pixel modes given:" << endl;
+			for (int k = 0, count = globalOptions.dupPixelModes.size(); k < count; k++ ) {
+				cout<< "\t" <<globalOptions.dupPixelModes[k].toString() << endl;
+			}
+		}
+		
+		if ( !csv_name ) {
+			usage("--duplicate_pixel: No --csv command!");
+		}
+	}
+	
 	//
 	// dispatch commands with special processing:
 	//
@@ -502,6 +557,16 @@ int main(int argc, char ** argv) {
 				select_fields, 
 				csv_name,
 				vector_layernum
+			);
+		}
+		else if ( globalOptions.dupPixelModes.size() > 0 ) {
+			res = starspan_csv_dup_pixel(
+				vect,  
+				raster_filenames,
+				select_fields, 
+				csv_name,
+				vector_layernum,
+				globalOptions.dupPixelModes
 			);
 		}
 		else if ( raster_filenames.size() > 0 ) {

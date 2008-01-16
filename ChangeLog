@@ -1,6 +1,14 @@
 StarSpan ChangeLog
 $Id$
 
+2008-01-16 (1.0.06)
+	- FR #350112: Duplicate pixel handling -- starting implementation.
+	See discussion: http://starspan.casil.ucdavis.edu/doku/doku.php?id=fr_350112
+	
+	
+	
+	
+	
 2007-12-14 (1.0.05)
 	- FR #200332: Added --delimiter option, now used in:
 	    function                           command
