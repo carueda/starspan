@@ -76,8 +76,9 @@ elif [ "$1" = "--view_geometries" ]; then
 	CP=$CLASSPATH
 	CP=$JARS/plotapplication.jar:$CP
 	java -Xmx256m -cp "$CP" ptolemy.plot.PlotApplication "$@"
-	if [ "$?" != 0 ]; then
-		echo "[java returned $? -- perhaps a missing component in your classpath?]"
+	ret=$?
+	if [ "$ret" != 0 ]; then
+		echo "[exit code=$ret -- a missing component in your classpath?]"
 	fi
 
 elif [ "$1" = "--test" ]; then
@@ -86,8 +87,9 @@ elif [ "$1" = "--test" ]; then
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testrunner.TopologyTestApp "$@"
-	if [ "$?" != 0 ]; then
-		echo "[java returned $? -- perhaps a missing component in your classpath?]"
+	ret=$?
+	if [ "$ret" != 0 ]; then
+		echo "[exit code=$ret -- a missing component in your classpath?]"
 	fi
 
 elif [ "$1" = "--jts" ]; then
@@ -96,8 +98,9 @@ elif [ "$1" = "--jts" ]; then
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testbuilder.JTSTestBuilder "$@"
-	if [ "$?" != 0 ]; then
-		echo "[java returned $? -- perhaps a missing component in your classpath?]"
+	ret=$?
+	if [ "$ret" != 0 ]; then
+		echo "[exit code=$ret -- a missing component in your classpath?]"
 	fi
 
 elif [ "$1" = "--run" ]; then
