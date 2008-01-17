@@ -15,21 +15,23 @@ export LD_LIBRARY_PATH=@GEOS_PREFIX@/lib:$LD_LIBRARY_PATH
 # mainly for --run command
 export PATH=@GDAL_PREFIX@/bin:@GEOS_PREFIX@/bin:$PATH
 
-# $JARS: the following jars should be present under this directory:
+# $JARS: For convenience, the jars in this directory are included in the
+# CLASSPATH for running the java based commands. Whether you use this directory 
+# or not, the following jars should be accessible:
 #
 # Required by the --view_geometries option:
 #      plotapplication.jar
 # Can be download from http://ptolemy.eecs.berkeley.edu/java/ptplot
-# Currently the version 5.1p2 is used.
+# Tested with version 5.6.
 #
 # Required by the --test and --jts options:
 #      xerces.jar
-#      jts-1.4.0.jar
+#      jts-1.8.jar
 #      jdom.jar
 #      JTS_Test.jar
-#      Acme.jar
+#      acme.jar
 # These can be downloaded from http://www.vividsolutions.com/jts/jtshome.htm 
-# Currently JTS 1.4 is used.
+# Tested with version JTS 1.8.
 #
 JARS=$BINDIR/starspan.jars/
 
@@ -74,6 +76,9 @@ elif [ "$1" = "--view_geometries" ]; then
 	CP=$CLASSPATH
 	CP=$JARS/plotapplication.jar:$CP
 	java -Xmx256m -cp "$CP" ptolemy.plot.PlotApplication "$@"
+	if [ "$?" != 0 ]; then
+		echo "[java returned $? -- perhaps a missing component in your classpath?]"
+	fi
 
 elif [ "$1" = "--test" ]; then
 	echo "[Launching JTS TopologyTestApp...]"
@@ -81,6 +86,9 @@ elif [ "$1" = "--test" ]; then
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testrunner.TopologyTestApp "$@"
+	if [ "$?" != 0 ]; then
+		echo "[java returned $? -- perhaps a missing component in your classpath?]"
+	fi
 
 elif [ "$1" = "--jts" ]; then
 	echo "[Launching JTSTestBuilder...]"
@@ -88,6 +96,9 @@ elif [ "$1" = "--jts" ]; then
 	CP=$CLASSPATH
 	for i in $JARS/*.jar; do CP=$i:$CP; done
 	java -Xmx256m -cp "$CP" com.vividsolutions.jtstest.testbuilder.JTSTestBuilder "$@"
+	if [ "$?" != 0 ]; then
+		echo "[java returned $? -- perhaps a missing component in your classpath?]"
+	fi
 
 elif [ "$1" = "--run" ]; then
 	shift
