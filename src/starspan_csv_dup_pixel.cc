@@ -249,7 +249,8 @@ static void process_modes_feature(
 		// Apply given modes until one candidate is obtained
 		
 		if ( globalOptions.verbose ) {
-			cout<< "--duplicate_pixel: Applying duplicate pixel mode(s) to FID " <<feature->GetFID()<< "..." << endl;
+			cout<< "--duplicate_pixel: Applying duplicate pixel mode(s) to FID " <<feature->GetFID()<< ": " 
+			    <<candidates.size()<< " initial candidates..." <<endl;
 		}
 		
 		// apply each mode in order while there are more than one candidate:
