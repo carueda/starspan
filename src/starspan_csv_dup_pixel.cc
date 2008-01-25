@@ -210,20 +210,16 @@ static void process_modes_feature(
 	// initialize candidates with the rasters containing the feature:
 	vector<RasterInfo*> candidates;
 	if ( globalOptions.verbose ) {
-		cout<< "Checking " <<rastInfos.size()<< " rasters for containment" <<endl;
+        cout<< "--duplicate_pixel: FID " <<feature->GetFID()<< ": Checking " <<rastInfos.size()<< " rasters for containment" <<endl;
 	}
 	for ( unsigned i = 0, numRasters = rastInfos.size(); i < numRasters; i++ ) {
 		RasterInfo* rasterInfo = rastInfos[i];
 		bool containsFeature = false;
-		if ( globalOptions.verbose ) {
-			cout<< (i+1) << "  " <<rasterInfo->ri_filename<< ": ";
-		}
 		if ( rasterInfo->ri_bb->Contains(feature_geometry) ) {
-			containsFeature = true;
 			candidates.push_back(rasterInfo);
-		}
-		if ( globalOptions.verbose ) {
-			cout<< (containsFeature ? "contains" : "DOESN'T contain") << " feature" << endl;
+            if ( globalOptions.verbose ) {
+                cout<< "\t" << (i+1) << "  " <<rasterInfo->ri_filename<< endl;
+            }
 		}
 	}
 	
