@@ -476,7 +476,7 @@ int main(int argc, char ** argv) {
 	}
 	// ---------------------------------------------------------------------
 	
-	CPLPushErrorHandler(starspan_myErrorHandler);
+	////CPLPushErrorHandler(starspan_myErrorHandler);
 
 	time_t time_start = time(NULL);
 	
@@ -494,7 +494,8 @@ int main(int argc, char ** argv) {
 		vect = Vector::open(vector_filename);
 		if ( !vect ) {
 			fprintf(stderr, "Cannot open %s\n", vector_filename);
-			return 1;
+			res = 1;
+			goto end;
 		}  
 
 		// 
@@ -773,6 +774,11 @@ int main(int argc, char ** argv) {
 		}
 	}
 	
+end:
+	if ( vect ) {
+		delete vect;
+	}
+	
 	Vector::end();
 	Raster::end();
 	
@@ -802,7 +808,7 @@ int main(int argc, char ** argv) {
 	}
 
 	// more final cleanup:
-	CPLPopErrorHandler();
+	////CPLPopErrorHandler();
 	Unload::Release();	
 	
 	return res;

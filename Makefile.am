@@ -34,7 +34,7 @@ starspan2_SOURCES =	\
 	src/util/Progress.cc \
 	src/vector/Vector_ogr.cc
 
-AM_CPPFLAGS = @GEOS_INC@  @GDAL_INC@
+AM_CPPFLAGS = -g -O0 @GEOS_INC@  @GDAL_INC@
 
 INCLUDES = \
 	-I$(srcdir)/src \

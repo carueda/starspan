@@ -43,43 +43,68 @@ static const char* csv_filename;
 static int layernum;
 
 
+/**
+ * Gets the center of the geometry. 
+ */
+static OGRPoint* getGeometryCenter(OGRGeometry* geometry) {
+	OGREnvelope env;
+	geometry->getEnvelope(&env);
+	OGRPoint* center = new OGRPoint();
+	center->setX((env.MinX + env.MaxX) / 2);
+	center->setY((env.MinY + env.MaxY) / 2);
+	return center;
+}
+
 ////////////////////////
 // info for each raster
 struct RasterInfo {
 	// filename
-	const char* raster_filename;
+	const char* ri_filename;
 	
 	// raster
-	Raster* rast;
+	Raster* ri_raster;
 	
 	// bounding box
-	OGRPolygon bb;
+	OGRPolygon* ri_bb;
 	
-	// center of bb;
-	OGRPoint center;
+	// center of ri_bb;
+	OGRPoint* ri_center;
 	
 	// distance: set during evaluation as a candidate
 	double distance;
+	
+	RasterInfo(const char* filename) {
+		ri_filename = filename;
+		ri_raster = new Raster(ri_filename);
+
+		// create a geometry for raster envelope:
+		double x0, y0, x1, y1;		
+		ri_raster->getCoordinates(&x0, &y0, &x1, &y1);
+		OGRLinearRing* raster_ring = new OGRLinearRing();
+		raster_ring->addPoint(x0, y0);
+		raster_ring->addPoint(x1, y0);
+		raster_ring->addPoint(x1, y1);
+		raster_ring->addPoint(x0, y1);
+		raster_ring->addPoint(x0, y0);
+		ri_bb = new OGRPolygon();
+		ri_bb->addRingDirectly(raster_ring);
+		
+		ri_center = getGeometryCenter(ri_bb);
+	}
+	
+	~RasterInfo() {
+		delete ri_bb;
+		delete ri_center;
+		delete ri_raster;
+	}
 };
 
 
 
 /**
- * Gets the center of the geometry. 
+ * Processes the given feature extracting pixels from the given raster. 
  */
-static OGRPoint getGeometryCenter(OGRGeometry* geometry) {
-	OGREnvelope env;
-	geometry->getEnvelope(&env);
-	OGRPoint center;
-	center.setX((env.MinX + env.MaxX) / 2);
-	center.setY((env.MinY + env.MaxY) / 2);
-	return center;
-}
-
-/**
- * Processes the given feature extracting pixels from the figen raster. 
- */
-static void do_extraction(OGRFeature* feature, RasterInfo& rasterInfo) {
+static void do_extraction(OGRFeature* feature, RasterInfo* rasterInfo) {
 
 	// strategy:
 	// - Set globalOptions.FID = feature->GetFID();
@@ -91,9 +116,11 @@ static void do_extraction(OGRFeature* feature, RasterInfo& rasterInfo) {
 	
 	// - Set list of rasters to only the one given
 	vector<const char*> raster_filenames;
-	raster_filenames.push_back(rasterInfo.raster_filename);
+	raster_filenames.push_back(rasterInfo->ri_filename);
 	
-	// - Call starspan_csv() 
+	// - Call starspan_csv()
+	bool prevResetReading = Traverser::_resetReading;
+	Traverser::_resetReading = false;
 	int ret = starspan_csv(
 		vect,
 		raster_filenames,
@@ -101,6 +128,7 @@ static void do_extraction(OGRFeature* feature, RasterInfo& rasterInfo) {
 		csv_filename,
 		layernum
 	);
+	Traverser::_resetReading = prevResetReading;
 	
 	if ( globalOptions.verbose ) {
 		cout<< "--duplicate_pixel: do_extraction: starspan_csv returned: " <<ret<< endl;
@@ -111,24 +139,24 @@ static void do_extraction(OGRFeature* feature, RasterInfo& rasterInfo) {
 /**
  * Gets the angle of the vector p2-p1 in degrees
  */
-static inline double getAngle(OGRPoint& p1, OGRPoint& p2) {
-	double theta = atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());  
+static inline double getAngle(OGRPoint* p1, OGRPoint* p2) {
+	double theta = atan2(p2->getY() - p1->getY(), p2->getX() - p1->getX());  
 	return theta * 180 / PI;
 }
 
 /**
  * Gets the distance between the given arguments.
  */
-static inline double getDistance(OGRPoint& origin, OGRPoint& p) {
-	return origin.Distance(&p);
+static inline double getDistance(OGRPoint* origin, OGRPoint* p) {
+	return origin->Distance(p);
 }
 
 
 /**
  * To sort candidates list
  */
-static bool comparator(RasterInfo ri1, RasterInfo ri2) {
-	return ri1.distance < ri2.distance;
+static bool comparator(RasterInfo* ri1, RasterInfo* ri2) {
+	return ri1->distance < ri2->distance;
 }
 			    
 /**
@@ -137,7 +165,7 @@ static bool comparator(RasterInfo ri1, RasterInfo ri2) {
 static void process_modes_feature(
 		vector<DupPixelMode>& dupPixelModes,
 		OGRFeature* feature, 
-		vector<RasterInfo>& rastInfos) {
+		vector<RasterInfo*>& rastInfos) {
 	
 
 	bool ignore_nodata = false;
@@ -167,7 +195,7 @@ static void process_modes_feature(
 	OGRGeometry* feature_geometry = feature->GetGeometryRef();
 	
 	// get center of feature's bounding box:
-	OGRPoint feature_center = getGeometryCenter(feature_geometry);
+	OGRPoint* feature_center = getGeometryCenter(feature_geometry);
 	
 	///////////////////////////////////////////////////////////////////
 	// --buffer option given?
@@ -180,11 +208,22 @@ static void process_modes_feature(
 	
 	/////////////////////////////////////////////////////////////////
 	// initialize candidates with the rasters containing the feature:
-	vector<RasterInfo> candidates;
-	for ( unsigned i = 0; i < rastInfos.size(); i++ ) {
-		RasterInfo& rasterInfo = rastInfos[i];
-		if ( rasterInfo.bb.Contains(feature_geometry) ) {
+	vector<RasterInfo*> candidates;
+	if ( globalOptions.verbose ) {
+		cout<< "Checking " <<rastInfos.size()<< " rasters for containment" <<endl;
+	}
+	for ( unsigned i = 0, numRasters = rastInfos.size(); i < numRasters; i++ ) {
+		RasterInfo* rasterInfo = rastInfos[i];
+		bool containsFeature = false;
+		if ( globalOptions.verbose ) {
+			cout<< (i+1) << "  " <<rasterInfo->ri_filename<< ": ";
+		}
+		if ( rasterInfo->ri_bb->Contains(feature_geometry) ) {
+			containsFeature = true;
 			candidates.push_back(rasterInfo);
+		}
+		if ( globalOptions.verbose ) {
+			cout<< (containsFeature ? "contains" : "DOESN'T contain") << " feature" << endl;
 		}
 	}
 	
@@ -192,6 +231,7 @@ static void process_modes_feature(
 		if ( globalOptions.verbose ) {
 			cout<< "--duplicate_pixel: FID " <<feature->GetFID()<< ": No raster containing the feature" << endl;
 		}
+		delete feature_center;
 		return;
 	}
 	
@@ -202,7 +242,7 @@ static void process_modes_feature(
 			cout<< "--duplicate_pixel: FID " <<feature->GetFID()<< ": Only one raster contains the feature" << endl;
 			cout<< "   No need to apply duplicate pixel mode(s)" << endl;
 		}
-		selectedRasterInfo = &candidates[0];
+		selectedRasterInfo = candidates[0];
 	}
 	else {
 		/////////////////////////////////////////////////////////
@@ -226,23 +266,23 @@ static void process_modes_feature(
 				
 			// evaluate candidates according to mode:
 			for (unsigned i = 0; i < candidates.size(); i++ ) {
-				RasterInfo& candidate = candidates[i];
+				RasterInfo* candidate = candidates[i];
 				
-				double distance = getDistance(feature_center, candidate.center);
+				double distance = getDistance(feature_center, candidate->ri_center);
 				
 				if ( mode.code == "direction" ) {
 					// if the distance is "zero", ie.,  within an epsilon...
 					if ( distance <= DISTANCE_EPS ) {
 						// ... then, assume the angle is the desired one:
-						candidate.distance = 0;
+						candidate->distance = 0;
 					}
 					else {
-						double theta = getAngle(feature_center, candidate.center);
-						candidate.distance = fabs(theta - mode.arg);
+						double theta = getAngle(feature_center, candidate->ri_center);
+						candidate->distance = fabs(theta - mode.arg);
 					}
 				}
 				if ( mode.code == "distance" ) {
-					candidate.distance = getDistance(feature_center, candidate.center);
+					candidate->distance = getDistance(feature_center, candidate->ri_center);
 				}
 				else if ( mode.code == "ignore_nodata" ) {
 					// nothing to do here. Should be handled above.
@@ -254,7 +294,7 @@ static void process_modes_feature(
 
 
 			// Get new candidates:			
-			vector<RasterInfo> newCandidates;
+			vector<RasterInfo*> newCandidates;
 			
 			// at least, the first (best) candidate is selected:
 			newCandidates.push_back(candidates[0]);
@@ -263,13 +303,13 @@ static void process_modes_feature(
 			for (unsigned i = 1; i < candidates.size(); i++ ) {
 				if ( mode.code == "direction" ) {
 					// Take candidate if |difference| <= maxDegreeDifference
-					if ( fabs(candidates[i].distance - candidates[0].distance) <= maxDegreeDifference ) {
+					if ( fabs(candidates[i]->distance - candidates[0]->distance) <= maxDegreeDifference ) {
 						newCandidates.push_back(candidates[i]);
 					}
 				}
 				else {
 					// Take candidate if distance <= acceptable distance:
-					if ( candidates[i].distance <= (maxDistancePercentage + 1) * candidates[0].distance ) {
+					if ( candidates[i]->distance <= (maxDistancePercentage + 1) * candidates[0]->distance ) {
 						newCandidates.push_back(candidates[i]);
 					}
 				}
@@ -284,7 +324,7 @@ static void process_modes_feature(
 		
 		assert( candidates.size() > 0 );
 		
-		selectedRasterInfo = &candidates[0];
+		selectedRasterInfo = candidates[0];
 		
 		if ( candidates.size() > 1 ) {
 			if ( globalOptions.verbose ) {
@@ -296,8 +336,10 @@ static void process_modes_feature(
 	
 	assert( selectedRasterInfo != 0 ) ;
 	
+	delete feature_center;
+	
 	// we have our selected raster:
-	do_extraction(feature, *selectedRasterInfo);
+	do_extraction(feature, selectedRasterInfo);
 }
 
 
@@ -333,36 +375,19 @@ int starspan_csv_dup_pixel(
 	
 	
 	// Open rasters, corresponding bounding boxes, and union of all boxes:
-	vector<RasterInfo> rastInfos;
+	vector<RasterInfo*> rastInfos;
 	OGRGeometry* allRasterArea = new OGRPolygon();
+	
+	int res = 0;
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
-		RasterInfo rasterInfo;
-		rastInfos.push_back(rasterInfo);
+		RasterInfo* rasterInfo = new RasterInfo(raster_filenames[i]);
 
-		rasterInfo.raster_filename = raster_filenames[i];
-		rasterInfo.rast = new Raster(rasterInfo.raster_filename);
-
-		// create a geometry for raster envelope:
-		double x0, y0, x1, y1;		
-		rasterInfo.rast->getCoordinates(&x0, &y0, &x1, &y1);
-		OGRLinearRing raster_ring;
-		raster_ring.addPoint(x0, y0);
-		raster_ring.addPoint(x1, y0);
-		raster_ring.addPoint(x1, y1);
-		raster_ring.addPoint(x0, y1);
-		rasterInfo.bb.addRing(&raster_ring);
-		rasterInfo.bb.closeRings();
-		rasterInfo.center = getGeometryCenter(&rasterInfo.bb);
-		
-		OGRGeometry* newAllRasterArea = allRasterArea->Union(&rasterInfo.bb);
+		OGRGeometry* newAllRasterArea = allRasterArea->Union(rasterInfo->ri_bb);
 		delete allRasterArea;
 		allRasterArea = newAllRasterArea;
+		
+		rastInfos.push_back(rasterInfo);
 	}
-	
-	if ( globalOptions.verbose ) {
-		cout<< "--duplicate_pixel: Setting spatial filter" << endl;
-	}
-	layer->SetSpatialFilter(allRasterArea);
 	
 	
 	// Now, traverse the features:
@@ -372,9 +397,17 @@ int starspan_csv_dup_pixel(
 	// Was a specific FID given?
 	//
 	if ( globalOptions.FID >= 0 ) {
-		// TODO -- IGNORED here -- see traverser.cc
-		cout<< "--duplicate_pixel: Sorry: --fid option not yet implemented" <<endl;
-		return 2;
+		if ( globalOptions.verbose ) {
+			cout<< "--duplicate_pixel: Only to process FID: " <<globalOptions.FID <<endl;
+		}
+		feature = layer->GetFeature(globalOptions.FID);
+		if ( !feature ) {
+			cerr<< "FID " <<globalOptions.FID<< " not found in " <<vect->getName()<< endl;
+			res = 2;
+			goto end;
+		}
+		process_modes_feature(dupPixelModes, feature, rastInfos);
+		delete feature;
 	}
 	
 	//
@@ -388,17 +421,28 @@ int starspan_csv_dup_pixel(
 	// else: process each feature in vector datasource:
 	//
 	else {
+		if ( globalOptions.verbose ) {
+			cout<< "--duplicate_pixel: Setting spatial filter" << endl;
+		}
+		layer->SetSpatialFilter(allRasterArea);
+		
 		while( (feature = layer->GetNextFeature()) != NULL ) {
 			process_modes_feature(dupPixelModes, feature, rastInfos);
 			delete feature;
 		}
 	}
 	
-	// release rasters
-	for ( unsigned i = 0; i < rastInfos.size(); i++ ) {
-		delete rastInfos[i].rast;
+end:
+	if ( allRasterArea ) {
+		delete allRasterArea;
 	}
 	
-	return 0;
+	        
+	// release rasters
+	for ( unsigned i = 0; i < rastInfos.size(); i++ ) {
+		delete rastInfos[i];
+	}
+	
+	return res;
 }
 

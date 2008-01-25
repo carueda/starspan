@@ -273,32 +273,25 @@ int starspan_csv(
 	}
 	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
-	Raster* rasters[raster_filenames.size()];
-	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
-		rasters[i] = new Raster(raster_filenames[i]);
-	}
-	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
 		obs.raster_filename = raster_filenames[i];
 		obs.write_header = new_file && i == 0;
 		tr.removeRasters();
-		tr.addRaster(rasters[i]);
+
+		Raster* raster = new Raster(raster_filenames[i]);
+		tr.addRaster(raster);
 		
 		tr.traverse();
 
 		if ( globalOptions.report_summary ) {
 			tr.reportSummary();
 		}
+
+		delete raster;
 	}
 	
 	fclose(file);
-	
-	/***   PENDING
-	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
-		delete rasters[i];
-	}
-	***/
 	
 	return 0;
 }

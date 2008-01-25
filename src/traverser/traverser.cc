@@ -20,6 +20,8 @@
 #endif
 
 
+bool Traverser::_resetReading = true;
+
 Traverser::Traverser() {
 	vect = 0;
 	pixelProportion = 0.5;
@@ -730,7 +732,9 @@ void Traverser::traverse() {
 		cerr<< "Couldn't get layer " <<layernum<< " from " << vect->getName()<< endl;
 		return;
 	}
-	layer->ResetReading();
+	if ( _resetReading ) {
+		layer->ResetReading();
+	}
 
 	lineRasterizer = new LineRasterizer(x0, y0, pix_x_size, pix_y_size);
 	lineRasterizer->setObserver(this);

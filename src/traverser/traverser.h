@@ -462,6 +462,20 @@ public:
 	/** reports a summary of intersection to std output. */
 	void reportSummary(void);
 	
+	
+	/**
+	 * By default, traverse() starts by calling ResetReading on the layer
+	 * (_resetReading == true).
+	 * However, this is in general not appropriate because it precludes the
+	 * traversal from being used as a subtask. 
+	 * For example, in starspan_csv_dup_pixel, all features are processed
+	 * but the extraction from each one is done with a corresponding traversal.
+	 * As a quick fix to allow for this beahaviuor at least for specific commands,
+	 * this global (static) flag can be used to instruct the traversal not
+	 * to call ResetReading on the layer. 
+	 */
+	static bool _resetReading;
+	
 private:
 	
 	
