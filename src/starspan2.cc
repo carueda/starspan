@@ -766,9 +766,8 @@ int main(int argc, char ** argv) {
 		}
 		
 		// release data input objects:
-		if ( tr.getVector() ) {
-			delete tr.getVector();
-		}
+        // Note that we get the rasters from the traverser, while
+        // the single vector is directly deleted below:
 		for ( int i = 0; i < tr.getNumRasters(); i++ ) {
 			delete tr.getRaster(i);
 		}
@@ -781,6 +780,10 @@ end:
 	
 	Vector::end();
 	Raster::end();
+	
+	// more final cleanup:
+	////CPLPopErrorHandler();
+	Unload::Release();	
 	
 	if ( report_elapsed_time ) {
 		cout<< "Elapsed time: ";
@@ -807,10 +810,6 @@ end:
 		}
 	}
 
-	// more final cleanup:
-	////CPLPopErrorHandler();
-	Unload::Release();	
-	
 	return res;
 }
 

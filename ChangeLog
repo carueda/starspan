@@ -14,7 +14,8 @@ $Id$
 	    As a quick fix to allow for this behavior at least for specific commands,
 	    this global (static) flag can be used to instruct the traversal not
 	    to call ResetReading on the layer.
-	- Fixed some memory leaks -- thanks valgrind, again!
+
+     - Fixed some memory errors and leaks -- thanks valgrind, again!
 		
 
 2008-01-16 (1.0.06)
