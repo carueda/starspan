@@ -303,7 +303,8 @@ static void process_modes_feature(
 			for (unsigned i = 1; i < candidates.size(); i++ ) {
 				if ( mode.code == "direction" ) {
 					// Take candidate if |difference| <= maxDegreeDifference
-					if ( fabs(candidates[i]->distance - candidates[0]->distance) <= maxDegreeDifference ) {
+                    // (note: no need for fabs())
+					if ( candidates[i]->distance - candidates[0]->distance <= maxDegreeDifference ) {
 						newCandidates.push_back(candidates[i]);
 					}
 				}
