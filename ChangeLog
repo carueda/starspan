@@ -1,6 +1,13 @@
 StarSpan ChangeLog
 $Id$
 
+2008-01-25
+	- Add processing of rasters according to associated masks.
+	  Some masks:
+	  	/delta/raster/hymap/base/ref1_geo3/200406/mask_edge
+	  
+	  
+
 2008-01-24 (1.0.06)
 	- First tests on --duplicate_pixel
 	- Dev note: layer->ResetReading() call in traverse()
