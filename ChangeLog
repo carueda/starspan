@@ -2,13 +2,21 @@ StarSpan ChangeLog
 $Id$
 
 2008-01-28
-	- Add processing of rasters according to associated masks.
-	  Some masks:
-	  	/delta/raster/hymap/base/ref1_geo3/200406/mask_edge
+	- Added processing of rasters according to associated masks.
+      See starspan_csv_dup_pixel.cc
+	  
+      Tests done with:
+        VECTOR=/proj/delta/gis/vector_data/phenology/200406/all_emergent_polyg_2004.shp
+        RASTERS=/proj/delta/raster/hymap/classification/version_4/200406/inputs/indexes/sdw_p1_*_indx
+        MASKS=/proj/delta/raster/hymap/base/ref1_geo3/200406/mask_edge/200406_p1_*_ref1_mask.img
         
-    - See starspan_csv_dup_pixel.cc
-	  
-	  
+        cd /proj/delta/raster/hymap/classification/version_4/200406/results
+        starspan --duplicate_pixel direction 90 --vector $VECTOR \
+            --raster $RASTERS --mask $MASKS \
+            --csv test_dupixel.csv --verbose > test_dupixel.log
+
+    - TODO: mask handling on other options/commands -- now, only done for the
+            --duplicate_pixel and --csv commands
 
 2008-01-24 (1.0.06)
 	- First tests on --duplicate_pixel
