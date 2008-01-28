@@ -206,13 +206,7 @@ static bool within_mask(OGRFeature* feature, RasterInfo* rasterInfo) {
     
     tr.traverse();
     
-    bool ret = obs.OK && !obs.zeroFound;
-	
-	if ( globalOptions.verbose ) {
-		cout<< "--duplicate_pixel: within_mask: " <<ret<< endl;
-	}
-    
-    return ret;
+    return obs.OK && !obs.zeroFound;
 }
 		
 
@@ -354,7 +348,7 @@ static void process_modes_feature(
 	// if masks are given, then check that all pixels in features contain actual
     // data according to the masks:
 	if ( globalOptions.verbose ) {
-        cout<< "--duplicate_pixel: FID " <<feature->GetFID()<< ": Checking masks, if given" <<endl;
+        cout<< "--duplicate_pixel: Selecting according to masks, if given:" <<endl;
 	}
     vector<RasterInfo*> newCandidates;
     for ( unsigned i = 0, numRasters = candidates.size(); i < numRasters; i++ ) {
