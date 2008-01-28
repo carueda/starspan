@@ -600,6 +600,14 @@ int main(int argc, char ** argv) {
                 raster_filenames.resize(noPairs);
                 mask_filenames.resize(noPairs);
                 masks = &mask_filenames;
+                
+                if ( globalOptions.verbose ) {
+                    cout<< "raster-mask pairs given:" << endl;
+                    for ( size_t i = 0; i < noPairs; i++ ) {
+                        cout<< "\t" <<raster_filenames[i]<< endl
+                            << "\t" <<mask_filenames[i]<< endl<<endl;
+                    }
+                }
             }
             
 			res = starspan_csv_dup_pixel(

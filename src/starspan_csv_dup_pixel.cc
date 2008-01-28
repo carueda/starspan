@@ -504,7 +504,7 @@ int starspan_csv_dup_pixel(
 	int _layernum,
 	vector<DupPixelMode>& dupPixelModes
 ) {
-    // Either no masks are given, or_eq the number of rasters and_eq masks are the same:
+    // Either no masks are given, or the number of rasters and masks are the same:
     assert( mask_filenames == 0 || mask_filenames->size() == raster_filenames.size() );
     
 	vect = _vect;
