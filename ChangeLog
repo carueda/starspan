@@ -1,10 +1,12 @@
 StarSpan ChangeLog
 $Id$
 
-2008-01-25
+2008-01-28
 	- Add processing of rasters according to associated masks.
 	  Some masks:
 	  	/delta/raster/hymap/base/ref1_geo3/200406/mask_edge
+        
+    - See starspan_csv_dup_pixel.cc
 	  
 	  
 

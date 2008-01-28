@@ -58,12 +58,19 @@ static OGRPoint* getGeometryCenter(OGRGeometry* geometry) {
 ////////////////////////
 // info for each raster
 struct RasterInfo {
-	// filename
+	// raster filename
 	const char* ri_filename;
 	
 	// raster
 	Raster* ri_raster;
 	
+	// mask filename
+	const char* ri_mask_filename;
+	
+	// mask
+	Raster* ri_mask;
+	
+    
 	// bounding box
 	OGRPolygon* ri_bb;
 	
@@ -73,9 +80,15 @@ struct RasterInfo {
 	// distance: set during evaluation as a candidate
 	double distance;
 	
-	RasterInfo(const char* filename) {
-		ri_filename = filename;
+	RasterInfo(const char* raster_filename, const char* mask_filename) {
+		ri_filename = raster_filename;
 		ri_raster = new Raster(ri_filename);
+        
+        
+        ri_mask_filename = mask_filename;
+        if ( ri_mask_filename ) {
+            ri_mask = new Raster(ri_mask_filename);
+        }
 
 		// create a geometry for raster envelope:
 		double x0, y0, x1, y1;		
@@ -96,15 +109,45 @@ struct RasterInfo {
 		delete ri_bb;
 		delete ri_center;
 		delete ri_raster;
+        
+        if ( ri_mask ) {
+            delete ri_mask;
+        }
 	}
 };
 
 
 
 /**
+ * Determines whether the feature is fully contained in the raster
+ * according to the mask. 
+ */
+static bool within_mask(OGRFeature* feature, RasterInfo* rasterInfo) {
+    assert( rasterInfo->ri_raster ) ;
+
+	// strategy:
+    // - As with count-by-class, traverse the feature and use an observer
+    // to detect if a zero value appears; if so, stop the traversal and
+    // update a flag.
+    // return the value corresponding to the flag.
+    
+    bool ret = true;
+    
+    // TODO ...
+	
+	if ( globalOptions.verbose ) {
+		cout<< "--duplicate_pixel: within_mask: " <<ret<< endl;
+	}
+}
+		
+
+
+
+
+/**
  * Processes the given feature extracting pixels from the given raster. 
  */
-static void do_extraction(OGRFeature* feature, RasterInfo* rasterInfo) {
+static void do_extraction(OGRFeature* feature, RasterInfo* rasterInfo, const char* csv_filename) {
 
 	// strategy:
 	// - Set globalOptions.FID = feature->GetFID();
@@ -230,6 +273,38 @@ static void process_modes_feature(
 		delete feature_center;
 		return;
 	}
+    
+    
+	/////////////////////////////////////////////////////////////////
+	// if masks are given, then check that all pixels in features contain actual
+    // data according to the masks:
+    vector<RasterInfo*> newCandidates;
+    for ( unsigned i = 0, numRasters = rastInfos.size(); i < numRasters; i++ ) {
+        RasterInfo* rasterInfo = rastInfos[i];
+        if ( !rasterInfo->ri_mask || within_mask(feature, rasterInfo) ) {
+            newCandidates.push_back(rasterInfo);
+            if ( globalOptions.verbose ) {
+                cout<< "\t" << (i+1) << "  " <<rasterInfo->ri_filename<< endl;
+            }
+        }
+    }
+    // update candidates list:
+    candidates.clear();
+    for (unsigned i = 0; i < newCandidates.size(); i++ ) {
+        candidates.push_back(newCandidates[i]);
+    }
+	
+    
+	if ( candidates.size() == 0 ) {
+		if ( globalOptions.verbose ) {
+			cout<< "--duplicate_pixel: FID " <<feature->GetFID()<< ": No raster containing the feature" << endl;
+		}
+		delete feature_center;
+		return;
+	}
+    
+    
+    ///////
 	
 	RasterInfo* selectedRasterInfo = 0;
 	
@@ -291,7 +366,7 @@ static void process_modes_feature(
 
 
 			// Get new candidates:			
-			vector<RasterInfo*> newCandidates;
+			newCandidates.clear();
 			
 			// at least, the first (best) candidate is selected:
 			newCandidates.push_back(candidates[0]);
@@ -337,7 +412,7 @@ static void process_modes_feature(
 	delete feature_center;
 	
 	// we have our selected raster:
-	do_extraction(feature, selectedRasterInfo);
+	do_extraction(feature, selectedRasterInfo, csv_filename);
 }
 
 
@@ -345,17 +420,21 @@ static void process_modes_feature(
 ////////////////////////////////////////////////////////////////////////////////
 
 //
-// FR 350112: Duplicate pixel handling.
+// FR 200337: Duplicate pixel handling.
 // Only one raster is chosen (if possible) to get pixel data for the feature.
 //
 int starspan_csv_dup_pixel(
 	Vector* _vect,
 	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,
 	vector<const char*>* _select_fields,
 	const char* _csv_filename,
 	int _layernum,
 	vector<DupPixelMode>& dupPixelModes
 ) {
+    // Either no masks are given, or_eq the number of rasters and_eq masks are the same:
+    assert( mask_filenames == 0 || mask_filenames->size() == raster_filenames.size() );
+    
 	vect = _vect;
 	select_fields = _select_fields;
 	csv_filename = _csv_filename;
@@ -378,7 +457,11 @@ int starspan_csv_dup_pixel(
 	
 	int res = 0;
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
-		RasterInfo* rasterInfo = new RasterInfo(raster_filenames[i]);
+        const char* mask_filename = 0;
+        if ( mask_filenames ) {
+            mask_filename = (*mask_filenames)[i];
+        }
+		RasterInfo* rasterInfo = new RasterInfo(raster_filenames[i], mask_filename);
 
 		OGRGeometry* newAllRasterArea = allRasterArea->Union(rasterInfo->ri_bb);
 		delete allRasterArea;

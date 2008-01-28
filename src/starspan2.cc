@@ -156,6 +156,9 @@ int main(int argc, char ** argv) {
 	
 	const char* raster_field_name = 0;
 	const char* raster_directory = 0;
+    
+	vector<const char*> mask_filenames;
+	const char* mask_directory = 0;
 
 	const char* dump_geometries_filename = NULL;
 	
@@ -196,14 +199,36 @@ int main(int argc, char ** argv) {
 					usage("--raster: only one element when indicating a @field");
 			}
 			if ( raster_filenames.size() == 0 )
-				usage("--raster: which raster files or @field indicator?");
+				usage("--raster: missing argument(s)");
 			if ( i < argc && argv[i][0] == '-' ) 
 				--i;
 		}
 		else if ( 0==strcmp("--raster_directory", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
-				usage("--raster_directory: which raster directory?");
+				usage("--raster_directory: missing argument");
 			raster_directory = argv[i];
+		}
+		else if ( 0==strcmp("--mask", argv[i]) ) {
+			while ( ++i < argc && argv[i][0] != '-' ) {
+				const char* mask_filename = argv[i];
+				mask_filenames.push_back(mask_filename);
+				// check for field indication:
+				if ( mask_filename[0] == '@' ) {
+					usage("--mask: @field specification not implemented");
+				}
+			}
+			if ( mask_filenames.size() == 0 ) {
+				usage("--mask: missing argument(s)");
+            }
+			if ( i < argc && argv[i][0] == '-' ) { 
+				--i;
+            }
+		}
+		else if ( 0==strcmp("--mask_directory", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' ) {
+				usage("--raster_mask_directory: missing argument");
+            }
+			mask_directory = argv[i];
 		}
 		else if ( 0==strcmp("--duplicate_pixel", argv[i]) ) {
 			while ( ++i < argc && argv[i][0] != '-' ) {
@@ -520,9 +545,16 @@ int main(int argc, char ** argv) {
 			"that currently processes the --raster @fieldname specification)"
 		);
 	}
-	if ( !raster_field_name && raster_directory ) {
-		usage("--raster_directory is only used with --raster @field");
+	if ( raster_directory ) {
+        if ( raster_filenames.size() > 1 ) {
+            // TODO
+            //expandFileNames(raster_directory, raster_filenames);
+        }
+        else if ( !raster_field_name  ) {
+            usage("--raster_directory: --raster required");
+        }
 	}
+	
 	
 	if ( globalOptions.dupPixelModes.size() > 0 ) {
 		if ( globalOptions.verbose ) {
@@ -561,9 +593,18 @@ int main(int argc, char ** argv) {
 			);
 		}
 		else if ( globalOptions.dupPixelModes.size() > 0 ) {
+            vector<const char*> *masks = 0;
+            if ( mask_filenames.size() > 0 ) {
+                size_t noPairs = min(raster_filenames.size(), mask_filenames.size());
+                raster_filenames.resize(noPairs);
+                mask_filenames.resize(noPairs);
+                masks = &mask_filenames;
+            }
+            
 			res = starspan_csv_dup_pixel(
 				vect,  
 				raster_filenames,
+				masks,
 				select_fields, 
 				csv_name,
 				vector_layernum,

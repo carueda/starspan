@@ -252,13 +252,14 @@ int starspan_csv(
 
 
 /**
- * FR 350112 Duplicate pixel handling.
+ * FR 200337 Duplicate pixel handling.
  *
  * @param dupPixelModes modes
  */
 int starspan_csv_dup_pixel(
 	Vector* vect,
 	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,     //  FR 200341
 	vector<const char*>* select_fields,
 	const char* csv_filename,
 	int layernum,
