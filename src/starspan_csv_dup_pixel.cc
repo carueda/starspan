@@ -204,7 +204,12 @@ static bool within_mask(OGRFeature* feature, RasterInfo* rasterInfo) {
     
     tr.addRaster(rasterInfo->ri_mask);
     
+	bool prevResetReading = Traverser::_resetReading;
+	Traverser::_resetReading = false;
+
     tr.traverse();
+    
+    Traverser::_resetReading = prevResetReading;
     
     return obs.OK && !obs.zeroFound;
 }
