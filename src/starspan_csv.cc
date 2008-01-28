@@ -219,8 +219,9 @@ int starspan_csv(
 	// if file exists, append new rows. Otherwise create file.
 	file = fopen(csv_filename, "r+");
 	if ( file ) {
-		if ( globalOptions.verbose )
-			fprintf(stdout, "Appending to existing file %s\n", csv_filename);
+		if ( globalOptions.verbose ) {
+			fprintf(stdout, "starspan_csv: Appending to existing file %s\n", csv_filename);
+        }
 
 		fseek(file, 0, SEEK_END);
 
@@ -274,7 +275,7 @@ int starspan_csv(
 	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
-		fprintf(stdout, "%3u: Extracting from %s\n", i+1, raster_filenames[i]);
+		fprintf(stdout, "starspan_csv: %3u: Extracting from %s\n", i+1, raster_filenames[i]);
 		obs.raster_filename = raster_filenames[i];
 		obs.write_header = new_file && i == 0;
 		tr.removeRasters();

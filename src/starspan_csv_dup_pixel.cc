@@ -58,6 +58,8 @@ static OGRPoint* getGeometryCenter(OGRGeometry* geometry) {
 ////////////////////////
 // info for each raster
 struct RasterInfo {
+    const int ri_idx;
+    
 	// raster filename
 	const char* ri_filename;
 	
@@ -80,12 +82,11 @@ struct RasterInfo {
 	// distance: set during evaluation as a candidate
 	double distance;
 	
-	RasterInfo(const char* raster_filename, const char* mask_filename) {
-		ri_filename = raster_filename;
+	RasterInfo(int idx, const char* raster_filename, const char* mask_filename)
+	: ri_idx(idx), ri_filename(raster_filename), ri_mask_filename(mask_filename) {
+        
 		ri_raster = new Raster(ri_filename);
         
-        
-        ri_mask_filename = mask_filename;
         if ( ri_mask_filename ) {
             ri_mask = new Raster(ri_mask_filename);
         }
@@ -335,7 +336,7 @@ static void process_modes_feature(
 		if ( rasterInfo->ri_bb->Contains(feature_geometry) ) {
 			candidates.push_back(rasterInfo);
             if ( globalOptions.verbose ) {
-                cout<< "\t" << (i+1) << "  " <<rasterInfo->ri_filename<< endl;
+                cout<< "\t" <<rasterInfo->ri_idx<< "  " <<rasterInfo->ri_filename<< endl;
             }
 		}
 	}
@@ -361,7 +362,7 @@ static void process_modes_feature(
         if ( !rasterInfo->ri_mask || within_mask(feature, rasterInfo) ) {
             newCandidates.push_back(rasterInfo);
             if ( globalOptions.verbose ) {
-                cout<< "\t" << (i+1) << "  " <<rasterInfo->ri_filename<< endl;
+                cout<< "\t" <<rasterInfo->ri_idx<< "  " <<rasterInfo->ri_filename<< endl;
             }
         }
     }
@@ -538,7 +539,7 @@ int starspan_csv_dup_pixel(
         if ( mask_filenames ) {
             mask_filename = (*mask_filenames)[i];
         }
-		RasterInfo* rasterInfo = new RasterInfo(raster_filenames[i], mask_filename);
+		RasterInfo* rasterInfo = new RasterInfo(i, raster_filenames[i], mask_filename);
 
 		OGRGeometry* newAllRasterArea = allRasterArea->Union(rasterInfo->ri_bb);
 		delete allRasterArea;
