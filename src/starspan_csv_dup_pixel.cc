@@ -210,6 +210,8 @@ static bool within_mask(OGRFeature* feature, RasterInfo* rasterInfo) {
 	if ( globalOptions.verbose ) {
 		cout<< "--duplicate_pixel: within_mask: " <<ret<< endl;
 	}
+    
+    return ret;
 }
 		
 
