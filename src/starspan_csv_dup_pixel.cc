@@ -350,9 +350,12 @@ static void process_modes_feature(
 	/////////////////////////////////////////////////////////////////
 	// if masks are given, then check that all pixels in features contain actual
     // data according to the masks:
+	if ( globalOptions.verbose ) {
+        cout<< "--duplicate_pixel: FID " <<feature->GetFID()<< ": Checking masks, if given" <<endl;
+	}
     vector<RasterInfo*> newCandidates;
-    for ( unsigned i = 0, numRasters = rastInfos.size(); i < numRasters; i++ ) {
-        RasterInfo* rasterInfo = rastInfos[i];
+    for ( unsigned i = 0, numRasters = candidates.size(); i < numRasters; i++ ) {
+        RasterInfo* rasterInfo = candidates[i];
         if ( !rasterInfo->ri_mask || within_mask(feature, rasterInfo) ) {
             newCandidates.push_back(rasterInfo);
             if ( globalOptions.verbose ) {
