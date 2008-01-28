@@ -49,6 +49,7 @@ static void usage(const char* msg) {
 		"      --vector <filename>\n"
 		"      --layer <layername>     (optional; defaults to first layer in vector dataset)\n"
 		"      --raster {<filenames>... | @fieldname}\n"
+		"      --mask <filenames>... \n"
 		"      --speclib <filename>\n"
 		"      --update-csv <filename>\n"
 		"      --raster_directory <directory>\n"

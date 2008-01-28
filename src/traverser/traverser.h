@@ -149,6 +149,8 @@ public:
 	  * Returns true if this observer is only interested in the location of
 	  * intersecting pixels, in which case traversal event objects will
 	  * be filled with only info about the pixel location.
+      * This base class returns false, so events in addPixel notifications
+      * will contain band values as well.
 	  */
 	virtual bool isSimple(void) { return false; }
 	

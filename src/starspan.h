@@ -460,6 +460,40 @@ inline void starspan_extract_string_value(GDALDataType bandType, char* ptr, char
 }
 
 
+/**
+  * Extracts a value from a buffer according to a type and returns it as an integer.
+  */
+inline int starspan_extract_int_value(GDALDataType bandType, void* ptr) {
+	int value;
+	switch(bandType) {
+		case GDT_Byte:
+			value = (int) *( (char*) ptr );
+			break;
+		case GDT_UInt16:
+			value = (int) *( (unsigned short*) ptr );
+			break;
+		case GDT_Int16:
+			value = (int) *( (short*) ptr );
+			break;
+		case GDT_UInt32: 
+			value = (int) *( (unsigned int*) ptr );
+			break;
+		case GDT_Int32:
+			value = (int) *( (int*) ptr );
+			break;
+		case GDT_Float32:
+			value = (int) *( (float*) ptr );
+			break;
+		case GDT_Float64:
+			value = (int) *( (double*) ptr );
+			break;
+		default:
+			fprintf(stderr, "Unexpected GDALDataType: %s\n", GDALGetDataTypeName(bandType));
+			exit(1);
+	}
+	return value;
+}
+
 /** gets rid of a possible path in the name. */
 inline void starspan_simplify_filename(string& filename) {
 	size_t idx = filename.find_last_of("/:\\");

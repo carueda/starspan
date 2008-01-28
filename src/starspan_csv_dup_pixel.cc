@@ -119,21 +119,93 @@ struct RasterInfo {
 
 
 /**
+  * Checks bands for zero values. If a zero is found, it records its
+  * location [col0, row0].
+  */
+struct MaskObserver : public Observer {
+	GlobalInfo* global_info;
+	bool OK;
+    bool zeroFound;
+    
+    int col0;
+    int row0;
+		
+	MaskObserver() : global_info(0), zeroFound(false) {
+	}
+	
+	void init(GlobalInfo& info) {
+		global_info = &info;
+
+		OK = false;   // but let's see ...
+		
+		if ( global_info->bands.size() == 0 ) {
+			cerr<< "MaskObserver: warning: no bands in raster mask" <<endl;
+			return;
+		}
+
+		// now, all seems OK to continue processing		
+		OK = true;
+	}
+	
+	void addPixel(TraversalEvent& ev) { 
+        if ( !OK || zeroFound ) {
+            return;
+        }
+		void* band_values = ev.bandValues;
+		
+		// check bands for any zero value
+		char* ptr = (char*) band_values;
+		char value[1024];
+		for ( unsigned i = 0; i < global_info->bands.size(); i++ ) {
+			GDALDataType bandType = global_info->bands[i]->GetRasterDataType();
+			int typeSize = GDALGetDataTypeSize(bandType) >> 3;
+			
+			int value = starspan_extract_int_value(bandType, ptr);
+            if ( value == 0 ) {
+                zeroFound = true;
+                col0 = 1 + ev.pixel.col;
+                row0 = 1 + ev.pixel.row;
+                break;
+            }
+			
+			// move to next piece of data in buffer:
+			ptr += typeSize;
+		}
+	}
+
+};
+
+
+
+
+/**
  * Determines whether the feature is fully contained in the raster
  * according to the mask. 
  */
 static bool within_mask(OGRFeature* feature, RasterInfo* rasterInfo) {
-    assert( rasterInfo->ri_raster ) ;
+    assert( rasterInfo->ri_mask ) ;
 
 	// strategy:
-    // - As with count-by-class, traverse the feature and use an observer
-    // to detect if a zero value appears; if so, stop the traversal and
-    // update a flag.
-    // return the value corresponding to the flag.
+    // - Traverse feature with a MaskObserver to detect if a zero value appears
     
-    bool ret = true;
+    MaskObserver obs;
     
-    // TODO ...
+	Traverser tr;
+	tr.addObserver(&obs);
+
+	tr.setVector(vect);
+	tr.setLayerNum(layernum);
+	tr.setDesiredFID(feature->GetFID());
+    
+	if ( globalOptions.pix_prop >= 0.0 )
+		tr.setPixelProportion(globalOptions.pix_prop);
+	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
+    
+    tr.addRaster(rasterInfo->ri_mask);
+    
+    tr.traverse();
+    
+    bool ret = obs.OK && !obs.zeroFound;
 	
 	if ( globalOptions.verbose ) {
 		cout<< "--duplicate_pixel: within_mask: " <<ret<< endl;
