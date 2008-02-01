@@ -299,6 +299,12 @@ static void process_modes_feature(
 		}
 	}
 	
+	if ( globalOptions.verbose ) {
+        cout<< endl
+		    << "___________________________________________________" <<endl
+            << "--duplicate_pixel: FID " <<feature->GetFID()<< endl;
+	}
+	
 	///////////////////////////////////////////////////////////////////
 	// ignore_nodata?
 	// TODO Not yet implemented.  Mode IGNORED at this time.
@@ -335,7 +341,7 @@ static void process_modes_feature(
 		if ( rasterInfo->ri_bb->Contains(feature_geometry) ) {
 			candidates.push_back(rasterInfo);
             if ( globalOptions.verbose ) {
-                cout<< "\t" <<rasterInfo->ri_idx<< "  " <<rasterInfo->ri_filename<< endl;
+                cout<< "\t" << "  " <<rasterInfo->ri_filename<< endl;
             }
 		}
 	}
@@ -361,7 +367,7 @@ static void process_modes_feature(
         if ( !rasterInfo->ri_mask || within_mask(feature, rasterInfo) ) {
             newCandidates.push_back(rasterInfo);
             if ( globalOptions.verbose ) {
-                cout<< "\t" <<rasterInfo->ri_idx<< "  " <<rasterInfo->ri_filename<< endl;
+                cout<< "\t" << "  " <<rasterInfo->ri_filename<< endl;
             }
         }
     }

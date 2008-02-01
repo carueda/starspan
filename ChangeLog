@@ -1,6 +1,10 @@
 StarSpan ChangeLog
 $Id$
 
+2008-02-02
+        - starspan_csv_dup_pixel.cc: Minor changes in log messages for
+          easier inspection.
+
 2008-01-28
 	- Added processing of rasters according to associated masks.
       See starspan_csv_dup_pixel.cc
