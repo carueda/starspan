@@ -63,9 +63,6 @@ struct RasterInfo {
 	// raster filename
 	const char* ri_filename;
 	
-	// raster
-	Raster* ri_raster;
-	
 	// mask filename
 	const char* ri_mask_filename;
 	
@@ -85,15 +82,16 @@ struct RasterInfo {
 	RasterInfo(int idx, const char* raster_filename, const char* mask_filename)
 	: ri_idx(idx), ri_filename(raster_filename), ri_mask_filename(mask_filename) {
         
-		ri_raster = new Raster(ri_filename);
-        
         if ( ri_mask_filename ) {
             ri_mask = new Raster(ri_mask_filename);
         }
-
+        
+        // open the raster momentarily to get its bounding box and center:
+		Raster ri_raster(ri_filename);
+        
 		// create a geometry for raster envelope:
 		double x0, y0, x1, y1;		
-		ri_raster->getCoordinates(&x0, &y0, &x1, &y1);
+		ri_raster.getCoordinates(&x0, &y0, &x1, &y1);
 		OGRLinearRing* raster_ring = new OGRLinearRing();
 		raster_ring->addPoint(x0, y0);
 		raster_ring->addPoint(x1, y0);
@@ -105,11 +103,10 @@ struct RasterInfo {
 		
 		ri_center = getGeometryCenter(ri_bb);
 	}
-	
+    
 	~RasterInfo() {
 		delete ri_bb;
 		delete ri_center;
-		delete ri_raster;
         
         if ( ri_mask ) {
             delete ri_mask;
