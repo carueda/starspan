@@ -581,8 +581,8 @@ int main(int argc, char ** argv) {
 			}
 		}
 		
-		if ( !csv_name ) {
-			usage("--duplicate_pixel: No --csv command!");
+		if ( !csv_name && !mini_prefix) {
+			usage("--duplicate_pixel: No --csv or --mini_rasters command!");
 		}
 	}
 	
