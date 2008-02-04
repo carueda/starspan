@@ -159,6 +159,7 @@ int main(int argc, char ** argv) {
 	const char* raster_directory = 0;
     
 	vector<const char*> mask_filenames;
+    vector<const char*> *masks = 0;
 	const char* mask_directory = 0;
 
 	const char* dump_geometries_filename = NULL;
@@ -557,6 +558,21 @@ int main(int argc, char ** argv) {
 	}
 	
 	
+    if ( mask_filenames.size() > 0 ) {
+        size_t noPairs = min(raster_filenames.size(), mask_filenames.size());
+        raster_filenames.resize(noPairs);
+        mask_filenames.resize(noPairs);
+        masks = &mask_filenames;
+        
+        if ( globalOptions.verbose ) {
+            cout<< "raster-mask pairs given:" << endl;
+            for ( size_t i = 0; i < noPairs; i++ ) {
+                cout<< "\t" <<raster_filenames[i]<< endl
+                    << "\t" <<mask_filenames[i]<< endl<<endl;
+            }
+        }
+    }
+
 	if ( globalOptions.dupPixelModes.size() > 0 ) {
 		if ( globalOptions.verbose ) {
 			cout<< "--duplicate_pixel modes given:" << endl;
@@ -594,22 +610,6 @@ int main(int argc, char ** argv) {
 			);
 		}
 		else if ( globalOptions.dupPixelModes.size() > 0 ) {
-            vector<const char*> *masks = 0;
-            if ( mask_filenames.size() > 0 ) {
-                size_t noPairs = min(raster_filenames.size(), mask_filenames.size());
-                raster_filenames.resize(noPairs);
-                mask_filenames.resize(noPairs);
-                masks = &mask_filenames;
-                
-                if ( globalOptions.verbose ) {
-                    cout<< "raster-mask pairs given:" << endl;
-                    for ( size_t i = 0; i < noPairs; i++ ) {
-                        cout<< "\t" <<raster_filenames[i]<< endl
-                            << "\t" <<mask_filenames[i]<< endl<<endl;
-                    }
-                }
-            }
-            
 			res = starspan_csv_dup_pixel(
 				vect,  
 				raster_filenames,
@@ -633,6 +633,21 @@ int main(int argc, char ** argv) {
 			usage("--csv expects at least a raster input (use --raster)");
 		}
 	}
+    
+    else if ( mini_prefix && globalOptions.dupPixelModes.size() > 0 ) {
+        // testing this new implementation:
+        res = starspan_miniraster2(
+            vect,  
+            raster_filenames,
+            masks,
+            select_fields, 
+            vector_layernum,
+            globalOptions.dupPixelModes,
+            mini_prefix,
+            mini_srs
+        );
+    }
+
 	
 	else if ( stats_name ) {
 		//Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);

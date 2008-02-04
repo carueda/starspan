@@ -503,5 +503,48 @@ inline void starspan_simplify_filename(string& filename) {
 }
 
 
+
+////////////////////////////////////////////////////////////////////////////////
+// general raster selection processing
+
+struct ExtractionItem {
+    OGRFeature* feature;
+    const char* rasterFilename;
+};
+
+
+int starspan_dup_pixel(
+	Vector* vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,
+	vector<const char*>* select_fields,
+	int layernum,
+	vector<DupPixelMode>& dupPixelModes,
+	void (*extractionFunction)(ExtractionItem* item)
+);
+
+
+int starspan_csv2(
+	Vector* _vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,
+	vector<const char*>* _select_fields,
+	int _layernum,
+	vector<DupPixelMode>& dupPixelModes,
+	const char* _csv_filename
+);
+
+
+int starspan_miniraster2(
+	Vector* _vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,
+	vector<const char*>* _select_fields,
+	int _layernum,
+	vector<DupPixelMode>& dupPixelModes,
+    const char*  _mini_prefix,
+    const char*  _mini_srs
+);
+
 #endif
 
