@@ -80,7 +80,8 @@ struct RasterInfo {
 	double distance;
 	
 	RasterInfo(int idx, const char* raster_filename, const char* mask_filename)
-	: ri_idx(idx), ri_filename(raster_filename), ri_mask_filename(mask_filename) {
+	: ri_idx(idx), ri_filename(raster_filename), 
+      ri_mask_filename(mask_filename), ri_mask(0), ri_bb(0), ri_center(0) {
         
         if ( ri_mask_filename ) {
             ri_mask = new Raster(ri_mask_filename);
