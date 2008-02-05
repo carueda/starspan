@@ -610,15 +610,24 @@ int main(int argc, char ** argv) {
 			);
 		}
 		else if ( globalOptions.dupPixelModes.size() > 0 ) {
-			res = starspan_csv_dup_pixel(
-				vect,  
-				raster_filenames,
-				masks,
-				select_fields, 
-				csv_name,
-				vector_layernum,
-				globalOptions.dupPixelModes
-			);
+            res = starspan_csv2(
+                vect,
+                raster_filenames,
+                masks,
+                select_fields,
+                vector_layernum,
+                globalOptions.dupPixelModes,
+                csv_name
+            );
+			//res = starspan_csv_dup_pixel(
+			//	vect,  
+			//	raster_filenames,
+			//	masks,
+			//	select_fields, 
+			//	csv_name,
+			//	vector_layernum,
+			//	globalOptions.dupPixelModes
+			//);
 		}
 		else if ( raster_filenames.size() > 0 ) {
 			res = starspan_csv(
