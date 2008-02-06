@@ -17,7 +17,6 @@ import javax.swing.WindowConstants;
 import java.io.File;
 
 import org.geotools.data.FeatureSource;
-import org.geotools.data.arcgrid.ArcGridDataSource;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.gui.swing.StyledMapPane;

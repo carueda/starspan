@@ -7,15 +7,18 @@
 	<!-- Base dir for generated files -->
 	<property name="generated" value="../../_GENERATED/starspan"/>
 
-	<property name="baselib"  value="../../../_GENERATED/starspan/lib"/>
+	<property name="baselib"  value="/home/carueda/software/gt2-spearfishdemo/lib/"/>
+	<!--property name="baselib"  value="../../../_GENERATED/starspan/lib"/-->
 
 	<!-- External required libraries -->
 	<property name="envifile"  value="${baselib}/envifile.jar"/>
 	<property name="jts"  value="${baselib}/JTS-1.4.jar"/>
 	<property name="shape"  value="${baselib}/gt2-shapefile.jar"/>
-	<property name="vecmath"  value="${baselib}/vecmath-1.2.1.jar"/>
+	<property name="vecmath"  value="${baselib}/vecmath-1.3.jar"/>
 	<property name="gt2"  value="${baselib}/gt2-main.jar"/>
-	<property name="arcgrid"  value="${baselib}/gt2-arcgrid.jar"/>
+	<property name="arcgrid"  value="${baselib}/gt2-arcgrid-2.1.x.jar"/>
+	<property name="geoapi"  value="${baselib}/geoapi-1.1.0alpha.jar"/>
+	<property name="units"  value="${baselib}/units-0.01.jar"/>
 
 	<!-- Directory to put compiled classes -->
 	<property name="build" value="${generated}/BUILD"/>
@@ -28,9 +31,10 @@
 
 	<!-- Main class to specify in manifest -->
 	<property name="mainclass" value="starspan.tools.Prototype1"/>
+	<!--property name="mainclass" value="starspan.tools.ShapeViewer"/-->
 
 	<property name="classpath" 
-	 value="${envifile} ${jts} ${shape} ${vecmath} ${gt2} ${arcgrid} envifile.jar JTS-1.4.jar gt2-shapefile.jar vecmath-1.2.1.jar gt2-main.jar /gt2-arcgrid.jar" 
+	 value="${envifile} ${jts} ${shape} ${vecmath} ${gt2} ${arcgrid} ${geoapi} ${units} envifile.jar JTS-1.4.jar gt2-shapefile.jar vecmath-1.3.jar gt2-main.jar /gt2-arcgrid-2.1.x.jar geoapi-1.1.0alpha.jar units-0.01.jar" 
 	/>	
 	
 	<target name="init">

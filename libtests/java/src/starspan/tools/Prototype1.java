@@ -28,7 +28,7 @@ import java.net.URL;
 public class Prototype1 {
 	/** Main entry for this prototype. */
     public static void main(String[] args) throws Exception {
-		if ( args.length != 1 ) {
+		if ( args.length < 1 ) {
 			System.out.println(
 				"starspan - prototype 1\n" +
 				"USAGE:  starspan <shpfile>  [<raster-header>]"
