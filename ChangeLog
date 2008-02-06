@@ -1,6 +1,9 @@
 StarSpan ChangeLog
 $Id$
 
+2008-02-05
+    - Included --gui extended option to launch the GUI
+    
 2008-02-02
         - starspan_csv_dup_pixel.cc: Minor changes in log messages for
           easier inspection.
