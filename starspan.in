@@ -80,7 +80,7 @@ if [ "$1" = "--xhelp" ]; then
 
 elif [ "$1" = "--gui" ]; then
 	echo "[Launching StarSpan GUI...]"
-    if [ ! -x java ]; then
+    if [ ! -x `which java` ]; then
         echo "Command 'java' is required to launch this application."
         exit 1
     fi
