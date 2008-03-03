@@ -13,7 +13,6 @@ starspan2_SOURCES =	\
 	src/starspan_dup_pixel.cc \
 	src/starspan_csv2.cc \
 	src/starspan_minirasters2.cc \
-	src/starspan_csv_dup_pixel.cc \
 	src/starspan_stats.cc \
 	src/starspan_countbyclass.cc \
 	src/starspan_update_csv.cc \

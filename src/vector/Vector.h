@@ -42,6 +42,9 @@ public:
 	// report
 	void showFields(FILE* file);
 	
+	// gets the OGRDataSource
+	OGRDataSource* getDataSource(void) { return poDS; } 
+	
 private:
 	Vector(OGRDataSource* ds);
 	OGRDataSource* poDS;

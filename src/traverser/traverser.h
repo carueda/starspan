@@ -303,6 +303,13 @@ public:
 	void setPixelProportion(double pixprop);
 
 	/**
+	  * Sets the vector selection parameters. 
+	  *
+	  * @param vsp the parameters.
+	  */
+    void setVectorSelectionParams(VectorSelectionParams vsp) { vSelParams = vsp; }
+
+	/**
 	  * Only the given FID will be processed.
 	  *
 	  * @param FID  a FID.
@@ -574,6 +581,9 @@ private:
 	bool notSimpleObserver;
 
 	double pixelProportion;
+    
+    VectorSelectionParams vSelParams;
+    
 	long desired_FID;
 	string desired_fieldName;
 	string desired_fieldValue;

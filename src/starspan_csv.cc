@@ -259,6 +259,9 @@ int starspan_csv(
 	tr.setLayerNum(layernum);
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
+    
+    tr.setVectorSelectionParams(globalOptions.vSelParams);
+    
 	if ( globalOptions.FID >= 0 )
 		tr.setDesiredFID(globalOptions.FID);
 	tr.setVerbose(globalOptions.verbose);

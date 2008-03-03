@@ -484,6 +484,9 @@ double** starspan_getFeatureStatsByField(
 	Traverser tr;
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
+    
+    tr.setVectorSelectionParams(globalOptions.vSelParams);
+    
 	tr.setVector(vect);
 	tr.addRaster(rast);
 	tr.setDesiredFeatureByField(field_name, field_value);
@@ -566,6 +569,9 @@ int starspan_stats(
 
 	if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
+    
+    tr.setVectorSelectionParams(globalOptions.vSelParams);
+    
 	if ( globalOptions.FID >= 0 )
 		tr.setDesiredFID(globalOptions.FID);
 	tr.setVerbose(globalOptions.verbose);

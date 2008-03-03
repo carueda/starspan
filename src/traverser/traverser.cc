@@ -726,12 +726,43 @@ void Traverser::traverse() {
 		cerr<< "traverser: No raster datasets were specified!\n";
 		return;
 	}
-	
-	OGRLayer* layer = vect->getLayer(layernum);
-	if ( !layer ) {
-		cerr<< "Couldn't get layer " <<layernum<< " from " << vect->getName()<< endl;
-		return;
-	}
+    
+    OGRLayer* layer = 0;
+    bool releaseLayer = false;
+    
+    // SQL statement?
+    if ( vSelParams.sql.length() > 0 ) {
+        OGRDataSource *poDS = vect->getDataSource();
+        
+		const char *dialect = 0;
+        if ( vSelParams.dialect.length() > 0 ) {
+            dialect = vSelParams.dialect.c_str();
+        }
+
+        OGRGeometry *poSpatialFilter = 0;  // We do not use this here; TODO perhaps enable it later on.
+        
+        layer = poDS->ExecuteSQL(vSelParams.sql.c_str(), poSpatialFilter, dialect);
+        if ( layer != 0 ) {
+            if ( vSelParams.where.length() > 0 ) {
+                layer->SetAttributeFilter(vSelParams.where.c_str());
+            }
+            // the OGR API requires this layer to be explicitly released:
+            releaseLayer = true;
+        }
+        else {
+            cerr<< "traverser: No result or an error occured while issueing query: "
+                << vSelParams.sql << endl;
+            return;
+        }
+    }
+	else {
+        layer = vect->getLayer(layernum);
+        if ( !layer ) {
+            cerr<< "Couldn't get layer " <<layernum<< " from " << vect->getName()<< endl;
+            return;
+        }
+    }
+    
 	if ( _resetReading ) {
 		layer->ResetReading();
 	}
@@ -843,6 +874,11 @@ void Traverser::traverse() {
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
 		(*obs)->end();
 	}
+    
+    if ( releaseLayer ) {
+        OGRDataSource *poDS = vect->getDataSource();
+        poDS->ReleaseResultSet(layer);
+    }
 
 	delete[] bandValues_buffer;
 	bandValues_buffer = 0;

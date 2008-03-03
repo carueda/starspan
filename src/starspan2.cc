@@ -72,6 +72,9 @@ static void usage(const char* msg) {
 		"      --pixprop <minimum-pixel-proportion>\n"
 		"      --noColRow \n"
 		"      --noXY\n"
+		"      --sql <statement>\n"
+		"      --where <condition>\n"
+		"      --dialect <string>\n"
 		"      --fid <FID>\n"
 		"      --skip_invalid_polys \n"
 		"      --nodata <value> \n"
@@ -411,6 +414,24 @@ int main(int argc, char ** argv) {
 				usage("invalid FID");
 		}
 		
+		else if ( 0==strcmp("--sql", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--sql: missing statement");
+			globalOptions.vSelParams.sql = argv[i];
+		}
+		
+		else if ( 0==strcmp("--where", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--where: missing condition");
+			globalOptions.vSelParams.where = argv[i];
+		}
+		
+		else if ( 0==strcmp("--dialect", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' )
+				usage("--dialect: missing string");
+			globalOptions.vSelParams.dialect = argv[i];
+		}
+		
 		else if ( 0==strcmp("--noColRow", argv[i]) ) {
 			globalOptions.noColRow = true;
 		}
@@ -525,6 +546,10 @@ int main(int argc, char ** argv) {
 			goto end;
 		}  
 
+        if ( vector_layername && globalOptions.vSelParams.sql.length() > 0 ) {
+            cout<< "Warning: --layer option ignored when --sql option is given" <<endl;
+        }
+        
 		// 
 		// get the layer number for the given layer name 
 		// if not specified or there is only a single layer, use the first layer 
@@ -731,6 +756,8 @@ int main(int argc, char ** argv) {
 		if ( globalOptions.pix_prop >= 0.0 )
 			tr.setPixelProportion(globalOptions.pix_prop);
 	
+        tr.setVectorSelectionParams(globalOptions.vSelParams);
+		
 		if ( globalOptions.FID >= 0 )
 			tr.setDesiredFID(globalOptions.FID);
 		

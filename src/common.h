@@ -50,6 +50,25 @@ struct DupPixelMode {
 	}
 };
 
+
+/** 
+ * vector selection parameters
+ */
+struct VectorSelectionParams {
+    /** sql statement */
+    string sql;
+    
+    /** where statement */
+    string where;
+    
+    /** dialect */
+    string dialect;
+    
+    VectorSelectionParams() : sql(""), where(""), dialect("") {}
+    
+};
+
+
 /** Options that might be used by different services.
   * This comes in handy while the tool gets more stabilized.
   */
@@ -58,6 +77,9 @@ struct GlobalOptions {
 	bool skip_invalid_polys;
 
 	double pix_prop;
+	
+	// vector selection parameters
+	VectorSelectionParams vSelParams;
 	
 	/** desired FID */
 	long FID;
