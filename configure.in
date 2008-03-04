@@ -37,7 +37,7 @@ if test "$GEOS_CONFIG" != "no" ; then
   GEOS_PREFIX=`$GEOS_CONFIG --prefix`
 fi
 
-AC_SUBST(GEOS_INC GEOS_PREFIX)
+AC_SUBST(GEOS_INC GEOS_PREFIX program_suffix)
 
 
 dnl ###########################################################
@@ -69,4 +69,3 @@ AC_SUBST(GDAL_INC GDAL_PREFIX)
 
 
 AC_OUTPUT([Makefile starspan mksrcdist.sh])
-
