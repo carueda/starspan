@@ -761,6 +761,9 @@ void Traverser::traverse() {
             cerr<< "Couldn't get layer " <<layernum<< " from " << vect->getName()<< endl;
             return;
         }
+        if ( vSelParams.where.length() > 0 ) {
+            layer->SetAttributeFilter(vSelParams.where.c_str());
+        }
     }
     
 	if ( _resetReading ) {
