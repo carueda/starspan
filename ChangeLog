@@ -1,10 +1,14 @@
 StarSpan ChangeLog
 $Id$
 
-2008-03-02 (1.0.07)
+2008-03-03 (1.0.07)
     - Adding options --sql, --where, and --dialect à la ogrinfo:
         
     - removed unneeded starspan_csv_dup_pixel.cc from Makefile.am
+    
+    - configure.in, starspan.in: using program_prefix and program_suffix to
+      refer to binary executable, so the corresponding ./configure options
+      are honored.
     
 2008-02-05
     - Included --gui extended option to launch the GUI

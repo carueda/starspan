@@ -7,7 +7,7 @@
 BINDIR=`dirname $0`
 
 # The proper StarSpan binary:
-STARSPAN2=$BINDIR/starspan2@program_suffix@
+STARSPAN2=$BINDIR/@program_prefix@starspan2@program_suffix@
 
 export LD_LIBRARY_PATH=@GDAL_PREFIX@/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=@GEOS_PREFIX@/lib:$LD_LIBRARY_PATH

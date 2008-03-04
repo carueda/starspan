@@ -37,7 +37,7 @@ if test "$GEOS_CONFIG" != "no" ; then
   GEOS_PREFIX=`$GEOS_CONFIG --prefix`
 fi
 
-AC_SUBST(GEOS_INC GEOS_PREFIX program_suffix)
+AC_SUBST(GEOS_INC GEOS_PREFIX program_prefix program_suffix)
 
 
 dnl ###########################################################
