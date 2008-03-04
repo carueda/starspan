@@ -2,14 +2,50 @@ StarSpan ChangeLog
 $Id$
 
 2008-03-03 (1.0.07)
-    - Adding options --sql, --where, and --dialect à la ogrinfo:
+    - Adding options --sql, --where, and --dialect à la ogrinfo.
+      Preliminary tests OK.
         
+      More details about the syntax for --sql:  http://gdal.org/ogr/ogr_sql.html
+      The "where" section corresponds to the --where option.
+
+      In starspan you will write something like for example:
+        starspan --vector myvector.shp \
+                 --where "(SITE_ID >= 10) and (SITE_ID <= 20)"  ...other options...
+
+      Although more tests are pending, I think these new options should work as 
+      expected.
+
+      
     - removed unneeded starspan_csv_dup_pixel.cc from Makefile.am
     
     - configure.in, starspan.in: using program_prefix and program_suffix to
       refer to binary executable, so the corresponding ./configure options
       are honored.
+      
+    - Adjustments to GEOS include files according to deprecated warning
+      issued by GEOS 3.0.0
+      
+      
+    - Since GDAL and GRASS are working nicely together on pegasus, I just made a
+      basic test to confirm that starspan can access vector and raster GRASS
+      datasets, and everything seems to work fine. For example, according the 
+      the naming of the datasorces explainded in http://gdal.org/ogr/drv_grass.html
+      and http://gdal.org/frmt_grass.html:
+
+        starspan --raster /proj/delta/gis/grass/delta/lidar_shadows/cellhd/200506_p1_31_beam_irradiance --report
+        starspan --vector /proj/delta/gis/grass/delta/carueda/vector/starspan_testply/head --report
+
+      Note that you don't have to launch these commands from within GRASS to access
+      the datasets. However, I notice that more information is reported for rasters
+      when the command is launched from within GRASS, so I guess running those in 
+      GRASS is the recommended way.
+
+      Note also that accepting the inputs according to the GRASS syntax, for example:
+        starspan-grass raster=00506_p1_31_beam_irradiance@lidar_shadows vector=somevector@somewhere ...etc...
+      is another story; this would required a concrete module in starspan especially 
+      designed to use the GRASS APIs.      
     
+      
 2008-02-05
     - Included --gui extended option to launch the GUI
     
