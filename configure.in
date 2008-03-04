@@ -37,6 +37,14 @@ if test "$GEOS_CONFIG" != "no" ; then
   GEOS_PREFIX=`$GEOS_CONFIG --prefix`
 fi
 
+case $program_prefix in
+NONE) program_prefix="" ;;
+esac
+
+case $program_suffix in
+NONE) program_suffix="" ;;
+esac
+
 AC_SUBST(GEOS_INC GEOS_PREFIX program_prefix program_suffix)
 
 
