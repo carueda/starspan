@@ -5,6 +5,10 @@
 // $Id$
 //
 
+#include <geos/unload.h>
+using namespace geos::io;   // for Unload
+
+
 #include "starspan.h"           
 #include "traverser.h"           
 

@@ -8,7 +8,6 @@
 #include "starspan.h"           
 #include "vrtdataset.h"
 #include "jts.h"       
-#include <geos/io.h>
 
 #include <stdlib.h>
 
