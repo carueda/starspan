@@ -14,45 +14,31 @@
 #include "Progress.h"
 
 #include <geos/version.h>
-#include <geos/util.h>
+#if GEOS_VERSION_MAJOR < 3
+	#include <geos.h>
+	#include <geos/io.h>
+#else
+	#include <geos/util.h>
 
-//#include <geos/geom.h>
-//- #include <geos/geom/Coordinate.h>
-#include <geos/geom/CoordinateArraySequence.h>
-//- #include <geos/geom/CoordinateArraySequenceFactory.h>
-//- #include <geos/geom/CoordinateFilter.h>
-#include <geos/geom/CoordinateSequence.h>
-#include <geos/geom/CoordinateSequenceFactory.h>
-//- #include <geos/geom/Dimension.h>
-#include <geos/geom/Envelope.h>
-#include <geos/geom/Geometry.h>
-#include <geos/geom/GeometryCollection.h>
-//- #include <geos/geom/GeometryComponentFilter.h>
-#include <geos/geom/GeometryFactory.h>
-//- #include <geos/geom/GeometryFilter.h>
-#include <geos/geom/LineString.h>
-#include <geos/geom/LinearRing.h>
-#include <geos/geom/MultiLineString.h>
-#include <geos/geom/MultiPoint.h>
-#include <geos/geom/MultiPolygon.h>
-#include <geos/geom/Point.h>
-#include <geos/geom/Polygon.h>
-//- #include <geos/geom/PrecisionModel.h>
-//- #include <geos/geom/LineSegment.h>
-//- #include <geos/geom/IntersectionMatrix.h>
-//- #include <geos/geom/Location.h>
+	#include <geos/geom/CoordinateArraySequence.h>
+	#include <geos/geom/CoordinateSequence.h>
+	#include <geos/geom/CoordinateSequenceFactory.h>
+	#include <geos/geom/Envelope.h>
+	#include <geos/geom/Geometry.h>
+	#include <geos/geom/GeometryCollection.h>
+	#include <geos/geom/GeometryFactory.h>
+	#include <geos/geom/LineString.h>
+	#include <geos/geom/LinearRing.h>
+	#include <geos/geom/MultiLineString.h>
+	#include <geos/geom/MultiPoint.h>
+	#include <geos/geom/MultiPolygon.h>
+	#include <geos/geom/Point.h>
+	#include <geos/geom/Polygon.h>
+
+	#include <geos/io/WKTWriter.h>
+#endif
 
 
-
-//#include <geos/io.h>
-//- #include <geos/io/ByteOrderDataInStream.h>
-//- #include <geos/io/ByteOrderValues.h>
-//- #include <geos/io/ParseException.h>
-//- #include <geos/io/WKBConstants.h>
-//- #include <geos/io/WKBReader.h>
-//- #include <geos/io/WKBWriter.h>
-//- #include <geos/io/WKTReader.h>
-#include <geos/io/WKTWriter.h>
 
 
 

@@ -5,8 +5,13 @@
 // $Id$
 //
 
-#include <geos/unload.h>
-using namespace geos::io;   // for Unload
+#include <geos/version.h>
+#if GEOS_VERSION_MAJOR < 3
+	#include <geos.h>
+#else
+	#include <geos/unload.h>
+	using namespace geos::io;   // for Unload
+#endif
 
 
 #include "starspan.h"           
