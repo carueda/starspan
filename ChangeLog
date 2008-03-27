@@ -1,6 +1,9 @@
 StarSpan ChangeLog
 $Id$
 
+2008-03-27 (1.0.08)
+    - Fresh release to facilitate creation of windows binaries.
+    
 2008-03-03 (1.0.07)
     - Adding options --sql, --where, and --dialect à la ogrinfo.
       Preliminary tests OK.
