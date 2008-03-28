@@ -1,6 +1,10 @@
 BUILD on windows
 $Id$
 
+2008-03-27
+    See http://starspan.casil.ucdavis.edu/doku/doku.php?id=mingw
+    
+    
 2007-10-19
 	- Windows version with LFS is now successful
 	TODO: update this notes accordingly.

@@ -4,16 +4,6 @@ $Id$
 
 In this directory we create a binary distribution of StarSpan for Windows.
 
-Prerequisites
-	Apache Ant is used to build the system.
-	http://ant.apache.org
-	
-	IzPack is used to create the installer.
-	http://izforge.com/izpack
-	
-	End users will need a Java Runtime Environment to be able to run
-	the StarSpan GUI.
-
 Build
 	- Once you have built the windows binaries, manually copy them
 	  in base_dist/bin/. The required files are:
@@ -27,7 +17,12 @@ Build
 	[(*) Originally created without extension--manually added]
 
 	- Check the values in build.properties according to location of 
-	  prerequisites in your system.
+	  prerequisites in your system and also the indicate the
+      starspan version STARSPAN_VERSION property.
+	
+	- Create the package with only the command line files: 
+		ant cl
+	The ZIP takes the name starspan-${STARSPAN_VERSION}-win32.zip
 	
 	- Create the installer: 
 		ant installer

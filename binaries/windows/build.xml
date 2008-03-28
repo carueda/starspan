@@ -29,13 +29,14 @@
 		<copy file="base_dist/bin/gdalinfo.exe" todir="${dist}/base_dist/bin"/>
 		<copy file="base_dist/bin/starspan2.exe" todir="${dist}/base_dist/bin"/>
 		
-        <echo file="${dist}/base_dist/bin/starspan.bat">REM
-REM Starspan ${STARSPAN_VERSION}
+        <echo file="${dist}/base_dist/bin/starspan.bat"
+>REM Starspan ${STARSPAN_VERSION}
 REM See ..\README.txt
 %~dp0starspan2.exe %*
         </echo>
         
-        <echo file="${dist}/base_dist/README.txt">Starspan ${STARSPAN_VERSION}
+        <echo file="${dist}/base_dist/README.txt"
+>Starspan ${STARSPAN_VERSION}
 
 Running the command line executable
 
@@ -49,10 +50,10 @@ You can also optionally set your PATH environment variable, eg.,
 (see your Windows documentation) so, you can just call:
     starspan  ...arguments...
     
-If the program (a batch file: starspan.bat), does not run, 
+If the batch program (starspan.bat) does not run properly, 
 try running starspan2.exe directly.
 
-License:
+Copyright agreement:
   Please, see doc\copyright.txt
         </echo>
         <fixcrlf eol="dos" file="${dist}/base_dist/bin/starspan.bat"/>
