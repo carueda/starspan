@@ -56,8 +56,8 @@ try running starspan2.exe directly.
 License:
   Please, see doc\copyright.txt
         </echo>
-        <fixcrlf eol="CLRF" file="${dist}/base_dist/bin/starspan.bat"/>
-        <fixcrlf eol="CLRF" file="${dist}/base_dist/README.txt"/>
+        <fixcrlf eol="dos" file="${dist}/base_dist/bin/starspan.bat"/>
+        <fixcrlf eol="dos" file="${dist}/base_dist/README.txt"/>
         
         <zip destfile="${dist}/${ZIPNAME}"
              basedir="${dist}/base_dist"
