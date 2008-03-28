@@ -29,24 +29,35 @@
 		<copy file="base_dist/bin/gdalinfo.exe" todir="${dist}/base_dist/bin"/>
 		<copy file="base_dist/bin/starspan2.exe" todir="${dist}/base_dist/bin"/>
 		
-        <echo file="${dist}/base_dist/README.txt">
-        Starspan ${STARSPAN_VERSION}
-        
-        Running the command line executable
-        
-        - Open a command window
-        - Assuming you unpacked the contents of ${ZIPNAME} in C:\My\Dir\,
-          you can run StarSpan as follows:
-            C:\My\Dir\starspan2.exe  ...arguments...
-            
-        You can also optionally set your PATH environment variable, eg.,
-            PATH=C:\My\Dir\;%PATH%
-        (see your Windows documentation) so, you can just call:
-            starspan2.exe  ...arguments...
-            
-        License:
-          Please, see doc\copyright.txt
+        <echo file="${dist}/base_dist/bin/starspan.bat">
+REM Starspan ${STARSPAN_VERSION}
+REM See ..\README.txt
+starspan2.exe %* 
         </echo>
+        
+        <echo file="${dist}/base_dist/README.txt">
+Starspan ${STARSPAN_VERSION}
+
+Running the command line executable
+
+- Open a command window
+- Assuming you unpacked the contents of ${ZIPNAME} in C:\My\Dir\,
+  you can run StarSpan as follows:
+    C:\My\Dir\starspan  ...arguments...
+    
+You can also optionally set your PATH environment variable, eg.,
+    PATH=C:\My\Dir\;%PATH%
+(see your Windows documentation) so, you can just call:
+    starspan  ...arguments...
+    
+If the program (a batch file: starspan.bat), does not run, 
+try running starspan2.exe directly.
+
+License:
+  Please, see doc\copyright.txt
+        </echo>
+        <fixcrlf eol="CLRF" file="${dist}/base_dist/bin/starspan.bat"/>
+        <fixcrlf eol="CLRF" file="${dist}/base_dist/README.txt"/>
         
         <zip destfile="${dist}/${ZIPNAME}"
              basedir="${dist}/base_dist"
