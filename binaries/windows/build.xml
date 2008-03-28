@@ -15,6 +15,22 @@
 		<echo message="VERSION = ${VERSION}"/>
 	</target>
 
+    <!-- Only command-line files -->
+	<target name="cl" depends="init">
+		<delete dir="${dist}/base_dist"/>
+		<copy file="copyright.txt" todir="${dist}/base_dist/doc"/>
+		<copy file="libgeos_c-1.dll" todir="${dist}/base_dist/bin"/>
+		<copy file="libgeos-2.dll" todir="${dist}/base_dist/bin"/>
+		<copy file="libgdal-1.dll" todir="${dist}/base_dist/bin"/>
+		<copy file="ogrinfo.exe" todir="${dist}/base_dist/bin"/>
+		<copy file="gdalinfo.exe" todir="${dist}/base_dist/bin"/>
+		<copy file="starspan2.exe" todir="${dist}/base_dist/bin"/>
+        
+        <zip destfile="${dist}/starspan-${STARSPAN_VERSION}-win32.zip"
+             basedir="${dist}/base_dist"
+        />
+	</target>
+
 	<target name="prepare-inst" depends="init">
 		<delete dir="${dist}/base_dist"/>
 		<copy todir="${dist}/base_dist">
@@ -29,7 +45,7 @@
 		<taskdef name="izpack" classpath="${izdir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<izpack input="izinstall.xml"
-			output="${dist}/install-starspan-win32-${VERSION}.jar"
+			output="${dist}/install-starspan-win32-${VERSION}.jar" 
 			installerType="standard"
 			basedir="${dist}/base_dist"
 			izPackDir="${izdir}/"/>
