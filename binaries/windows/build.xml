@@ -19,12 +19,12 @@
 	<target name="cl" depends="init">
 		<delete dir="${dist}/base_dist"/>
 		<copy file="copyright.txt" todir="${dist}/base_dist/doc"/>
-		<copy file="base_dist/libgeos_c-1.dll" todir="${dist}/base_dist/bin"/>
-		<copy file="base_dist/libgeos-2.dll" todir="${dist}/base_dist/bin"/>
-		<copy file="base_dist/libgdal-1.dll" todir="${dist}/base_dist/bin"/>
-		<copy file="base_dist/ogrinfo.exe" todir="${dist}/base_dist/bin"/>
-		<copy file="base_dist/gdalinfo.exe" todir="${dist}/base_dist/bin"/>
-		<copy file="base_dist/starspan2.exe" todir="${dist}/base_dist/bin"/>
+		<copy file="base_dist/bin/libgeos_c-1.dll" todir="${dist}/base_dist/bin"/>
+		<copy file="base_dist/bin/libgeos-2.dll" todir="${dist}/base_dist/bin"/>
+		<copy file="base_dist/bin/libgdal-1.dll" todir="${dist}/base_dist/bin"/>
+		<copy file="base_dist/bin/ogrinfo.exe" todir="${dist}/base_dist/bin"/>
+		<copy file="base_dist/bin/gdalinfo.exe" todir="${dist}/base_dist/bin"/>
+		<copy file="base_dist/bin/starspan2.exe" todir="${dist}/base_dist/bin"/>
         
         <zip destfile="${dist}/starspan-${STARSPAN_VERSION}-win32.zip"
              basedir="${dist}/base_dist"
