@@ -546,5 +546,17 @@ int starspan_miniraster2(
     const char*  _mini_srs
 );
 
+
+int starspan_miniraster_strip(
+	Vector* _vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,
+	vector<const char*>* _select_fields,
+	int _layernum,
+	vector<DupPixelMode>& dupPixelModes,
+    const char*  _mini_raster_strip_filename
+);
+
+
 #endif
 

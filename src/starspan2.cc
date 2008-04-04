@@ -139,6 +139,8 @@ int main(int argc, char ** argv) {
 	globalOptions.bufferParams.quadrantSegments = "1";
 	globalOptions.mini_raster_parity = "";
 	globalOptions.mini_raster_separation = 0;
+	globalOptions.mini_raster_box_width = "";
+	globalOptions.mini_raster_box_height = "";
 	globalOptions.delimiter = ",";
 	
 
@@ -413,6 +415,20 @@ int main(int argc, char ** argv) {
 			globalOptions.mini_raster_separation = atoi(argv[i]);
 			if ( globalOptions.mini_raster_separation < 0 )
 				usage("--separation: invalid number of pixels");
+		}
+		
+		else if ( 0==strcmp("--mini_raster_box", argv[i]) ) {
+			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 ) {
+				usage("--mini_raster_box: missing argument");
+            }
+			globalOptions.mini_raster_box_width = argv[i];
+			if ( 1 + i < argc && strncmp(argv[1 + i], "--", 2) != 0 ) {
+                globalOptions.mini_raster_box_height = argv[++i];
+            }
+            else {
+                // use the same width as height
+                globalOptions.mini_raster_box_height = globalOptions.mini_raster_box_width;
+            }
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {

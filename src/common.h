@@ -118,6 +118,11 @@ struct GlobalOptions {
 	/** separation in pixels between minirasters in strip */
 	int mini_raster_separation;
 	
+	/** mini_raster_box arguments */
+	string mini_raster_box_width;
+	string mini_raster_box_height;
+	
+    
 	/** separator for CSV files */
 	string delimiter;
 	
