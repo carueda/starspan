@@ -1,6 +1,9 @@
 StarSpan ChangeLog
 $Id$
 
+2008-04-04 (1.0.08)
+    - Implementing --mini_raster_box option (FR 200347)
+    
 2008-03-27 (1.0.08)
     - Fresh release to facilitate creation of windows binaries.
     
