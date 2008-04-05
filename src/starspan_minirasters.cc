@@ -17,6 +17,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 using namespace std;
 
@@ -332,26 +333,53 @@ public:
 			return;
 		}
 		
-        // separation between minirasters:
-		const int mr_separation = globalOptions.mini_raster_separation;
+        // the number of minirasters:
+		const int num_minis = mrbi_list->size();
 
-        ///////////////////////////////////////////////
-		// get dimensions for output strip images:
+        /////////////////////////////////////////////////////////////
+		// the dimensions for output strip images (obtained below):
 		int strip_width = 0;		
 		int strip_height = 0;
-		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
-			
-            // width will be the maximum miniraster width:
-			if ( strip_width < mrbi->width ) {
-				strip_width = mrbi->width;
-            }
+        
+        
+        // separation between minirasters:
+		const int mr_separation = globalOptions.mini_raster_separation;
+        
+        ////////////////////////////////////////////////////////
+		// get dimensions for output strip images:
+        
+        if ( globalOptions.mini_raster_box_width.length() > 0 ) {
+            // If  mini_raster_box parameters are given, then the strip size
+            // can be determined directly.
+            // First, get the box dimensions:
+            assert ( globalOptions.mini_raster_box_height.length() > 0 );
+            string bw = globalOptions.mini_raster_box_width;
+            string bh = globalOptions.mini_raster_box_height;
+            assert ( bw.find('.') == string::npos );
+            assert ( bh.find('.') == string::npos );
             
-			// height will be the sum of the miniraster heights, plus separation pixels (see below):
-			strip_height += mrbi->height;
-		}
+            int box_width = atoi(bw.c_str());
+            int box_height = atoi(bh.c_str());
+            
+            // strip_width will be the box width:
+            strip_width = box_width;
+            
+            // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
+            strip_height = box_height * num_minis;
+        }
+        else {
+            // strip_width will be the maximum miniraster width:
+            // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
+            for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
+                if ( strip_width < mrbi->width ) {
+                    strip_width = mrbi->width;
+                }
+                strip_height += mrbi->height;
+            }
+        }
         
 		// add pixels to height according to desired separation between minirasters:
-		strip_height += mr_separation * (mrbi_list->size() - 1);
+		strip_height += mr_separation * (num_minis - 1);
 		
         
         ///////////////////////
@@ -480,6 +508,11 @@ public:
 				continue;
 			}
 
+            // column to position miniraster in strip:
+            // (This column was always zero before the option --mini_raster_box was implemented.)
+            int next_col = 0;
+
+
 			///////////////////////////////////////////////////////////////
 			// transfer data to image strip (row by row):			
 			for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
@@ -503,7 +536,7 @@ public:
 				
 				// write buffer in strip image
 				strip_ds->RasterIO(GF_Write,
-					0,   	                     //nXOff,
+					next_col,                    //nXOff,
 					next_row + i,                //nYOff,
 					mini_ds->GetRasterXSize(),   //nXSize,
 					1,                           //nYSize,
@@ -525,9 +558,11 @@ public:
             
 			if ( false ) {  
                 // ----- should work but seems to be a RasterIO bug  -----
+                // NOTE: The arguments in the following call need to be reviewed
+                // since I haven't paid much attention to keep it up to date.
 				fid_ds->RasterIO(GF_Write,
-					0,   	                   //nXOff,
-					next_row,                  //nYOff,
+					next_col,                  //nXOff,
+					next_row + i,              //nYOff,
 					mini_ds->GetRasterXSize(), //nXSize,
 					mini_ds->GetRasterYSize(), //nYSize,
 					&fid_datum,                //pData,
@@ -550,7 +585,7 @@ public:
 				}
 				for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
 					fid_ds->RasterIO(GF_Write,
-						0,   	                    //nXOff,
+						next_col,                   //nXOff,
 						next_row + i,               //nYOff,
 						mini_ds->GetRasterXSize(),  //nXSize,
 						1,                          //nYSize,
@@ -580,7 +615,7 @@ public:
 				xy[0] = x0;
 				for ( int j = 0; j < mini_ds->GetRasterXSize(); j++, xy[0] += pix_x_size ) {
 					loc_ds->RasterIO(GF_Write,
-						j,   	                    //nXOff,
+						next_col + j,               //nXOff,
 						next_row + i,               //nYOff,
 						1,                          //nXSize,
 						1,                          //nYSize,

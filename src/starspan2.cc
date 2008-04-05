@@ -421,14 +421,16 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 ) {
 				usage("--mini_raster_box: missing argument");
             }
-			globalOptions.mini_raster_box_width = argv[i];
-			if ( 1 + i < argc && strncmp(argv[1 + i], "--", 2) != 0 ) {
-                globalOptions.mini_raster_box_height = argv[++i];
+            string bw = argv[i];
+            string bh = bw;
+            if ( 1 + i < argc && strncmp(argv[1 + i], "--", 2) != 0 ) {
+                bh = argv[++i];
             }
-            else {
-                // use the same width as height
-                globalOptions.mini_raster_box_height = globalOptions.mini_raster_box_width;
+            if ( bw.find('.') != string::npos || bh.find('.') != string::npos ) {
+                usage("--mini_raster_box: Relative size not implemented. Use absolute sizes");
             }
+            globalOptions.mini_raster_box_width = bw;
+            globalOptions.mini_raster_box_height = bh;
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {
