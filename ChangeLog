@@ -1,6 +1,10 @@
 StarSpan ChangeLog
 $Id$
 
+2008-04-05 (1.0.08)
+    - tests/Makefile: use zcat for comparison instead of gunzip
+      (so the .gz, which is on CVS, is preserved).
+    
 2008-04-04 (1.0.08)
     - Implementing --mini_raster_box option (FR 200347)
     
