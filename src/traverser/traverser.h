@@ -360,9 +360,18 @@ public:
 	  * before computing the intersection.
 	  * By default, no buffer operation will be applied.
 	  *
-	  * @param bufferParams      See description in starspan.h
+	  * @param bufferParams      See description in common.h
 	  */
 	void setBufferParameters(BufferParams bufferParams);
+	
+	/**
+	  * Sets parameters to use a fixed box centered according to bounding box
+      * of the geometry features before computing the intersection.
+	  * By default, no box is used.
+	  *
+	  * @param boxParams      See description in common.h
+	  */
+	void setBoxParameters(BoxParams boxParams);
 	
 	
 	/**
@@ -711,6 +720,9 @@ private:
 
 	// buffer parameters
 	BufferParams bufferParams;
+
+	// box parameters
+	BoxParams boxParams;
 };
 
 #endif

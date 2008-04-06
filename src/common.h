@@ -34,6 +34,18 @@ struct BufferParams {
 };
 
 
+/** Box parameters
+  */
+struct BoxParams {
+	/** were given? */
+	bool given;
+	
+	double width;
+	double height;
+	
+};
+
+
 /** Class for dupplicate pixel modes.  */
 struct DupPixelMode {
 	string code;
@@ -112,15 +124,14 @@ struct GlobalOptions {
 	// buffer parameters
 	BufferParams bufferParams;
 	
+	// box parameters
+	BoxParams boxParams;
+	
 	// miniraster parity
 	string mini_raster_parity;
 	
 	/** separation in pixels between minirasters in strip */
 	int mini_raster_separation;
-	
-	/** mini_raster_box arguments */
-	string mini_raster_box_width;
-	string mini_raster_box_height;
 	
     
 	/** separator for CSV files */

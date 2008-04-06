@@ -4,9 +4,19 @@ $Id$
 2008-04-05 (1.0.08)
     - tests/Makefile: use zcat for comparison instead of gunzip
       (so the .gz, which is on CVS, is preserved).
+      
+    - Removed FR 200347: --mini_raster_box option
     
-2008-04-04 (1.0.08)
-    - Implementing --mini_raster_box option (FR 200347)
+    - Added FR 200348: extract a centered box wrt feature's bounding box.
+    
+      This is implemented with the --box option, which behaves as a variant
+      of the --buffer operation, so it's handled by traverser. 
+      Only one of --buffer or --box may be specified.
+      
+      
+    - Removed starspan_minirasterstrip.cc (function starspan_miniraster_strip())
+      Was never implemented.
+      
     
 2008-03-27 (1.0.08)
     - Fresh release to facilitate creation of windows binaries.

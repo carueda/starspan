@@ -88,6 +88,7 @@ static void usage(const char* msg) {
 		"      --skip_invalid_polys \n"
 		"      --nodata <value> \n"
 		"      --buffer <distance> [<quadrantSegments>] \n"
+		"      --box <width> [<height>] \n"
 		"      --RID {file | path | none}\n"
 		"      --delimiter <separator>\n"
 		"      --progress [<value>] \n"
@@ -137,10 +138,9 @@ int main(int argc, char ** argv) {
 	globalOptions.nodata = 0.0;
 	globalOptions.bufferParams.given = false;
 	globalOptions.bufferParams.quadrantSegments = "1";
+	globalOptions.boxParams.given = false;
 	globalOptions.mini_raster_parity = "";
 	globalOptions.mini_raster_separation = 0;
-	globalOptions.mini_raster_box_width = "";
-	globalOptions.mini_raster_box_height = "";
 	globalOptions.delimiter = ",";
 	
 
@@ -403,6 +403,20 @@ int main(int argc, char ** argv) {
 			globalOptions.bufferParams.given = true;				
 		}
 		
+		else if ( 0==strcmp("--box", argv[i]) ) {
+			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 ) {
+				usage("--box: missing argument");
+            }
+            string bw = argv[i];
+            string bh = bw;
+            if ( 1 + i < argc && strncmp(argv[1 + i], "--", 2) != 0 ) {
+                bh = argv[++i];
+            }
+            globalOptions.boxParams.width  = atof(bw.c_str());
+            globalOptions.boxParams.height = atof(bh.c_str());
+            globalOptions.boxParams.given = true;
+		}
+		
 		else if ( 0==strcmp("--mini_raster_parity", argv[i]) ) {
 			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
 				usage("--mini_raster_parity: even, odd, or @<field>?");
@@ -415,22 +429,6 @@ int main(int argc, char ** argv) {
 			globalOptions.mini_raster_separation = atoi(argv[i]);
 			if ( globalOptions.mini_raster_separation < 0 )
 				usage("--separation: invalid number of pixels");
-		}
-		
-		else if ( 0==strcmp("--mini_raster_box", argv[i]) ) {
-			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 ) {
-				usage("--mini_raster_box: missing argument");
-            }
-            string bw = argv[i];
-            string bh = bw;
-            if ( 1 + i < argc && strncmp(argv[1 + i], "--", 2) != 0 ) {
-                bh = argv[++i];
-            }
-            if ( bw.find('.') != string::npos || bh.find('.') != string::npos ) {
-                usage("--mini_raster_box: Relative size not implemented. Use absolute sizes");
-            }
-            globalOptions.mini_raster_box_width = bw;
-            globalOptions.mini_raster_box_height = bh;
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {
@@ -553,6 +551,11 @@ int main(int argc, char ** argv) {
 	
 	////CPLPushErrorHandler(starspan_myErrorHandler);
 
+    
+    if ( globalOptions.bufferParams.given && globalOptions.boxParams.given ) {
+        usage("Only one of --buffer/--box may be given");
+    }
+    
 	time_t time_start = time(NULL);
 	
 	// module initialization
@@ -812,6 +815,16 @@ int main(int argc, char ** argv) {
 				;
 			}
 			tr.setBufferParameters(globalOptions.bufferParams);
+		}
+		else if ( globalOptions.boxParams.given ) {
+			if ( globalOptions.verbose ) {
+				cout<< "Using fixed box parameters:"
+				    << "\n\twidth = " <<globalOptions.boxParams.width
+				    << "\n\theight = " <<globalOptions.boxParams.height
+					<<endl;
+				;
+			}
+			tr.setBoxParameters(globalOptions.boxParams);
 		}
 			
 		if ( csv_name || envi_name || mini_prefix || mini_raster_strip_filename || jtstest_filename) { 

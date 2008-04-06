@@ -21,6 +21,8 @@
 
 using namespace std;
 
+///////////////////////////////////////////////////
+// mini raster basic information
 struct MRBasicInfo {
 	// corresponding FID from which the miniraster was extracted
 	long FID;
@@ -36,7 +38,7 @@ struct MRBasicInfo {
 
 
 /**
-  * 
+  * Creates a miniraster for each traversed feature.
   */
 class MiniRasterObserver : public Observer {
 public:
@@ -77,14 +79,14 @@ public:
 	}
 	
 	/**
-	  * Nothing done.
+	  * Nothing done in this class.
 	  */
 	virtual void end() {
 	}
 	
 	/**
 	  * returns true:  we subset the raster directly for
-	  *  each intersecting feature.
+	  *  each intersecting feature in intersectionEnd(OGRFeature*)
 	  */
 	bool isSimple() { 
 		return true; 
@@ -147,6 +149,8 @@ public:
 		if ( tr.getPixelSetSize() == 0 )
 			return;
 		
+        
+        // (width,height) of proper mini raster according to feature geometry
 		int mini_width = mini_col1 - mini_col0 + 1;  
 		int mini_height = mini_row1 - mini_row0 + 1;
 		
@@ -158,11 +162,10 @@ public:
 		int xsize_incr = 0; 
 		int ysize_incr = 0;
 		
-		//
-		// make necessary parity adjustments (on xsize_incr and/or ysize_incr) 
-		// if so indicated: 
-		//
 		if ( globalOptions.mini_raster_parity.length() > 0 ) {
+            //
+            // make necessary parity adjustments (on xsize_incr and/or ysize_incr) 
+            //
 			const char* mini_raster_parity = 0;
 			if ( globalOptions.mini_raster_parity[0] == '@' ) {
 				const char* attr = globalOptions.mini_raster_parity.c_str() + 1;
@@ -199,6 +202,7 @@ public:
 				ysize_incr = 1;
 			}
 		}
+        
 		
 		GDALDatasetH hOutDS = starspan_subset_raster(
 			rast.getDataset(),
@@ -316,7 +320,7 @@ public:
 	}
 	  
 	/**
-	  * Creates the ouput strips according to the minirasters registered
+	  * Creates the output strips according to the minirasters registered
       * in list mrbi_list.
 	  */
 	void create_strip() {
@@ -348,34 +352,13 @@ public:
         ////////////////////////////////////////////////////////
 		// get dimensions for output strip images:
         
-        if ( globalOptions.mini_raster_box_width.length() > 0 ) {
-            // If  mini_raster_box parameters are given, then the strip size
-            // can be determined directly.
-            // First, get the box dimensions:
-            assert ( globalOptions.mini_raster_box_height.length() > 0 );
-            string bw = globalOptions.mini_raster_box_width;
-            string bh = globalOptions.mini_raster_box_height;
-            assert ( bw.find('.') == string::npos );
-            assert ( bh.find('.') == string::npos );
-            
-            int box_width = atoi(bw.c_str());
-            int box_height = atoi(bh.c_str());
-            
-            // strip_width will be the box width:
-            strip_width = box_width;
-            
-            // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
-            strip_height = box_height * num_minis;
-        }
-        else {
-            // strip_width will be the maximum miniraster width:
-            // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
-            for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
-                if ( strip_width < mrbi->width ) {
-                    strip_width = mrbi->width;
-                }
-                strip_height += mrbi->height;
+        // strip_width will be the maximum miniraster width:
+        // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
+        for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
+            if ( strip_width < mrbi->width ) {
+                strip_width = mrbi->width;
             }
+            strip_height += mrbi->height;
         }
         
 		// add pixels to height according to desired separation between minirasters:
@@ -509,15 +492,15 @@ public:
 			}
 
             // column to position miniraster in strip:
-            // (This column was always zero before the option --mini_raster_box was implemented.)
             int next_col = 0;
-
+            
 
 			///////////////////////////////////////////////////////////////
 			// transfer data to image strip (row by row):			
 			for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
 				
 				// read data from raster into buffer
+                // (note: reading is always (0,0)-relative in source miniraster)
 				mini_ds->RasterIO(GF_Read,
 					0,   	                     //nXOff,
 					0 + i,  	                 //nYOff,
@@ -535,6 +518,7 @@ public:
 				);  	
 				
 				// write buffer in strip image
+                // (note: wiritn is (next_col,next_row)-based in destination strip)
 				strip_ds->RasterIO(GF_Write,
 					next_col,                    //nXOff,
 					next_row + i,                //nYOff,
@@ -562,7 +546,7 @@ public:
                 // since I haven't paid much attention to keep it up to date.
 				fid_ds->RasterIO(GF_Write,
 					next_col,                  //nXOff,
-					next_row + i,              //nYOff,
+					next_row,                  //nYOff,
 					mini_ds->GetRasterXSize(), //nXSize,
 					mini_ds->GetRasterYSize(), //nYSize,
 					&fid_datum,                //pData,

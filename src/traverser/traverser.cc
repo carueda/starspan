@@ -46,11 +46,16 @@ Traverser::Traverser() {
 	skip_invalid_polys = false;
 
 	bufferParams.given = false;
+	boxParams.given = false;
 }
 
 
 void Traverser::setBufferParameters(BufferParams _bufferParams) {
 	bufferParams = _bufferParams;
+}
+
+void Traverser::setBoxParameters(BoxParams _boxParams) {
+	boxParams = _boxParams;
 }
 
 
@@ -579,9 +584,53 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	///////////////////////////////////////////////////////////////////
 	//
-	// apply buffer operation if so indicated:
+	// apply box operation if so indicated:
 	//
-	if ( bufferParams.given ) {
+	if ( boxParams.given ) {
+        //
+        // Create a rectangle with the given box sizes and centered w.r.t.
+        // the bounding box of the feature geometry.
+        //
+        
+        // requested box dimension:
+        double rbw = boxParams.width ; 
+        double rbh = boxParams.height;
+        
+        // bounding box
+        OGREnvelope bbox;
+        feature_geometry->getEnvelope(&bbox);
+        
+		// create a geometry for the requested box:
+        
+        // sizes of bounding box:
+        double bbw = bbox.MaxX - bbox.MinX; 
+        double bbh = bbox.MaxY - bbox.MinY;
+        
+        // corners of requested box:
+        double x0 = bbox.MinX - (rbw - bbw) / 2; 
+        double y0 = bbox.MinY - (rbh - bbh) / 2;
+        double x1 = x0 + rbw;
+        double y1 = y0 + rbh;
+        
+		OGRLinearRing ring;
+		ring.addPoint(x0, y0);
+		ring.addPoint(x1, y0);
+		ring.addPoint(x1, y1);
+		ring.addPoint(x0, y1);
+        OGRPolygon* boxPoly = new OGRPolygon();
+		boxPoly->addRing(&ring);
+		boxPoly->closeRings();
+		feature_geometry = boxPoly;
+        //
+        // Note: this new polygon will be deleted at the end of this method.
+        //
+    }
+    
+	///////////////////////////////////////////////////////////////////
+	//
+	// else: apply buffer operation if so indicated:
+	//
+	else if ( bufferParams.given ) {
 		OGRGeometry* buffered_geometry = 0;
 		
 		// get distance:
@@ -696,7 +745,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 done:
 	delete intersection_geometry;
-	if ( bufferParams.given ) {
+	if ( bufferParams.given || boxParams.given ) {
 		delete feature_geometry;
 	}
 }

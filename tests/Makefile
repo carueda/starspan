@@ -77,4 +77,22 @@ test_miniraster_strip:
 	   generated/mrstrip/myoutput_mrloc.glt
 	@echo "$@ : OK"
 	@echo
-	
+
+# preliminary generation of miniraster along with --box option	
+miniraster_box:
+	mkdir -p generated/miniraster_box/
+	${STARSPAN} \
+		--vector data/vector/starspan_testply.shp \
+		--raster data/raster/starspan2raster.img \
+		--mini_rasters generated/miniraster_box/box_100_ \
+		--box 100
+
+# preliminary generation of miniraster strip along with --box option
+miniraster_strip_box:
+	mkdir -p generated/mrstrip_box/
+	${STARSPAN} \
+		--vector data/vector/starspan_testply.shp \
+		--raster data/raster/starspan2raster.img \
+		--mini_raster_strip generated/mrstrip_box/box_100_ \
+		--box 100 \
+		--separation 10
