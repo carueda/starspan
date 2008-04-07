@@ -5,19 +5,24 @@
 # $Id$
 #
 if [ -z $1 ]; then
-	echo "USAGE:  mksrcdist.sh <VERSION>"
+    echo "USAGE:  mksrcdist.sh { <VERSION> | now }"
 	exit 1
 fi
 VERSION=$1
 
-if [ "$VERSION" != "@STARSPAN_VERSION@" ]; then
-	echo "VERSION mismatch.  Check configure.in"
-	exit 2
+if [ "$VERSION" = "now" ]; then
+    VERSION=`date +"%Y%m%d_%H%M%S"`
+    tag=r-$VERSION
+    dotag=y
+else
+    if [ "$VERSION" != "@STARSPAN_VERSION@" ]; then
+	    echo "VERSION mismatch.  Check configure.in"
+        exit 2
+    fi
+    tag=`echo release-$VERSION | tr -t . _`
+    echo "Make tag [y/-]?:  cvs -q tag $tag"
+    read dotag
 fi
-tag=`echo release-$VERSION | tr -t . _`
-
-echo "Make tag [y/-]?:  cvs -q tag $tag"
-read dotag
 
 # $cvsroot: used to export the source from cvs
 # (should be anonymously...
