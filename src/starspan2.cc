@@ -70,7 +70,7 @@ static void usage(const char* msg) {
 		"      --calbase <link> <filename> [<stats>...]\n"
 		"      --in   \n"
 		"      --mini_rasters <prefix> \n"
-		"      --mini_raster_strip <filename> \n"
+		"      --mini_raster_strip <filename> [<shpname>]\n"
 		"      --mini_raster_parity {even | odd | @<field>} \n"
 		"      --separation <num-pixels> \n"
 		"\n"
@@ -158,6 +158,7 @@ int main(int argc, char ** argv) {
 	const char*  mini_prefix = NULL;
 	const char*  mini_srs = NULL;
 	const char* mini_raster_strip_filename = NULL;
+	const char* mini_raster_strip_shpfilename = NULL;
 	const char* jtstest_filename = NULL;
 	
 	const char* vector_filename = 0;
@@ -344,6 +345,9 @@ int main(int argc, char ** argv) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--mini_raster_strip: filename?");
 			mini_raster_strip_filename = argv[i];
+            if ( 1 + i < argc && argv[1 + i][0] != '-' ) {
+                mini_raster_strip_shpfilename = argv[++i];
+            }
 		}
 		
 		else if ( 0==strcmp("--mini_rasters", argv[i]) ) {
@@ -868,7 +872,9 @@ int main(int argc, char ** argv) {
 		}
 	
 		if ( mini_raster_strip_filename ) {
-			Observer* obs = starspan_getMiniRasterStripObserver(tr, mini_raster_strip_filename);
+			Observer* obs = starspan_getMiniRasterStripObserver(
+                tr, mini_raster_strip_filename, mini_raster_strip_shpfilename
+            );
 			if ( obs )
 				tr.addObserver(obs);
 		}

@@ -1,5 +1,5 @@
 /*
-	Vector - vector interface implemented on OGR
+	Vector - vector interface implementation
 	$Id$
 	See Vector.h for public doc.
 */
@@ -141,4 +141,23 @@ void Vector::showFields(FILE* file) {
 }
 
 
+Vector* Vector::create(const char* pszDataSource) {
+    const char *pszDriverName = "ESRI Shapefile";
+    OGRSFDriver *poDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(
+                pszDriverName 
+    );
+    if ( poDriver == NULL ) {
+        fprintf(stderr, "%s: driver not available.\n", pszDriverName);
+        return NULL;
+    }
+
+    OGRDataSource *poDS = poDriver->CreateDataSource(pszDataSource, NULL);
+    if ( poDS == NULL ) {
+        fprintf(stderr, "Creation of output file failed.\n");
+        return NULL;
+    }
+	
+	return new Vector(poDS);
+}
+	
 

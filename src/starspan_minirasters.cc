@@ -145,7 +145,7 @@ public:
 	  * Proper creation of mini-raster with info gathered during traversal
 	  * of the given feature.
 	  */
-	void intersectionEnd(OGRFeature* feature) {
+	virtual void intersectionEnd(OGRFeature* feature) {
 		if ( tr.getPixelSetSize() == 0 )
 			return;
 		
@@ -296,17 +296,116 @@ Observer* starspan_getMiniRasterObserver(
   */
 class MiniRasterStripObserver : public MiniRasterObserver {
 	string basefilename;
+    
+    OGRLayer* inLayer;  // layer being traversed;
+    
+    const char* shpfilename;
+    Vector* outVector;
+    OGRLayer* outLayer;
 	
 public:
 	MiniRasterStripObserver(Traverser& tr, OGRLayer* layer, Raster* rast, 
-		const char* bfilename)
+                            const char* bfilename, const char* bshpfilename)
 	: MiniRasterObserver(tr, layer, rast, "dummy", 0)
 	{
 		basefilename = bfilename;
+        shpfilename = bshpfilename;
 		prefix = basefilename;
 		prefix += "_TMP_PRFX_";
 		mrbi_list = new vector<MRBasicInfo>();
+        
+        outVector = NULL;
 	}
+    
+    
+    /**
+     * Takes a handle on the layer being traversed
+     * and, if indicated, creates the output shapefile with corresponding 
+     * field definitions.
+     */
+    void init(GlobalInfo& info) {
+        // remember layer being traversed:
+        inLayer = info.layer;
+
+        if ( shpfilename == NULL ) {
+            return;
+        }
+        
+		if ( globalOptions.verbose ) {
+			cout<< "mini_raster_strip: starting creation of output vector " <<shpfilename<< " ...\n";
+        }
+
+        outVector = Vector::create(shpfilename); 
+        if ( outVector == NULL ) {
+            // errors should have been written
+            exit(1);  // TODO: the observer interface should allow for early termination
+        }                
+
+        OGRDataSource *poDS = outVector->getDataSource();
+        
+        // get layer definition:
+        OGRFeatureDefn* inDefn = inLayer->GetLayerDefn();
+
+        // create layer in output vector:
+        outLayer = poDS->CreateLayer(
+                "mini_raster_strip", 
+                inLayer->GetSpatialRef(),
+                inDefn->GetGeomType(),
+                NULL
+        );
+        if ( outLayer == NULL ) {
+            delete outVector;
+            outVector = NULL;
+            cerr<< "Layer creation failed.\n";
+            exit(1);  // TODO: the observer interface should allow for early termination
+        }
+        
+        // TODO Add new fields (eg. RID)
+        // ...
+        
+        // create field definitions from originating layer:
+        for( int iAttr = 0; iAttr < inDefn->GetFieldCount(); iAttr++ ) {
+            OGRFieldDefn* inField = inDefn->GetFieldDefn(iAttr);
+            
+            OGRFieldDefn outField(inField->GetNameRef(), inField->GetType());
+            outField.SetWidth(inField->GetWidth());
+            outField.SetPrecision(inField->GetPrecision());
+            if ( outLayer->CreateField(&outField) != OGRERR_NONE ) {
+                cerr<< "Creating Name field failed.\n";
+                exit(1);  // TODO: the observer interface should allow for early termination
+            }
+        }
+    }
+    
+    
+    /**
+     * Calls super.intersectionEnd(feature) and then translates the feature
+     * data to the output vector if any.
+     */
+	virtual void intersectionEnd(OGRFeature* feature) {
+        MiniRasterObserver::intersectionEnd(feature);
+
+		if ( outVector == 0 ) {
+			return;  // not output vector creation
+        }
+        
+		if ( tr.getPixelSetSize() == 0 ) {
+			return;   // no pixels were actually intersected
+        }
+        
+        // create feature in output vector:
+        OGRFeature *outFeature = OGRFeature::CreateFeature(outLayer->GetLayerDefn());
+        
+        // TODO Add values for new fields:
+        // ...
+        
+        // copy everything from incoming feature:
+        outFeature->SetFrom(feature);
+        
+        // TODO Adjust geometry to be relative to the strip so it can be
+        // overlayed
+        // ...
+    }
 
 	/**
 	  * calls create_strip()
@@ -655,6 +754,10 @@ public:
 		delete strip_ds;
 		delete fid_ds;
 		delete loc_ds;
+        
+        if ( outVector ) {
+            delete outVector;
+        }
 		
 		// release buffer
 		delete buffer;
@@ -664,7 +767,8 @@ public:
 
 Observer* starspan_getMiniRasterStripObserver(
 	Traverser& tr,
-	const char* filename
+	const char* filename,
+	const char* shpfilename
 ) {	
 	if ( !tr.getVector() ) {
 		cerr<< "vector datasource expected\n";
@@ -683,7 +787,7 @@ Observer* starspan_getMiniRasterStripObserver(
 		return 0;
 	}
 	Raster* rast = tr.getRaster(0);
-	MiniRasterStripObserver* obs = new MiniRasterStripObserver(tr, layer, rast, filename);
+	MiniRasterStripObserver* obs = new MiniRasterStripObserver(tr, layer, rast, filename, shpfilename);
 	return obs;
 }
 

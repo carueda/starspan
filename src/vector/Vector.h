@@ -11,39 +11,51 @@
 
 #include <stdio.h>  // FILE
 
-/** Represents a vector dataset. */
+/**
+ * Represents a vector dataset.
+ * This is implemented on top of the OGR library.
+ */
 class Vector {
 public:
-	// initializes this module
+	/** initializes this module */
 	static int init(void);
 	
-	// finishes this module
+	/** finishes this module */
 	static int end(void);
 	
-	/** Creates a vector object representing an existing file. 
-	  * Returns null if error */
+	/**
+     * Creates a vector object representing an existing file. 
+	 * Returns null if error 
+     */
 	static Vector* open(const char* filename);
 	
-	// destroys this vector.
+	/** destroys this vector. */
 	~Vector();
 	
-	// gets the name of this object
+	/** gets the name of this object */
 	const char* getName();
 	
-	// gets the number of layers
+	/** gets the number of layers */
 	int getLayerCount(void) { return poDS->GetLayerCount(); } 
 	
-	// gets a layer
+	/** gets a layer */
 	OGRLayer* getLayer(int layer_num); 
 	
-	// for debugging
+	/** general report */
 	void report(FILE* file);
 	
-	// report
+	/** report */
 	void showFields(FILE* file);
 	
-	// gets the OGRDataSource
+	/** gets the OGRDataSource */
 	OGRDataSource* getDataSource(void) { return poDS; } 
+	
+	/** 
+     * Creates a vector object representing an new datasource.
+     * Currently, the only format for created datasources is shapefile.
+	 * Returns null if error 
+     */
+	static Vector* create(const char* filename);
 	
 private:
 	Vector(OGRDataSource* ds);
@@ -51,3 +63,4 @@ private:
 };
 
 #endif
+

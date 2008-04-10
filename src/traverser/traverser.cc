@@ -830,6 +830,8 @@ void Traverser::traverse() {
 	// for polygon rasterization:
 	pixelProportion_times_pix_abs_area = pixelProportion * pix_abs_area;
 
+    globalInfo.layer = layer;
+    
 	//
 	// notify observers about initialization of process
 	//

@@ -350,12 +350,14 @@ Observer* starspan_getMiniRasterObserver(
   *
   * @param tr Data traverser
   * @param filename  Name used to create output files
+  * @param shpfilename If non-null, name to create output shapefile
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_getMiniRasterStripObserver(
 	Traverser& tr,
-	const char* filename
+	const char* filename,
+    const char* shpfilename
 );
 
 
