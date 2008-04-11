@@ -126,11 +126,11 @@ public:
 	/**
 	  * gets the counts and writes news records accordingly.
 	  */
-	void intersectionEnd(OGRFeature* feature) {
+	void intersectionEnd(IntersectionInfo& intersInfo) {
 		if ( !OK )
 			return;
 
-		const long FID = feature->GetFID();
+		const long FID = intersInfo.feature->GetFID();
 		
 		// get values of pixels corresponding to first band:		
 		vector<int> values;

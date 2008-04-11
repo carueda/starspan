@@ -92,7 +92,7 @@ public:
 	
 	/**
 	  * returns true:  we subset the raster directly for
-	  *  each intersecting feature in intersectionEnd(OGRFeature*)
+	  *  each intersecting feature in intersectionEnd()
 	  */
 	bool isSimple() { 
 		return true; 
@@ -109,7 +109,7 @@ public:
 	/**
 	  * Just sets first = true.
 	  */
-	void intersectionFound(OGRFeature* feature) {
+	void intersectionFound(IntersectionInfo& intersInfo) {
 		first = true;
 	}
 
@@ -152,7 +152,10 @@ public:
 	  * Proper creation of mini-raster with info gathered during traversal
 	  * of the given feature.
 	  */
-	virtual void intersectionEnd(OGRFeature* feature) {
+	virtual void intersectionEnd(IntersectionInfo& intersInfo) {
+        OGRFeature* feature = intersInfo.feature;
+        OGRGeometry* intersection_geometry = intersInfo.intersection_geometry;
+        
 		if ( tr.getPixelSetSize() == 0 )
 			return;
 		
@@ -391,11 +394,14 @@ public:
     
     
     /**
-     * Calls super.intersectionEnd(feature); if out vector was indicated, then
+     * Calls super.intersectionEnd(); if output vector was indicated, then
      * it copies fields and translates the feature data to the output vector.
      */
-	virtual void intersectionEnd(OGRFeature* feature) {
-        MiniRasterObserver::intersectionEnd(feature);
+	virtual void intersectionEnd(IntersectionInfo& intersInfo) {
+        MiniRasterObserver::intersectionEnd(intersInfo);
+
+        OGRFeature* feature = intersInfo.feature;
+        OGRGeometry* intersection_geometry = intersInfo.intersection_geometry;
 
 		if ( outVector == 0 ) {
 			return;  // not output vector creation
@@ -412,11 +418,20 @@ public:
         // ...
         
         // copy everything from incoming feature:
-        // (TODO handled selected fields as in other commands)
+        // (TODO handled selected fields as in other commands) 
+        // (TODO do not copy geometry, but set the given intersection_geometry) 
         outFeature->SetFrom(feature);
         
-        // Adjust geometry to be relative to the strip so it can be overlayed:
-        OGRGeometry* geometry = outFeature->GetGeometryRef();
+        // Associate the given intersection_geometry
+        //  first, make sure we release the copied one
+        outFeature->SetGeometryDirectly(NULL);
+        //  then, set the geometry by copying it:
+        outFeature->SetGeometry(intersection_geometry);
+        //  then, grab a ref to the copied one for modification:
+        intersection_geometry = outFeature->GetGeometryRef();
+
+        
+        // Adjust intersection_geometry to be relative to the strip so it can be overlayed:
         
         MRBasicInfo mrbi = mrbi_list->back();
         int next_row = mrbi.mrs_row;   // base row for this miniraster in strip:
@@ -428,8 +443,8 @@ public:
         double x0 = 0;    // column is always zero
         double y0 = pix_y_size * next_row;
         
-        // get min x and min y in geometry:
-        translateGeometry(geometry, x0, y0);
+        // translate:
+        translateGeometry(intersection_geometry, x0, y0);
 
         if ( outLayer->CreateFeature(outFeature) != OGRERR_NONE ) {
            cerr<< "*** WARNING: Failed to create feature in shapefile.\n";
@@ -880,18 +895,25 @@ static void traverseTranslate(OGRGeometry* geometry, double deltaX, double delta
 
 
 /**
- * Translates the geometry such that its min (x,y) point is located at (x0,y0).
+ * Translates the geometry such that it's located relative to (x0,y0).
  */
 static void translateGeometry(OGRGeometry* geometry, double x0, double y0) {
-    // get min (x,y) in geometry:
     OGREnvelope bbox;
     geometry->getEnvelope(&bbox);
+    
+    //
+    // FIXME: What follows is still rather a hack
+    //
+    
+    double baseX = //x0 <= 0 ? bbox.MaxX : bbox.MinX;
+                   bbox.MinX;
+    double baseY = y0 <= 0 ? bbox.MaxY : bbox.MinY;
     
     // deltas to adjust all points in geometry:
     // first term: to move to origin;
     // second term: to move to requested (x0,y0) origin:
-    double deltaX = -bbox.MinX +x0;
-    double deltaY = -bbox.MinY +y0;
+    double deltaX = -baseX +x0;
+    double deltaY = -baseY +y0;
 
     traverseTranslate(geometry, deltaX, deltaY);    
 }

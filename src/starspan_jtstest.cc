@@ -55,7 +55,8 @@ struct JtsTestObserver : public Observer {
 	/**
 	  *
 	  */
-	void intersectionFound(OGRFeature* feature) {
+	void intersectionFound(IntersectionInfo& intersInfo) {
+        OGRFeature* feature = intersInfo.feature;
 		if ( pp ) {
 			finish_case();
 		}

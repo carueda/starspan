@@ -187,8 +187,8 @@ public:
 	/**
 	  * Inits creation of datasets corresponding to new feature
 	  */
-	void intersectionFound(OGRFeature* feature) {
-		dumpFeature(feature, file);
+	void intersectionFound(IntersectionInfo& intersInfo) {
+		dumpFeature(intersInfo.feature, file);
 	}
 
 	/**

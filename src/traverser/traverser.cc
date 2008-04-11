@@ -714,6 +714,11 @@ void Traverser::process_feature(OGRFeature* feature) {
 		;
 	}
 	
+    
+    IntersectionInfo intersInfo;
+    intersInfo.feature = feature;
+    intersInfo.intersection_geometry = intersection_geometry;
+    
 	//
 	// Notify observers about this feature:
 	// NOTE: Particularly in the case of a GeometryCollection, it might be the
@@ -723,7 +728,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	// that are reported to be intersected.
 	// 
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
-		(*obs)->intersectionFound(feature);
+		(*obs)->intersectionFound(intersInfo);
 	}
 	
 	pixset.clear();
@@ -740,7 +745,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	// notify observers that processing of this feature has finished
 	// 
 	for ( vector<Observer*>::const_iterator obs = observers.begin(); obs != observers.end(); obs++ ) {
-		(*obs)->intersectionEnd(feature);
+		(*obs)->intersectionEnd(intersInfo);
 	}
 
 done:

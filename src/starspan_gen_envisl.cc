@@ -180,8 +180,8 @@ public:
 	/**
 	  * Used here to update currentFeature
 	  */
-	void intersectionFound(OGRFeature* feature) {
-		currentFeature = feature;
+	void intersectionFound(IntersectionInfo& intersInfo) {
+		currentFeature = intersInfo.feature;
 	}
 
 	

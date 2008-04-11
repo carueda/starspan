@@ -134,6 +134,18 @@ struct GlobalInfo {
 
 
 /**
+  * Info passed in observer#intersection{Found,End} methods.
+  */
+struct IntersectionInfo {
+    /** Interecting feature */
+    OGRFeature* feature;
+    
+    /** Initial intersection */
+    OGRGeometry* intersection_geometry;
+};
+
+
+/**
   * Event sent to traversal observers every time an intersecting
   * pixel is found.
   * Note that all pixel locations are 0-based, with [0,0] denoting
@@ -191,14 +203,16 @@ public:
 	virtual void init(GlobalInfo& info) {}
 	
 	/**
-	  * A new intersecting feature has been found 
+	  * A new intersecting feature has been found.
+      * @param intersInfo
 	  */
-	virtual void intersectionFound(OGRFeature* feature) {}
+	virtual void intersectionFound(IntersectionInfo& intersInfo) {}
 	
 	/**
 	  * Processing of intersecting feature has finished.  
+      * @param intersInfo
 	  */
-	virtual void intersectionEnd(OGRFeature* feature) {}
+	virtual void intersectionEnd(IntersectionInfo& intersInfo) {}
 	
 	/**
 	  * A new pixel location has been computed.

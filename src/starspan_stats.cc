@@ -400,13 +400,13 @@ public:
 	/**
 	  * dispatches pending feature if any, and prepares for the next
 	  */
-	void intersectionFound(OGRFeature* feature) {
+	void intersectionFound(IntersectionInfo& intersInfo) {
 		finalizePreviousFeatureIfAny();
 		
 		// keep track of last FID processed:
-		last_FID = feature->GetFID();
+		last_FID = intersInfo.feature->GetFID();
 		
-		last_feature = feature->Clone();
+		last_feature = intersInfo.feature->Clone();
 	}
 	
 	
