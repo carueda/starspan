@@ -137,8 +137,15 @@ struct GlobalInfo {
   * Info passed in observer#intersection{Found,End} methods.
   */
 struct IntersectionInfo {
-    /** Interecting feature */
+    /** Intersecting feature */
     OGRFeature* feature;
+    
+    /** The actual geometry used in intersection with raster envelope.
+     * Unless some pre-processing operation has been applied (eg., buffer, box),
+     * this will be equal to the original feature's geometry, ie., 
+     * feature->GetGeometryRef().
+     */
+    OGRGeometry* geometryToIntersect;
     
     /** Initial intersection */
     OGRGeometry* intersection_geometry;

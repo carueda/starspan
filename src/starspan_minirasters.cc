@@ -401,6 +401,7 @@ public:
         MiniRasterObserver::intersectionEnd(intersInfo);
 
         OGRFeature* feature = intersInfo.feature;
+        OGRGeometry* geometryToIntersect = intersInfo.geometryToIntersect;
         OGRGeometry* intersection_geometry = intersInfo.intersection_geometry;
 
 		if ( outVector == 0 ) {
@@ -419,32 +420,73 @@ public:
         
         // copy everything from incoming feature:
         // (TODO handled selected fields as in other commands) 
-        // (TODO do not copy geometry, but set the given intersection_geometry) 
+        // (TODO do not copy geometry, but set the corresponding geometry)
         outFeature->SetFrom(feature);
         
-        // Associate the given intersection_geometry
-        //  first, make sure we release the copied one
+        //  make sure we release the copied geometry:
         outFeature->SetGeometryDirectly(NULL);
-        //  then, set the geometry by copying it:
-        outFeature->SetGeometry(intersection_geometry);
-        //  then, grab a ref to the copied one for modification:
-        intersection_geometry = outFeature->GetGeometryRef();
+
+        // depending on the associated geometry (see below), these offsets
+        // will help in locating the geometry in the strip:
+        double offsetX = 0;
+        double offsetY = 0;
+        
+        double pix_x_size, pix_y_size;
+        rast.getPixelSize(&pix_x_size, &pix_y_size);
+        
+        // Associate the required geometry.
+        // This will depend on what geometry was actually used for interesection:
+        OGRGeometry* feature_geometry = feature->GetGeometryRef();
+        if ( geometryToIntersect == feature_geometry ) {
+            // if it was the original feature's geometry, 
+            // then associate intersection_geometry:
+            outFeature->SetGeometry(intersection_geometry);
+        }
+        else {
+            // else, associate the intersection between original feature's 
+            // geometry and intersection_geometry:
+            try {
+                OGRGeometry* featInters = feature_geometry->Intersection(intersection_geometry);
+                outFeature->SetGeometryDirectly(featInters);
+                // (note: we use SetGeometryDirectly because featInters is a new object)
+                
+                // In this case, we need to take into account a possible offset
+                // between the envelopes of the intersected arguments above:
+                
+                // ///////
+                // FIXME  Not yet ready
+                // ///////
+                
+                OGREnvelope env1, env2;
+                feature_geometry->getEnvelope(&env1);
+                intersection_geometry->getEnvelope(&env2);
+                offsetX = pix_x_size < 0 ? env2.MaxX - env1.MaxX : -(env2.MinX - env1.MinX);
+                offsetY = pix_y_size < 0 ? env2.MaxY - env1.MaxY : -(env2.MinY - env1.MinY);
+            }
+            catch(GEOSException* ex) {
+                cerr<< "min_raster_strip: GEOSException: " << EXC_STRING(ex) << endl;
+                
+                // should not happen, but well, assign intersection_geometry:
+                outFeature->SetGeometry(intersection_geometry);
+            }
+        }
+        
+        
+        //  grab a ref to the associated geometry for modification:
+        OGRGeometry* outGeometry = outFeature->GetGeometryRef();
 
         
-        // Adjust intersection_geometry to be relative to the strip so it can be overlayed:
+        // Adjust outGeometry to be relative to the strip so it can be overlayed:
         
         MRBasicInfo mrbi = mrbi_list->back();
         int next_row = mrbi.mrs_row;   // base row for this miniraster in strip:
 
-        double pix_x_size, pix_y_size;
-        rast.getPixelSize(&pix_x_size, &pix_y_size);
-        
         // origin of miniraster:
-        double x0 = 0;    // column is always zero
-        double y0 = pix_y_size * next_row;
+        double x0 = offsetX;
+        double y0 = offsetY + pix_y_size * next_row;
         
         // translate:
-        translateGeometry(intersection_geometry, x0, y0);
+        translateGeometry(outGeometry, x0, y0);
 
         if ( outLayer->CreateFeature(outFeature) != OGRERR_NONE ) {
            cerr<< "*** WARNING: Failed to create feature in shapefile.\n";

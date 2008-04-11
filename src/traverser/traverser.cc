@@ -578,9 +578,15 @@ void Traverser::process_feature(OGRFeature* feature) {
 	}
 	
 	//
-	// get geometry
+	// get feature geometry
 	//
 	OGRGeometry* feature_geometry = feature->GetGeometryRef();
+
+	//
+	// the geometry to be interected with raster envelope,
+    // initialized with feature's geometry:
+	//
+	OGRGeometry* geometryToIntersect = feature_geometry;
 
 	///////////////////////////////////////////////////////////////////
 	//
@@ -620,7 +626,7 @@ void Traverser::process_feature(OGRFeature* feature) {
         OGRPolygon* boxPoly = new OGRPolygon();
 		boxPoly->addRing(&ring);
 		boxPoly->closeRings();
-		feature_geometry = boxPoly;
+		geometryToIntersect = boxPoly;
         //
         // Note: this new polygon will be deleted at the end of this method.
         //
@@ -679,9 +685,8 @@ void Traverser::process_feature(OGRFeature* feature) {
 			return;
 		}
 		
-		feature_geometry = buffered_geometry;
-		// NOTE that this feature_geometry must be deleted
-		// since it's a new created object. See below for destruction
+		geometryToIntersect = buffered_geometry;
+		// This geometry will be deleted at the end of this method.
 	}
 	
 	
@@ -691,7 +696,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	OGRGeometry* intersection_geometry = 0;
 	
 	try {
-		intersection_geometry = globalInfo.rasterPoly.Intersection(feature_geometry);
+		intersection_geometry = globalInfo.rasterPoly.Intersection(geometryToIntersect);
 	}
 	catch(GEOSException* ex) {
 		cerr<< ">>>>> FID: " << feature->GetFID()
@@ -717,6 +722,7 @@ void Traverser::process_feature(OGRFeature* feature) {
     
     IntersectionInfo intersInfo;
     intersInfo.feature = feature;
+    intersInfo.geometryToIntersect = geometryToIntersect;
     intersInfo.intersection_geometry = intersection_geometry;
     
 	//
@@ -750,8 +756,8 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 done:
 	delete intersection_geometry;
-	if ( bufferParams.given || boxParams.given ) {
-		delete feature_geometry;
+	if ( geometryToIntersect != feature_geometry ) {
+		delete geometryToIntersect;
 	}
 }
 
