@@ -30,9 +30,12 @@ struct MRBasicInfo {
 	// dimensions of this miniraster
 	int width;
 	int height;
+    
+    // row to locate this miniraster in strip:
+    int mrs_row;
 	
-	MRBasicInfo(long FID, int width, int height) : 
-		FID(FID), width(width), height(height)
+	MRBasicInfo(long FID, int width, int height, int mrs_row) : 
+		FID(FID), width(width), height(height), mrs_row(mrs_row)
 	{}
 };
 
@@ -56,6 +59,9 @@ public:
 	
 	// If not null, basic info is added for each created miniraster
 	vector<MRBasicInfo>* mrbi_list;
+    
+    // used to update MRBasicInfo::mrs_row in mrbi_list:
+    int next_row;
 	
 	
 	/**
@@ -95,8 +101,9 @@ public:
 	/**
 	  * 
 	  */
-	void init(GlobalInfo& info) {
+	virtual void init(GlobalInfo& info) {
 		global_info = &info;
+        next_row = 0;
 	}
 
 	/**
@@ -250,9 +257,9 @@ public:
 		}
 
 		if ( mrbi_list ) {
-			mrbi_list->push_back(MRBasicInfo(FID, mini_width, mini_height));
+			mrbi_list->push_back(MRBasicInfo(FID, mini_width, mini_height, next_row));
+            next_row += mini_height + globalOptions.mini_raster_separation;
 		}
-		
 		
 		GDALClose(hOutDS);
 		cout<< endl;
@@ -285,6 +292,9 @@ Observer* starspan_getMiniRasterObserver(
 
 	return new MiniRasterObserver(tr, layer, rast, prefix, pszOutputSRS);
 }
+
+
+static void translateGeometry(OGRGeometry* geometry, double x0, double y0);
 
 
 /////////////////////
@@ -324,6 +334,8 @@ public:
      * field definitions.
      */
     void init(GlobalInfo& info) {
+        MiniRasterObserver::init(info);
+        
         // remember layer being traversed:
         inLayer = info.layer;
 
@@ -379,8 +391,8 @@ public:
     
     
     /**
-     * Calls super.intersectionEnd(feature) and then translates the feature
-     * data to the output vector if any.
+     * Calls super.intersectionEnd(feature); if out vector was indicated, then
+     * it copies fields and translates the feature data to the output vector.
      */
 	virtual void intersectionEnd(OGRFeature* feature) {
         MiniRasterObserver::intersectionEnd(feature);
@@ -400,11 +412,30 @@ public:
         // ...
         
         // copy everything from incoming feature:
+        // (TODO handled selected fields as in other commands)
         outFeature->SetFrom(feature);
         
-        // TODO Adjust geometry to be relative to the strip so it can be
-        // overlayed
-        // ...
+        // Adjust geometry to be relative to the strip so it can be overlayed:
+        OGRGeometry* geometry = outFeature->GetGeometryRef();
+        
+        MRBasicInfo mrbi = mrbi_list->back();
+        int next_row = mrbi.mrs_row;   // base row for this miniraster in strip:
+
+        double pix_x_size, pix_y_size;
+        rast.getPixelSize(&pix_x_size, &pix_y_size);
+        
+        // origin of miniraster:
+        double x0 = 0;    // column is always zero
+        double y0 = pix_y_size * next_row;
+        
+        // get min x and min y in geometry:
+        translateGeometry(geometry, x0, y0);
+
+        if ( outLayer->CreateFeature(outFeature) != OGRERR_NONE ) {
+           cerr<< "*** WARNING: Failed to create feature in shapefile.\n";
+           return;
+        }
+        OGRFeature::DestroyFeature(outFeature);
     }
 
 	/**
@@ -565,9 +596,6 @@ public:
         
 		int processed_minirasters = 0;
         
-        // next row to position miniraster in strip:
-		int next_row = 0;
-        
         /////////////////////////////////////////////////////////////////////
         // for each miniraster (according to mrbi_list):
 		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); 
@@ -589,6 +617,9 @@ public:
 				unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
 				continue;
 			}
+            
+            // row to position miniraster in strip:
+            int next_row = mrbi->mrs_row;
 
             // column to position miniraster in strip:
             int next_col = 0;
@@ -744,10 +775,6 @@ public:
 			delete mini_ds;
 			hDriver->Delete(mini_filename.c_str());
 			unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
-			
-			// advance to next row in strip images 
-			next_row += mrbi->height + mr_separation;
-
 		}
 		
 		// close outputs
@@ -790,4 +817,83 @@ Observer* starspan_getMiniRasterStripObserver(
 	MiniRasterStripObserver* obs = new MiniRasterStripObserver(tr, layer, rast, filename, shpfilename);
 	return obs;
 }
+
+
+static void translateLineString(OGRLineString* gg, double deltaX, double deltaY) {
+    int numPoints = gg->getNumPoints();
+    for ( int i = 0; i < numPoints; i++ ) {
+        OGRPoint pp;
+        gg->getPoint(i, &pp);
+        pp.setX(pp.getX() + deltaX);
+        pp.setY(pp.getY() + deltaY);
+        gg->setPoint(i, &pp);
+    }
+}
+
+/** does the translation */
+static void traverseTranslate(OGRGeometry* geometry, double deltaX, double deltaY) {
+	OGRwkbGeometryType type = geometry->getGeometryType();
+	switch ( type ) {
+		case wkbPoint:
+		case wkbPoint25D: {
+			OGRPoint* gg = (OGRPoint*) geometry;
+            gg->setX(gg->getX() + deltaX);
+            gg->setY(gg->getY() + deltaY);
+        }
+			break;
+	
+		case wkbLineString:
+		case wkbLineString25D: {
+			OGRLineString* gg = (OGRLineString*) geometry;
+            translateLineString(gg, deltaX, deltaY);
+        }
+			break;
+	
+		case wkbPolygon:
+		case wkbPolygon25D: {
+			OGRPolygon* gg = (OGRPolygon*) geometry;
+            OGRLinearRing *ring = gg->getExteriorRing();
+            translateLineString(ring, deltaX, deltaY);
+           	for ( int i = 0; i < gg->getNumInteriorRings(); i++ ) {
+           		ring = gg->getInteriorRing(i);
+           		translateLineString(ring, deltaX, deltaY);
+           	}
+        }
+			break;
+			
+		case wkbGeometryCollection:
+		case wkbGeometryCollection25D: {
+			OGRGeometryCollection* gg = (OGRGeometryCollection*) geometry;
+           	for ( int i = 0; i < gg->getNumGeometries(); i++ ) {
+           		OGRGeometry* geo = (OGRGeometry*) gg->getGeometryRef(i);
+           		traverseTranslate(geo, deltaX, deltaY);
+           	}
+        }            
+			break;
+			
+		default:
+			cerr<< "***WARNING: mini_raster_strip: " <<OGRGeometryTypeToName(type)
+                << ": geometry type not considered.\n"
+			;
+	}
+}
+
+
+/**
+ * Translates the geometry such that its min (x,y) point is located at (x0,y0).
+ */
+static void translateGeometry(OGRGeometry* geometry, double x0, double y0) {
+    // get min (x,y) in geometry:
+    OGREnvelope bbox;
+    geometry->getEnvelope(&bbox);
+    
+    // deltas to adjust all points in geometry:
+    // first term: to move to origin;
+    // second term: to move to requested (x0,y0) origin:
+    double deltaX = -bbox.MinX +x0;
+    double deltaY = -bbox.MinY +y0;
+
+    traverseTranslate(geometry, deltaX, deltaY);    
+}
+
 
