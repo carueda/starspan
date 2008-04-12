@@ -5,8 +5,29 @@ $Id$
     - new IntersectionInfo struct to add more information in intersectionFound() 
       and intersectionEnd() traversal observer interface.
       
-    - 
-    
+    - Shapefile creation for mini_raster_strip now working including for --box
+      option. Tested as follows (under tests/):
+      * Mini raster strip with accompanying shapefile and using the –in option:
+         ../starspan2  \
+             --vector data/vector/starspan_testply.shp \
+             --raster data/raster/starspan2raster.img  \
+             --mini_raster_strip generated/mrstrip/myoutput_ \
+                                 generated/mrstrip/myoutput.shp \
+             --in \
+             --separation 10
+
+      * Mini raster strip example with accompanying shapefile and using the –box option:
+         ../starspan2  \
+             --vector data/vector/starspan_testply.shp \
+             --raster data/raster/starspan2raster.img  \
+             --mini_raster_strip generated/mrstrip_box/box_100_ \
+                                 generated/mrstrip_box/box_100_.shp \
+             --box 100 \
+             --separation 10
+             
+      See: http://starspan.casil.ucdavis.edu/doku/doku.php?id=minirasterstrip
+      
+      
 2008-04-10
     - Some code cleanup:
         Removed vector/{Makefile,Vector_shapelib.cc}

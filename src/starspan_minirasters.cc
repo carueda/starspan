@@ -441,6 +441,7 @@ public:
             // if it was the original feature's geometry, 
             // then associate intersection_geometry:
             outFeature->SetGeometry(intersection_geometry);
+            // (offsetX,offsetY) will remain == (0,0)
         }
         else {
             // else, associate the intersection between original feature's 
@@ -448,20 +449,18 @@ public:
             try {
                 OGRGeometry* featInters = feature_geometry->Intersection(intersection_geometry);
                 outFeature->SetGeometryDirectly(featInters);
-                // (note: we use SetGeometryDirectly because featInters is a new object)
+                // (note: featInters is a new object so we can use SetGeometryDirectly)
                 
                 // In this case, we need to take into account a possible offset
-                // between the envelopes of the intersected arguments above:
-                
-                // ///////
-                // FIXME  Not yet ready
-                // ///////
+                // between featInters and intersection_geometry:
                 
                 OGREnvelope env1, env2;
-                feature_geometry->getEnvelope(&env1);
+                featInters->getEnvelope(&env1);
                 intersection_geometry->getEnvelope(&env2);
-                offsetX = pix_x_size < 0 ? env2.MaxX - env1.MaxX : -(env2.MinX - env1.MinX);
-                offsetY = pix_y_size < 0 ? env2.MaxY - env1.MaxY : -(env2.MinY - env1.MinY);
+                
+                // the sign of the pixel size will indicate the way to get the offset: 
+                offsetX = -(pix_x_size < 0 ? env2.MaxX - env1.MaxX : env2.MinX - env1.MinX);
+                offsetY = -(pix_y_size < 0 ? env2.MaxY - env1.MaxY : env2.MinY - env1.MinY);
             }
             catch(GEOSException* ex) {
                 cerr<< "min_raster_strip: GEOSException: " << EXC_STRING(ex) << endl;
@@ -478,18 +477,22 @@ public:
         
         // Adjust outGeometry to be relative to the strip so it can be overlayed:
         
+        // get mrbi just pushed:
         MRBasicInfo mrbi = mrbi_list->back();
         int next_row = mrbi.mrs_row;   // base row for this miniraster in strip:
 
-        // origin of miniraster:
-        double x0 = offsetX;
-        double y0 = offsetY + pix_y_size * next_row;
+        // origin of outGeometry relative to:
+        //      * origin of miniraster (0,       pix_y_size*next_row) 
+        //      * and offset above     (offsetX, offsetY)
+        double x0 = 0                   + offsetX;
+        double y0 = pix_y_size*next_row + offsetY;
         
-        // translate:
+        // translate outGeometry:
         translateGeometry(outGeometry, x0, y0);
 
+        // add outFeature to outLayer:
         if ( outLayer->CreateFeature(outFeature) != OGRERR_NONE ) {
-           cerr<< "*** WARNING: Failed to create feature in shapefile.\n";
+           cerr<< "*** WARNING: Failed to create feature in output layer.\n";
            return;
         }
         OGRFeature::DestroyFeature(outFeature);
