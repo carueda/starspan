@@ -1,7 +1,7 @@
 //
 // STARSpan project
 // Carlos A. Rueda
-// starspan_minirasters - generate mini rasters
+// starspan_minirasters - generate mini rasters including strip
 // $Id$
 //
 
@@ -22,7 +22,10 @@
 using namespace std;
 
 ///////////////////////////////////////////////////
-// mini raster basic information
+// mini raster basic information; A list of these elements
+// is gathered by the main miniraster generator and then used by
+// the strip generator to properly locate the minirasters within the strip.
+//
 struct MRBasicInfo {
 	// corresponding FID from which the miniraster was extracted
 	long FID;
@@ -297,15 +300,16 @@ Observer* starspan_getMiniRasterObserver(
 }
 
 
+/////////////////////////////////////////////////////////////////////
+/////////// miniraster strip:
+/////////////////////////////////////////////////////////////////////
+
 static void translateGeometry(OGRGeometry* geometry, double x0, double y0);
 
 
-/////////////////////
-// miniraster strip:
-
 /**
-  * Uses mrbi_list and overrides end() to create the strip
-  * output files.
+  * Extends MiniRasterObserver to override a couple of methods,
+  * use mrbi_list, and create the strip output files.
   */
 class MiniRasterStripObserver : public MiniRasterObserver {
 	string basefilename;

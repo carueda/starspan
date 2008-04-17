@@ -553,8 +553,6 @@ int main(int argc, char ** argv) {
 	}
 	// ---------------------------------------------------------------------
 	
-	////CPLPushErrorHandler(starspan_myErrorHandler);
-
     
     if ( globalOptions.bufferParams.given && globalOptions.boxParams.given ) {
         usage("Only one of --buffer/--box may be given");
@@ -678,15 +676,6 @@ int main(int argc, char ** argv) {
                 globalOptions.dupPixelModes,
                 csv_name
             );
-			//res = starspan_csv_dup_pixel(
-			//	vect,  
-			//	raster_filenames,
-			//	masks,
-			//	select_fields, 
-			//	csv_name,
-			//	vector_layernum,
-			//	globalOptions.dupPixelModes
-			//);
 		}
 		else if ( raster_filenames.size() > 0 ) {
 			res = starspan_csv(
@@ -703,7 +692,6 @@ int main(int argc, char ** argv) {
 	}
     
     else if ( mini_prefix && globalOptions.dupPixelModes.size() > 0 ) {
-        // testing this new implementation:
         res = starspan_miniraster2(
             vect,  
             raster_filenames,
@@ -929,7 +917,6 @@ end:
 	Raster::end();
 	
 	// more final cleanup:
-	////CPLPopErrorHandler();
 	Unload::Release();	
 	
 	if ( report_elapsed_time ) {

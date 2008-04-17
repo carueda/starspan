@@ -99,31 +99,6 @@ int starspan_tuct_2(
 );
 
 
-/**
-  * Generates a CSV file with the following columns:
-  *     FID, RID, BandNumber, FieldBandValue, ImageBandValue
-  * where:
-  *     FID:          feature ID as given by OGRFeature#GetFID()
-  *     RID           raster filename
-  *     BandNumber    1 .. N
-  *     FieldBandValue  value from input speclib
-  *     ImageBandValue  MEAN value for BandNumber in RID
-  *
-  * @param vector_filename Vector datasource
-  * @param raster_filenames rasters
-  * @param speclib_filename spectral library file name
-  * @param calbase_filename output file name
-  *
-  * @return 0 iff OK 
-  */
-int starspan_tuct_1(
-	const char* vector_filename,
-	vector<const char*> raster_filenames,
-	const char* speclib_filename,
-	const char* calbase_filename
-);
-
-
 
 /** Stats calculation one multiple rasters.
   * Generates a CSV file with the following columns:
@@ -372,7 +347,6 @@ void starspan_report(Traverser& tr);
 
 void starspan_print_envelope(FILE* file, const char* msg, OGREnvelope& env);
 
-void starspan_myErrorHandler(CPLErr eErrClass, int err_no, const char *msg);
 
 /** 
   * Creates a raster by subsetting a given raster
@@ -509,12 +483,31 @@ inline void starspan_simplify_filename(string& filename) {
 ////////////////////////////////////////////////////////////////////////////////
 // general raster selection processing
 
+/**
+ * A pair (feature,raster) indicating the selected raster to extract
+ * data from for and feature.
+ */
 struct ExtractionItem {
     OGRFeature* feature;
     const char* rasterFilename;
 };
 
 
+/**
+ * Performs extraction on a per feature basis: for each feature, it selects
+ * a raster from the given list of raster and calls the provided 
+ * extractionFunction with the corresponding extraction item.
+ *
+ * @param vect List of features
+ * @param raster_filenames List of rasters
+ * @param mask_filenames List of corresponding masks for the rasters
+ * @param select_fields List of desired fields
+ * @param layernum
+ * @param dupPixelModes Modes for duplicate pixel handling
+ * @param extractionFunction Function to call for each extraction item.
+ *
+ * @return 0 iff successful.
+ */
 int starspan_dup_pixel(
 	Vector* vect,
 	vector<const char*> raster_filenames,
