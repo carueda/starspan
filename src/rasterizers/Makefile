@@ -1,8 +1,11 @@
 # for preliminary testing of LayerRasterizer
 
-
+# params for my laptop:
 geosconfig=/usr/local/pkg/geos/bin/geos-config
 gdalconfig=/usr/local/pkg/gdal/bin/gdal-config
+
+# running as follows on pegasus:
+# make geosconfig=`which geos-config` gdalconfig=`which gdal-config` runlayertest
 
 INC=$(shell $(geosconfig) --cflags)
 INC+=$(shell $(gdalconfig) --cflags)
@@ -24,7 +27,7 @@ layertest: layertest.cc  $(OBJ)
     -o layertest
 
 runlayertest: layertest
-	LD_LIBRARY_PATH=/usr/local/pkg/geos/lib/:/usr/local/pkg/gdal/lib/ \
+	LD_LIBRARY_PATH=`$(geosconfig) --prefix`/lib/:`$(gdalconfig) --prefix`/lib/ \
     ./layertest
 	
 $(OBJ): $(SRC) LayerRasterizer.h rasterizers.h
