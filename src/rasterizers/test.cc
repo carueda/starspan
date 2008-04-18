@@ -5,7 +5,7 @@
 // $Id$
 //
 //
-//   g++ -Wall -I/usr/local/include/agg2  LineRasterizer.cc  test.cc
+//   g++ -I. -Iagg -Wall LineRasterizer.cc test.cc
 //   ./a.out 0 0 3 3 10.1 5.3 20.6 10.1
 //   pixel origin: (0, 0)  pixel size:  3, 3
 //   From  (10.1, 5.3) -> (20.6, 10.1)

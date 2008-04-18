@@ -7,7 +7,7 @@
 //
 
 #include "rasterizers.h"           
-#include "agg_dda_line.h"   // line_bresenham_interpolator
+#include "agg/agg_dda_line.h"   // line_bresenham_interpolator
 
 #include <math.h>
 

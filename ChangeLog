@@ -10,6 +10,10 @@ $Id$
             - starspan_update_dbf.cc
             - function starspan_myErrorHandler()
         - Improved comments to some sources
+        
+        - Moved src/rasterizers/agg_*.h to new dir src/rasterizers/agg/
+          (agg is used only for line rasterization but other types of
+          rasterization may eventually be located in src/rasterizers/.)
     
 2008-04-11
     - new IntersectionInfo struct to add more information in intersectionFound() 
