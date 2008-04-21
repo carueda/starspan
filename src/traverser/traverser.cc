@@ -442,8 +442,8 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				cerr<< "--Invalid polygon has " <<geos_poly->getNumInteriorRing()
                     << " interior rings: cannot explode it--" << endl;
 				summary.num_polys_with_internal_ring++;
-			//} 
-			//else {
+			} 
+			else {
 				const LineString* lines = geos_poly->getExteriorRing();
 				// get noded linestring:
 				Geometry* noded = 0;
@@ -515,7 +515,7 @@ void Traverser::processMultiPolygon(OGRMultiPolygon* mpoly) {
 void Traverser::processGeometryCollection(OGRGeometryCollection* coll) {
 	for ( int i = 0; i < coll->getNumGeometries(); i++ ) {
 		OGRGeometry* geo = (OGRGeometry*) coll->getGeometryRef(i);
-		processGeometry(geo, true);//false); 2008-04-18
+		processGeometry(geo, false);
 	}
 }
 
