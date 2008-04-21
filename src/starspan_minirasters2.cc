@@ -55,8 +55,7 @@ static void extractFunction(ExtractionItem* item) {
     
     tr.setVectorSelectionParams(globalOptions.vSelParams);
     
-	if ( globalOptions.FID >= 0 )
-		tr.setDesiredFID(globalOptions.FID);
+    tr.setDesiredFID(globalOptions.FID);
 	tr.setVerbose(globalOptions.verbose);
     tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
     
