@@ -1,6 +1,10 @@
 StarSpan ChangeLog
 $Id$
 
+2008-04-18
+    - New starspan_rasterize.cc: Under testing, Search for "2008-04-18"
+      in source code for temporary diagnostic statements.
+
 2008-04-17
     - Code cleanup:
         - Removed (not used):

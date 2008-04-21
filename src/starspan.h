@@ -542,5 +542,34 @@ int starspan_miniraster2(
 );
 
 
+struct RasterizeParams {
+    const char* outRaster_filename; 
+    int rastValue;
+    bool fillNoData;
+    const char* rastFormat;
+    const char* projection;
+    double* geoTransform;
+    
+    RasterizeParams() : 
+        outRaster_filename(0), 
+        rastValue(1), 
+        fillNoData(true),
+        rastFormat("ENVI"),
+        projection(0),
+        geoTransform(new double[6])
+    {
+        for ( int i = 0; i < 6; i++ ) {
+            geoTransform[i] = 0;
+        }
+        geoTransform[1] = geoTransform[5] = 1;
+    }
+    
+    ~RasterizeParams() {
+        delete geoTransform;
+    }
+};
+Observer* starspan_getRasterizeObserver(RasterizeParams* rasterizeParams);
+
+
 #endif
 

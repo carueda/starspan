@@ -96,3 +96,12 @@ miniraster_strip_box:
 		--mini_raster_strip generated/mrstrip_box/box_100_ \
 		--box 100 \
 		--separation 10
+        
+# preliminary rasterization with --rasterize option
+rasterize:
+	mkdir -p generated/rasterize/
+	${STARSPAN} \
+		--vector data/vector/starspan_testply.shp \
+		--raster data/raster/starspan2raster.img \
+		--rasterize generated/rasterize/rasterized
+

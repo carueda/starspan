@@ -137,6 +137,8 @@ void Traverser::addRaster(Raster* raster) {
 		globalInfo.rasterPoly.addRing(&raster_ring);
 		globalInfo.rasterPoly.closeRings();
 		globalInfo.rasterPoly.getEnvelope(&raster_env);
+		globalInfo.width = width;
+		globalInfo.height = height;
 	}
 	
 	if ( rasts.size() > 1 ) {
@@ -419,6 +421,10 @@ const CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordina
 void Traverser::processPolygon(OGRPolygon* poly) {
 	Polygon* geos_poly = (Polygon*) poly->exportToGEOS();
 	if ( geos_poly->isValid() ) {
+        // 2008-04-18
+        if ( geos_poly->getNumInteriorRing() > 0 ) {
+            cerr<< "--Valid polygon WITH interior rings: " <<geos_poly->getNumInteriorRing()<< endl;
+        } 
 		processValidPolygon(geos_poly);
 	}
 	else {
@@ -433,16 +439,23 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 		else {
 			// try to explode this poly into smaller ones:
 			if ( geos_poly->getNumInteriorRing() > 0 ) {
-				//cerr<< "--Invalid polygon has interior rings: cannot explode it--" << endl;
+				cerr<< "--Invalid polygon has " <<geos_poly->getNumInteriorRing()
+                    << " interior rings: cannot explode it--" << endl;
 				summary.num_polys_with_internal_ring++;
-			} 
-			else {
+			//} 
+			//else {
 				const LineString* lines = geos_poly->getExteriorRing();
 				// get noded linestring:
 				Geometry* noded = 0;
 				const int num_points = lines->getNumPoints();
+                if ( verbose ) {
+                    cout << "Exploding external ring with " <<num_points<< " points...\n";
+                }
 				const CoordinateSequence* coordinates = lines->getCoordinatesRO();
 				for ( int i = 1; i < num_points; i++ ) {
+                    if ( verbose && i % 1000 == 0 ) {
+                        cout << "\tpoint " <<i<< "\n";
+                    }
 					vector<Coordinate>* subcoordinates = new vector<Coordinate>();
 					subcoordinates->push_back(coordinates->getAt(i-1));
 					subcoordinates->push_back(coordinates->getAt(i));
@@ -502,7 +515,7 @@ void Traverser::processMultiPolygon(OGRMultiPolygon* mpoly) {
 void Traverser::processGeometryCollection(OGRGeometryCollection* coll) {
 	for ( int i = 0; i < coll->getNumGeometries(); i++ ) {
 		OGRGeometry* geo = (OGRGeometry*) coll->getGeometryRef(i);
-		processGeometry(geo, false);
+		processGeometry(geo, true);//false); 2008-04-18
 	}
 }
 

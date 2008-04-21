@@ -142,6 +142,8 @@ int main(int argc, char ** argv) {
 	globalOptions.mini_raster_parity = "";
 	globalOptions.mini_raster_separation = 0;
 	globalOptions.delimiter = ",";
+    
+    RasterizeParams rasterizeParams;
 	
 
 	bool report_elapsed_time = false;
@@ -356,6 +358,15 @@ int main(int argc, char ** argv) {
 			mini_prefix = argv[i];
 		}
 		
+		else if ( 0==strcmp("--rasterize", argv[i]) ) {
+			if ( ++i == argc || argv[i][0] == '-' ) {
+				usage("--rasterize: output raster name?");
+            }
+			rasterizeParams.outRaster_filename = argv[i];
+            rasterizeParams.fillNoData = true;
+            // TODO: accept other parameters
+		}
+        
 		else if ( 0==strcmp("--envi", argv[i]) || 0==strcmp("--envisl", argv[i]) ) {
 			envi_image = 0==strcmp("--envi", argv[i]);
 			if ( ++i == argc || argv[i][0] == '-' )
@@ -875,6 +886,17 @@ int main(int argc, char ** argv) {
 				tr.addObserver(obs);
 		}
 	
+		if ( rasterizeParams.outRaster_filename ) {
+            GDALDataset* ds = tr.getRaster(0)->getDataset();
+            rasterizeParams.projection = ds->GetProjectionRef();
+            ds->GetGeoTransform(rasterizeParams.geoTransform);
+			Observer* obs = starspan_getRasterizeObserver(&rasterizeParams);
+			if ( obs ) {
+				tr.addObserver(obs);
+            }
+		}
+	
+
 		// the following don't use Observer scheme;  
 		// just call corresponding functions:	
 		if ( show_fields ) {

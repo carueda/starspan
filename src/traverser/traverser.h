@@ -128,6 +128,9 @@ struct GlobalInfo {
 	/** A rectangle covering the raster extension. */
 	OGRPolygon rasterPoly;
     
+    /** Dimensions of the raster */
+    int width, height;
+    
     /** The layer being traversed */
     OGRLayer* layer;
 };
