@@ -27,7 +27,7 @@ int starspan_grass(int argc, char ** argv) {
 	char module_description[5*1024];
     
 	struct GModule *module;
-	struct Option *opt_input, *opt_output;
+	struct Option *opt_vector_input, *opt_raster_output;
     
 	prog_name = argv[0];
 	sprintf(long_prgname, "%s %s (%s %s)", prog_name, prog_version, __DATE__, __TIME__);
@@ -58,6 +58,34 @@ int starspan_grass(int argc, char ** argv) {
     );
 	module->description = module_description;
     
+	// options:					        
+	opt_vector_input = G_define_option() ;
+	opt_vector_input->key        = "vector";
+	opt_vector_input->type       = TYPE_STRING;
+	opt_vector_input->required   = YES;
+	opt_vector_input->description= "Name of the vector map";
+
+	opt_raster_output = G_define_option() ;
+	opt_raster_output->key        = "raster";
+	opt_raster_output->type       = TYPE_STRING;
+	opt_raster_output->required   = YES;
+	opt_raster_output->description= "Name of the raster map";
+
+	if ( G_parser(argc, argv) ) {
+		exit(-1);
+    }
+    
+    
+	string vector_input_name = opt_vector_input->answer;
+	string raster_input_name = opt_raster_input->answer;
+    
+    
+    cout<< " vector = " <<vector_input_name<< endl;
+    cout<< " raster = " <<raster_input_name<< endl;
+    
+    
+    cout<< "returning --  GRASS interface not implemented yet." <<endl;
+    
     return 0;
 }
 
@@ -66,7 +94,7 @@ int starspan_grass(int argc, char ** argv) {
 // Not with GRASS
 #else
 int starspan_grass(int argc, char ** argv) {
-    fprintf(stderr, "ERORR: StarSpan not compiled with grass support.\n");
+    fprintf(stderr, "ERROR: StarSpan not compiled with grass support.\n");
     return -1;
 }
 
