@@ -29,30 +29,20 @@ int starspan_grass(int argc, char ** argv) {
 	struct GModule *module;
 	struct Option *opt_vector_input, *opt_raster_input;
     
+    struct Map_info In, Out;
+    char *mapset;
+    
 	prog_name = argv[0];
 	sprintf(long_prgname, "%s %s (%s %s)", prog_name, prog_version, __DATE__, __TIME__);
 	G_gisinit(long_prgname);
 	
 	module = G_define_module();
 	sprintf(module_description, 
-		"%s - CSTARS Daymet Interpolator\n"
+		"%s - CSTARS StarSpan\n"
 		"Version %s (%s %s)\n"
 		"\n"
-		"Reads a sites file and generates a raster file with interpolated values\n"
-		"for the active region, using an implementation of the Daymet technique.\n"
-		"By default, interpolation of a pixel is computed at its center, but other\n"
-		"location within the pixel can be specified.\n"
+		"GRASS GIS command-line interface -- NOT YET IMPLEMENTED\n"
 		"\n"
-		"Use elevation=name to specify an elevation raster. In this case,\n"
-		"unless the -n option is given, correction by elevation will be applied\n"
-		"on each cell in generated raster.\n"
-		"\n"
-		"If a lapse rate is given, sites values are taken as follows\n"
-		"     new_value = elevation * lapseRate / 1000 + original_value\n"
-		"The rest of the process is done on the new values (no back-correction).\n"
-		"\n"
-		"Specify -cve and optionally -K, to generate a crossvalidation error report.\n"
-		"Note that the interpolation step is done only if output=name is given.",
 		prog_name, prog_version,
         __DATE__, __TIME__
     );
@@ -72,9 +62,19 @@ int starspan_grass(int argc, char ** argv) {
 	opt_raster_input->description= "Name of the raster map";
 
 	if ( G_parser(argc, argv) ) {
-		exit(-1);
+		exit(EXIT_FAILURE);
     }
     
+    
+    if ( (mapset = G_find_vector2(opt_vector_input->answer, "") ) == NULL ) {
+        G_fatal_error(_("Vector map <%s> not found"), opt_vector_input->answer);
+    }
+    
+    Vect_set_open_level(2);
+ 	
+    if (1 > Vect_open_old(&In, opt_vector_input->answer, mapset)) {
+        G_fatal_error(_("Unable to open vector map <%s>"), opt_vector_input->answer);
+    }
     
 	string vector_input_name = opt_vector_input->answer;
 	string raster_input_name = opt_raster_input->answer;
@@ -85,6 +85,12 @@ int starspan_grass(int argc, char ** argv) {
     
     
     cout<< "returning --  GRASS interface not implemented yet." <<endl;
+    
+    
+    Vect_close(&In);
+    //Vect_close(&Out);
+ 	
+    exit(EXIT_SUCCESS);
     
     return 0;
 }
