@@ -32,7 +32,14 @@ public:
 	// finishes this module
 	static int end(void);
 	
+	/**
+     * Creates a raster object representing an existing file. 
+	 * Returns null if error 
+     */
+	static Raster* open(const char* filename);
+	
 	// Creates a raster object representing an existing file.
+    // Deprecated: use Raster::open
 	Raster(const char* filename);
 	
 	// Creates a raster object representing a new raster file.
@@ -117,6 +124,8 @@ public:
 	void report(FILE* file);
 	
 private:
+    Raster(GDALDataset* hDataset);
+    
 	GDALDataset* hDataset;
     const char* pszProjection;
     double adfGeoTransform[6];
