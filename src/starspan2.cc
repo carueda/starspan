@@ -119,6 +119,13 @@ static void usage_string(string& msg) {
 ///////////////////////////////////////////////////////////////
 // main test program
 int main(int argc, char ** argv) {
+    
+    // quick mechanism to launch the GRASS interface:
+    // If name of executable is the one indicated, then launch grass interface:
+	if ( string(argv[0]).rfind("v.starspan") != string::npos ) {
+		return starspan_grass(argc, argv);
+	}
+	
 	if ( argc == 1 ) {
 		usage(NULL);
 	}

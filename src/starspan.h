@@ -542,6 +542,11 @@ int starspan_miniraster2(
 );
 
 
+/** The GRASS interface */
+int starspan_grass(int argc, char ** argv);
+
+
+
 struct RasterizeParams {
     const char* outRaster_filename; 
     int rastValue;

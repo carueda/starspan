@@ -10,6 +10,7 @@ EXTRA_DIST   = starspan
 
 starspan2_SOURCES =	\
 	src/starspan2.cc \
+	src/starspan_grass.cc \
 	src/starspan_rasterize.cc \
 	src/starspan_dup_pixel.cc \
 	src/starspan_csv2.cc \
@@ -38,6 +39,8 @@ starspan2_SOURCES =	\
 	src/vector/Vector_ogr.cc
 
 AM_CPPFLAGS = -g @GEOS_INC@  @GDAL_INC@
+
+starspan2_LDADD = @GRASS_LDADD@
 
 INCLUDES = \
 	-I$(srcdir)/src \

@@ -76,4 +76,36 @@ fi
 AC_SUBST(GDAL_INC GDAL_PREFIX)
 
 
+dnl ###########################################################
+dnl GRASS
+dnl ###########################################################
+AC_ARG_WITH(grass,[  --with-grass=ARG        Include GRASS support (GRASS 5.7+, ARG=GRASS install tree dir)],,)
+if test "$with_grass" != "" ; then
+  GRASS_PREFIX=$with_grass
+  GRASS_LIB_DIR="$GRASS_PREFIX/lib"
+  LIBS="-L$GRASS_LIB_DIR -lgrass_gis -lgrass_datetime $LIBS -lz -lm"
+  GRASS_LDADD="-lgrass_gis -lgrass_datetime $LIBS -lz -lm"
+
+  GRASS_INCLUDE_DIR="$GRASS_PREFIX/include"
+  CPPFLAGS="$CPPFLAGS -I$GRASS_INCLUDE_DIR"
+
+  # check header:
+  AC_CHECK_HEADERS(gis.h, [], [AC_MSG_ERROR([gis.h header not found.
+    If you do have grass installed, please use the option
+	--with-grass=dir or to specify the right prefix
+	GRASS directory.])])
+  
+  # check corresponding library:
+  AC_CHECK_LIB(grass_gis,G_asprintf, [], [AC_MSG_ERROR([grass library not found.
+    If you do have grass installed, please use the option
+    --with-grass=dir to specify the right prefix
+    GRASS directory.])])
+fi
+AC_SUBST(GRASS_LDADD,$GRASS_LDADD)
+
+dnl ###########################################################
+dnl End GRASS
+dnl ###########################################################
+
+
 AC_OUTPUT([Makefile starspan mksrcdist.sh])
