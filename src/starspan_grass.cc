@@ -27,7 +27,7 @@ int starspan_grass(int argc, char ** argv) {
 	char module_description[5*1024];
     
 	struct GModule *module;
-	struct Option *opt_vector_input, *opt_raster_output;
+	struct Option *opt_vector_input, *opt_raster_input;
     
 	prog_name = argv[0];
 	sprintf(long_prgname, "%s %s (%s %s)", prog_name, prog_version, __DATE__, __TIME__);
@@ -65,11 +65,11 @@ int starspan_grass(int argc, char ** argv) {
 	opt_vector_input->required   = YES;
 	opt_vector_input->description= "Name of the vector map";
 
-	opt_raster_output = G_define_option() ;
-	opt_raster_output->key        = "raster";
-	opt_raster_output->type       = TYPE_STRING;
-	opt_raster_output->required   = YES;
-	opt_raster_output->description= "Name of the raster map";
+	opt_raster_input = G_define_option() ;
+	opt_raster_input->key        = "raster";
+	opt_raster_input->type       = TYPE_STRING;
+	opt_raster_input->required   = YES;
+	opt_raster_input->description= "Name of the raster map";
 
 	if ( G_parser(argc, argv) ) {
 		exit(-1);
