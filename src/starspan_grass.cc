@@ -12,8 +12,9 @@
 // With GRASS
 #ifdef HAVE_LIBGRASS_GIS
 
+extern "C" {
 #include "grass/gis.h"
-
+}
 
 static const char* prog_version = VERSION;
 static char* prog_name;   // argv[0]
