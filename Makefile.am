@@ -40,6 +40,7 @@ starspan2_SOURCES =	\
 
 AM_CPPFLAGS = -g @GEOS_INC@  @GDAL_INC@
 
+AM_LDFLAGS = @GRASS_LIB@
 starspan2_LDADD = @GRASS_LDADD@
 
 INCLUDES = \
