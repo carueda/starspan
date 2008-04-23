@@ -453,7 +453,7 @@ int starspan_grass(int argc, char ** argv) {
 // Not with GRASS
 #else
 
-bool use_grass(int &argc, char ** argv) {
+bool use_grass(int *argc, char ** argv) {
     return false;
 }
 
