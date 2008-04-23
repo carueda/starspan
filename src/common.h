@@ -46,20 +46,30 @@ struct BoxParams {
 };
 
 
-/** Class for dupplicate pixel modes.  */
+/** Class for duplicate pixel modes.  */
 struct DupPixelMode {
 	string code;
 	double arg;
 	
 	DupPixelMode(string code, double arg) :
-		code(code), arg(arg) {
+		code(code), arg(arg), withArg(true) {
+	}
+	
+	DupPixelMode(string code) :
+		code(code), withArg(false) {
 	}
 	
 	string toString() {
 		ostringstream ostr;
-		ostr << code << " " << arg;
+		ostr << code;
+        if ( withArg ) {
+            ostr << " " << arg;
+        }
 		return ostr.str();
 	}
+    
+    private:
+        bool withArg;
 };
 
 
