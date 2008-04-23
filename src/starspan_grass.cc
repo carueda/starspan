@@ -1,21 +1,32 @@
 //
 // StarSpan project
 // Carlos A. Rueda
-// starspan_grass GRASS interface -- preliminary
+// starspan_grass GRASS interface
 // $Id$
 //
-
-#include <geos/version.h>
-#if GEOS_VERSION_MAJOR < 3
-	#include <geos.h>
-#else
-	#include <geos/unload.h>
-	using namespace geos::io;   // for Unload
-#endif
-
+/*
+    This is a GRASS interface to some of the available StarSpan commands.
+    In this interface, the command must be the first argument in the invocation
+    of the program, eg:
+       starspan csv vector=myvector rasters=myraster output=myoutput.csv
+    
+    The dispatching routine, starspan_grass(), prepares the passed arguments so
+    the GRASS library is used on a per command basis.(*) For example, to get
+    the help message for the "csv" command, the user will type:
+       starspan csv help
+    
+    (*)Note: this is preliminary: need to check integration with GRASS GUI.
+    
+    GRASS datasources are opened by using the corresponding GDAL/OGR drivers,
+    that is, not by using the GRASS structures. This is currently the approach
+    to minimize changes to the base code. Note also that non-GRASS datasources
+    can still be opened: this module first tries to open a datasource assuming
+    it's a GRASS map; if the map cannot be found, then it's opened as a regular
+    dataset.
+    
+*/
 
 #include "starspan.h"
-#include <cassert>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,7 +39,18 @@ extern "C" {
 #include "grass/glocale.h"
 }
 
+#include <geos/version.h>
+#if GEOS_VERSION_MAJOR < 3
+	#include <geos.h>
+#else
+	#include <geos/unload.h>
+	using namespace geos::io;   // for Unload
+#endif
 
+#include <cassert>
+
+
+// utility to prepare arguments
 static void shift_args(int *argc, char ** argv) {
     for ( int i = 2; i < *argc; i++ ) {
         argv[i - 1] = argv[i];
@@ -52,6 +74,8 @@ bool use_grass(int *argc, char ** argv) {
 }
 
 
+// utility to ge the module description for wither the main program
+// or a specific command.
 static char* get_module_description(const char* cmd) {
     static char module_description[5*1024];
     sprintf(module_description,
@@ -69,6 +93,7 @@ static char* get_module_description(const char* cmd) {
     return module_description;
 }
 
+// GRASS initialization for a specific command
 static void init(const char* cmd) {
 	char long_prgname[1024];
     
@@ -116,6 +141,7 @@ static Vector* open_vector(const char* filename) {
     // first, try to open as a GRASS map:
     char *mapset;
     if ( (mapset = G_find_vector2(filename, "") ) != NULL ) {
+        // get full namespace according to http://gdal.org/ogr/drv_grass.html
         string fn = string(G_gisdbase())
                         + "/" + G_location()
                         + "/" + mapset
@@ -148,6 +174,7 @@ static Raster* open_raster(const char* filename) {
     // first, try to open as a GRASS map:
     char *mapset;
     if ( (mapset = G_find_cell2(filename, "") ) != NULL ) {
+        // get full namespace according to http://gdal.org/frmt_grass.html
         string fn = string(G_gisdbase())
                         + "/" + G_location()
                         + "/" + mapset
@@ -191,7 +218,7 @@ static int process_opt_layer(Vector* vect, const char* vector_layername) {
 
 
 
-
+// gets the list of masks, if any
 static vector<const char*>* process_opt_masks(Option* opt_mask_input) {
     vector<const char*>* mask_filenames = 0;    
     if ( opt_mask_input->answers ) {
@@ -204,7 +231,7 @@ static vector<const char*>* process_opt_masks(Option* opt_mask_input) {
 }
 
 
-
+// gets the list of selected fields, if any
 static vector<const char*>* process_opt_fields(Option* opt_fields) {
     vector<const char*>* select_fields = NULL;
     if ( opt_fields->answer ) {
@@ -224,7 +251,8 @@ static vector<const char*>* process_opt_fields(Option* opt_fields) {
     }
     return select_fields;
 }
-
+                
+// sets the list of duplicate_pixel modes
 static void process_opt_duplicate_pixel(Option *opt_duplicate_pixel) {
     if ( !opt_duplicate_pixel->answers ) {
         return;
@@ -257,6 +285,7 @@ static void process_opt_duplicate_pixel(Option *opt_duplicate_pixel) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Command: report
 static int command_report(int argc, char ** argv) {
 	struct Option *opt_vector_input = define_string_option("vector",  "Vector map", NO);
 	struct Option *opt_raster_input = define_string_option("rasters", "Raster map(s)", NO);
@@ -276,11 +305,13 @@ static int command_report(int argc, char ** argv) {
         delete vect;
     }
 
-    for ( int n = 0; opt_raster_input->answers[n] != NULL; n++ ) {
-        Raster* rast = open_raster(opt_raster_input->answers[n]);
-        if ( rast ) {
-            starspan_report_raster(rast);
-            delete rast;
+    if ( opt_raster_input->answers ) {
+        for ( int n = 0; opt_raster_input->answers[n] != NULL; n++ ) {
+            Raster* rast = open_raster(opt_raster_input->answers[n]);
+            if ( rast ) {
+                starspan_report_raster(rast);
+                delete rast;
+            }
         }
     }
     
@@ -289,6 +320,7 @@ static int command_report(int argc, char ** argv) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Command: csv
 static int command_csv(int argc, char ** argv) {
 	struct Option *opt_vector_input = define_string_option("vector",  "Vector map", YES);
     
@@ -383,7 +415,8 @@ static int command_csv(int argc, char ** argv) {
 }
 
 
-
+///////////////////////////////////////////////////////////////////////////////
+// main dispatcher
 int starspan_grass(int argc, char ** argv) {
     const char* cmd = argc == 1 ? "help" : argv[1];
     
@@ -443,7 +476,6 @@ int starspan_grass(int argc, char ** argv) {
 	
 	// more final cleanup:
 	Unload::Release();	
-    
 
     exit(res);
 }

@@ -7,31 +7,10 @@ $Id$
         report
         csv
         
-      BTW, starspan_dup_pixel() is segfaulting on pegasus:
-      the configure is as follows:
-        ./configure --prefix=/usr/local/pkg/starspan \
-            --with-geos=/usr/bin/geos-config \
-            --with-gdal=/usr/local/bin/gdal-config  \
-            --program-suffix=-pegasus \
-            --with-grass=/usr/local/grass-6.3.0RC5
-      The versions are:
-            geos 2.2.3
-            gdal 1.5.0
+        
+      NOTE: starspan_dup_pixel() was segfaulting with versions geos 2.2.3 and
+      gdal 1.5.0. Just updated geos to 3.0.0 (on pegasus) and problem fixed. 
             
-      To generate the error, on pegasus:
-        cd tests
-        starspan --vector data/vector/starspan_testply.shp \
-                 --raster data/raster/starspan1raster.img \
-                          data/raster/starspan2raster.img \
-                          data/raster/starspan3raster.img \
-                 --csv some_output.csv \
-                 --duplicate_pixel distance direction 90 \
-                 --verbose
-                 
-      The same command runs just fine on my laptop (geos 3.0.0rc4, gdal 1.4.2),
-      but, not --with-grass was used for the build.
-      Perhaps there is some conflict with libraries at runtime (?).
-      
        
         
 2008-04-21
@@ -136,16 +115,15 @@ $Id$
     - Since GDAL and GRASS are working nicely together on pegasus, I just made a
       basic test to confirm that starspan can access vector and raster GRASS
       datasets, and everything seems to work fine. For example, according the 
-      the naming of the datasorces explainded in http://gdal.org/ogr/drv_grass.html
+      the naming of the datasources explained in http://gdal.org/ogr/drv_grass.html
       and http://gdal.org/frmt_grass.html:
 
         starspan --raster /proj/delta/gis/grass/delta/lidar_shadows/cellhd/200506_p1_31_beam_irradiance --report
         starspan --vector /proj/delta/gis/grass/delta/carueda/vector/starspan_testply/head --report
 
       Note that you don't have to launch these commands from within GRASS to access
-      the datasets. However, I notice that more information is reported for rasters
-      when the command is launched from within GRASS, so I guess running those in 
-      GRASS is the recommended way.
+      the datasets. However, more information is reported for rasters
+      when the command is launched from within GRASS.
 
       Note also that accepting the inputs according to the GRASS syntax, for example:
         starspan-grass raster=00506_p1_31_beam_irradiance@lidar_shadows vector=somevector@somewhere ...etc...
