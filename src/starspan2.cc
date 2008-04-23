@@ -75,8 +75,7 @@ static void usage(const char* msg) {
 		"      --separation <num-pixels> \n"
 		"\n"
 		"      --duplicate_pixel <mode> ...\n"
-		"             <mode>: distance | direction <angle> | ignore_nodata\n"
-		"             (note: ignore_nodata not implemented yet.)\n"
+		"             <mode>: distance | direction <angle>\n"
 		"      --fields <field1> <field2> ... <fieldn>\n"
 		"      --pixprop <minimum-pixel-proportion>\n"
 		"      --noColRow \n"
@@ -120,16 +119,6 @@ static void usage_string(string& msg) {
 // main test program
 int main(int argc, char ** argv) {
     
-    // quick mechanism to launch the GRASS interface:
-    // If name of executable is the one indicated, then launch grass interface:
-	if ( string(argv[0]).rfind("v.starspan") != string::npos ) {
-		return starspan_grass(argc, argv);
-	}
-	
-	if ( argc == 1 ) {
-		usage(NULL);
-	}
-	
 	globalOptions.use_pixpolys = false;
 	globalOptions.skip_invalid_polys = false;
 	globalOptions.pix_prop = -1.0;
@@ -150,6 +139,15 @@ int main(int argc, char ** argv) {
 	globalOptions.mini_raster_separation = 0;
 	globalOptions.delimiter = ",";
     
+
+	if ( use_grass(&argc, argv) ) {
+		return starspan_grass(argc, argv);
+	}
+	
+	if ( argc == 1 ) {
+		usage(NULL);
+	}
+	
     RasterizeParams rasterizeParams;
 	
 
@@ -268,18 +266,15 @@ int main(int argc, char ** argv) {
 					else {
 						usage("direction: missing angle parameter");
 					}
+                    globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, dup_arg));
 				}
 				else if ( dup_code == "distance" ) {
-					// OK.
-				}
-				else if ( dup_code == "ignore_nodata" ) {
-					// OK.
+                    globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code));
 				}
 				else {
 					string msg = string("--duplicate_pixel: unrecognized mode: ") +dup_code;
 					usage_string(msg);
 				}
-				globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, dup_arg));
 			}
 			if ( globalOptions.dupPixelModes.size() == 0 ) {
 				usage("--duplicate_pixel: specify at least one mode");

@@ -542,9 +542,24 @@ int starspan_miniraster2(
 );
 
 
+//////////////////////////////////////////////////////////////////////
+// <GRASS>
+
+/**
+ * Determines if the GRASS interface should be used.
+ * This is the case if the following conditions are met:
+ *   - The program has been compiled with GRASS support, and
+ *   - The program is running within the GRASS environment, and
+ *   - The first argument is not "S" (for standard interface).
+ * Updates the argument info if necessary.
+ */
+bool use_grass(int *argc, char ** argv);
+
 /** The GRASS interface */
 int starspan_grass(int argc, char ** argv);
 
+// </GRASS>
+//////////////////////////////////////////////////////////////////////
 
 
 struct RasterizeParams {

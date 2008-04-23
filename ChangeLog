@@ -2,6 +2,38 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-04-22
+    - Implemented grass interface commands:
+        report
+        csv
+        
+      BTW, starspan_dup_pixel() is segfaulting on pegasus:
+      the configure is as follows:
+        ./configure --prefix=/usr/local/pkg/starspan \
+            --with-geos=/usr/bin/geos-config \
+            --with-gdal=/usr/local/bin/gdal-config  \
+            --program-suffix=-pegasus \
+            --with-grass=/usr/local/grass-6.3.0RC5
+      The versions are:
+            geos 2.2.3
+            gdal 1.5.0
+            
+      To generate the error, on pegasus:
+        cd tests
+        starspan --vector data/vector/starspan_testply.shp \
+                 --raster data/raster/starspan1raster.img \
+                          data/raster/starspan2raster.img \
+                          data/raster/starspan3raster.img \
+                 --csv some_output.csv \
+                 --duplicate_pixel distance direction 90 \
+                 --verbose
+                 
+      The same command runs just fine on my laptop (geos 3.0.0rc4, gdal 1.4.2),
+      but, not --with-grass was used for the build.
+      Perhaps there is some conflict with libraries at runtime (?).
+      
+       
+        
 2008-04-21
     - New starspan_grass.cc: preliminaries for providing a GRASS interface.
     
