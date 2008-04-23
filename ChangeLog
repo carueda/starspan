@@ -9,9 +9,7 @@ $Id$
         
     - Each command is GRASS-configured individually so it is better dispatched
       in terms of pertinent options. Also, the command can be dispached from
-      the GRASS GUI.
-      TODO: associate type of input map, vector or raster, to enable selection
-      in GRASS GUI.
+      the GRASS GUI, including selection according to input map: vector or raster.
         
         
       NOTE: starspan_dup_pixel() was segfaulting with versions geos 2.2.3 and

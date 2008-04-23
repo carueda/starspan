@@ -161,12 +161,19 @@ static Vector* open_vector(const char* filename) {
     // first, try to open as a GRASS map:
     char *mapset;
     if ( (mapset = G_find_vector2(filename, "") ) != NULL ) {
+        // filename may still end with @mapset, so remove that part:
+        char name[2048];
+        strcpy(name, filename);
+        char* ptr = strrchr(name, '@'); 
+        if ( ptr ) {
+            *ptr = 0;
+        }
         // get full namespace according to http://gdal.org/ogr/drv_grass.html
         string fn = string(G_gisdbase())
                         + "/" + G_location()
                         + "/" + mapset
                         + "/vector"
-                        + "/" + filename
+                        + "/" + name
                         + "/head";
         
         vect = Vector::open(fn.c_str());
@@ -334,8 +341,10 @@ static int command_report(int argc, char ** argv) {
 	define_cmd_option("report");
     
 	struct Option* opt_vector_input = define_string_option("vector",  "Vector map", NO);
+	opt_vector_input->gisprompt = (char*) "old,vector,vector";
 	struct Option* opt_raster_input = define_string_option("rasters", "Raster map(s)", NO);
     opt_raster_input->multiple = YES;
+    opt_raster_input->gisprompt = (char*) "old,cell,raster";
 
 	if ( call_parser(argc, argv) ) {
 		return EXIT_FAILURE;
