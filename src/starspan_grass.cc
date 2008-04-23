@@ -8,14 +8,12 @@
     This is a GRASS interface to some of the available StarSpan commands.
     In this interface, the command must be the first argument in the invocation
     of the program, eg:
-       starspan csv vector=myvector rasters=myraster output=myoutput.csv
+       starspan cmd=csv vector=myvector rasters=myraster output=myoutput.csv
     
     The dispatching routine, starspan_grass(), prepares the passed arguments so
-    the GRASS library is used on a per command basis.(*) For example, to get
+    the GRASS library is used on a per command basis. For example, to get
     the help message for the "csv" command, the user will type:
        starspan csv help
-    
-    (*)Note: this is preliminary: need to check integration with GRASS GUI.
     
     GRASS datasources are opened by using the corresponding GDAL/OGR drivers,
     that is, not by using the GRASS structures. This is currently the approach
@@ -108,6 +106,12 @@ static void init(const char* cmd) {
 
 
 /////////////////////////////
+// the command
+
+static struct Option *opt_cmd;
+
+
+/////////////////////////////
 // Inputs and general options
 
 static struct Option *opt_mask_input;
@@ -143,7 +147,6 @@ static void process_opt_fields(void) {
             select_fields->clear();
         }
     }
-    return select_fields;
 }
      
 
@@ -202,13 +205,12 @@ static void process_opt_layer_name(void) {
 // gets the list of masks, if any
 static void process_opt_masks(void) {
     mask_filenames = 0;    
-    if ( opt_mask_input->answers ) {
+    if ( opt_mask_input && opt_mask_input->answers ) {
         mask_filenames = new vector<const char*>();
         for ( int n = 0; opt_mask_input->answers[n] != NULL; n++ ) {
             mask_filenames->push_back(opt_mask_input->answers[n]);
         }
     }
-    return mask_filenames;
 }
 
 // sets the list of duplicate_pixel modes
@@ -253,7 +255,11 @@ static int call_parser(int argc, char ** argv) {
     globalOptions.verbose = G_verbose();
     process_opt_fields();
     process_opt_duplicate_pixel();
-    process_opt_masks();    
+    process_opt_masks();
+
+    if ( opt_delimiter && opt_delimiter->answer ) {
+        globalOptions.delimiter = opt_delimiter->answer;
+    }
 
     return 0;
 }
@@ -267,6 +273,21 @@ static Option *define_string_option(const char* key, const char* desc, int requi
 	option->required   = required;
 	option->description= (char*) desc;
     return option;
+}
+
+
+// Defines the command option, which is required and has to be
+// equal to the given value. Note that this option is used to
+// determine which command is to be run, especially when the program is
+// launched from the GRASS GUI.
+static void define_cmd_option(const char* cmd) {
+    static char *answers[] = { (char*) cmd };
+    static char desc[1024];
+    sprintf(desc, "Command, only valid argument: %s", cmd);
+	opt_cmd = define_string_option("cmd",  desc, YES);
+    opt_cmd->answer = (char*) cmd;
+    opt_cmd->options = (char*) cmd;
+    opt_cmd->answers = answers; 
 }
 
 
@@ -310,8 +331,10 @@ static Raster* open_raster(const char* filename) {
 ///////////////////////////////////////////////////////////////////////////////
 // Command: report
 static int command_report(int argc, char ** argv) {
-	opt_vector_input = define_string_option("vector",  "Vector map", NO);
-	opt_raster_input = define_string_option("rasters", "Raster map(s)", NO);
+	define_cmd_option("report");
+    
+	struct Option* opt_vector_input = define_string_option("vector",  "Vector map", NO);
+	struct Option* opt_raster_input = define_string_option("rasters", "Raster map(s)", NO);
     opt_raster_input->multiple = YES;
 
 	if ( call_parser(argc, argv) ) {
@@ -345,6 +368,8 @@ static int command_report(int argc, char ** argv) {
 ///////////////////////////////////////////////////////////////////////////////
 // Command: csv
 static int command_csv(int argc, char ** argv) {
+    define_cmd_option("csv");
+    
 	struct Option *opt_vector_input = define_string_option("vector",  "Vector map", YES);
     
 	struct Option *opt_raster_input = define_string_option("rasters", "Raster map(s)", YES);
@@ -445,7 +470,10 @@ int starspan_grass(int argc, char ** argv) {
     if ( strcmp("help", cmd) == 0 ) {
         fprintf(stdout, 
             " %s\n"
-            " USAGE:  starspan <command> ...arguments...\n"
+            " USAGE:\n"
+            "   starspan help\n"
+            "   starspan version\n"
+            "   starspan <command> ...arguments...\n"
             " The following commands are implemented: \n"
             "    report ...\n"
             "    csv ...\n"
@@ -462,13 +490,18 @@ int starspan_grass(int argc, char ** argv) {
         );
         exit(0);
     }
-    else if ( strcmp("report", cmd) == 0 
-    ||        strcmp("csv", cmd) == 0 
-    ) {
-        // OK.
+    else if ( strcmp("version", cmd) == 0 || strcmp("--version", cmd) == 0 ) {
+        fprintf(stdout, "starspan %s\n", STARSPAN_VERSION);
+        exit(0);
+    }
+    else if ( strcmp("report", cmd) == 0 || strcmp("cmd=report", cmd) == 0 ) {
+        cmd = "report";
+    }
+    else if ( strcmp("csv", cmd) == 0 || strcmp("cmd=csv", cmd) == 0 ) {
+        cmd = "csv";
     }
     else {
-        G_fatal_error(_("Command <%s> not recognized/implemented"), cmd);
+        G_fatal_error(_("%s: command not recognized/implemented"), cmd);
     }
 
     // command is OK.
@@ -480,9 +513,10 @@ int starspan_grass(int argc, char ** argv) {
     shift_args(&argc, argv);
 
     init(cmd);
-    char prgname[256];
-    sprintf(prgname, "starspan %s", cmd);
-    argv[0] = prgname;
+    //char prgname[256];
+    //sprintf(prgname, "starspan %s", cmd);
+    //argv[0] = prgname;
+    argv[0] = (char*) "starspan";
     
                    
     int res = 0;
