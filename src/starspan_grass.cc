@@ -74,7 +74,7 @@ bool use_grass(int *argc, char ** argv) {
 }
 
 
-// utility to ge the module description for wither the main program
+// utility to get the module description for either the main program
 // or a specific command.
 static char* get_module_description(const char* cmd) {
     static char module_description[5*1024];
@@ -107,28 +107,45 @@ static void init(const char* cmd) {
 }
 
 
+/////////////////////////////
+// Inputs and general options
 
-static Option *define_string_option(const char* key, const char* desc, int required) {
-	Option *option = G_define_option() ;
-	option->key        = (char*) key;
-	option->type       = TYPE_STRING;
-	option->required   = required;
-	option->description= (char*) desc;
-    return option;
-}
+static struct Option *opt_mask_input;
+static struct Option *opt_fields;
+static struct Option *opt_duplicate_pixel;
+static struct Option *opt_layer_name;
+static struct Option *opt_delimiter;
 
 
-// Calls G_parser and does general preparations:
-static int call_parser(int argc, char ** argv) {
-	if ( G_parser(argc, argv) ) {
-		return EXIT_FAILURE;
+////////////////////////////////////////////////////
+// Results of processing some of the general options
+static Vector* vect = 0;
+static vector<const char*>* select_fields = 0;
+static int vector_layernum = 0;
+static vector<const char*>* mask_filenames = 0;    
+
+
+// gets the list of selected fields, if any
+static void process_opt_fields(void) {
+    select_fields = 0;
+    if ( opt_fields && opt_fields->answers ) {
+        select_fields = new vector<const char*>();
+        // the special name "none" will indicate not fields at all:
+        bool none = false;
+        for ( int n = 0; opt_fields->answers[n] != NULL; n++ ) {
+            const char* str = opt_fields->answers[n];
+            none = none || 0==strcmp(str, "none");
+            if ( !none ) {
+                select_fields->push_back(str);
+            }
+        }
+        if ( none ) {
+            select_fields->clear();
+        }
     }
-    
-    globalOptions.verbose = G_verbose();
-    
-    return 0;
+    return select_fields;
 }
-
+     
 
 /** Opens a vector file if name given */
 static Vector* open_vector(const char* filename) {
@@ -163,6 +180,97 @@ static Vector* open_vector(const char* filename) {
 }
 
 
+// 
+// get the layer number for the given layer name 
+// if not specified or there is only a single layer, use the first layer 
+//
+static void process_opt_layer_name(void) {
+    vector_layernum = 0;
+    if ( vect && opt_layer_name && opt_layer_name->answer && vect->getLayerCount() != 1 ) { 
+        for ( unsigned i = 0; i < vect->getLayerCount(); i++ ) {    
+            if ( 0 == strcmp(opt_layer_name->answer, 
+                     vect->getLayer(i)->GetLayerDefn()->GetName()) ) {
+                vector_layernum = i;
+                break;
+            }
+        }
+    }
+}
+
+
+
+// gets the list of masks, if any
+static void process_opt_masks(void) {
+    mask_filenames = 0;    
+    if ( opt_mask_input->answers ) {
+        mask_filenames = new vector<const char*>();
+        for ( int n = 0; opt_mask_input->answers[n] != NULL; n++ ) {
+            mask_filenames->push_back(opt_mask_input->answers[n]);
+        }
+    }
+    return mask_filenames;
+}
+
+// sets the list of duplicate_pixel modes
+static void process_opt_duplicate_pixel(void) {
+    if ( !opt_duplicate_pixel || !opt_duplicate_pixel->answers ) {
+        return;
+    }
+    for ( int n = 0; opt_duplicate_pixel->answers[n] != NULL; n++ ) {
+        char* mode = opt_duplicate_pixel->answers[n];
+        char dup_code[256];
+        float dup_arg = -1;
+        sscanf(mode, "%[^ ] %f", dup_code, &dup_arg);
+        if ( 0 == strcmp(dup_code, "direction") ) {
+            if ( dup_arg < 0 ) {
+                G_fatal_error("duplicate_pixel: direction: missing angle parameter");
+            }
+            globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, dup_arg));
+        }
+        else if ( 0 == strcmp(dup_code, "distance") ) {
+            // OK.
+            globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code));
+        }
+        else {
+            G_fatal_error("duplicate_pixel: unrecognized mode: %s\n", dup_code);
+        }
+    }
+    if ( globalOptions.verbose ) {
+        cout<< "duplicate_pixel modes given:" << endl;
+        for (int k = 0, count = globalOptions.dupPixelModes.size(); k < count; k++ ) {
+            cout<< "\t" <<globalOptions.dupPixelModes[k].toString() << endl;
+        }
+    }
+}
+
+
+// Calls G_parser and processes some general options:
+static int call_parser(int argc, char ** argv) {
+	if ( G_parser(argc, argv) ) {
+		return EXIT_FAILURE;
+    }
+    
+    globalOptions.verbose = G_verbose();
+    process_opt_fields();
+    process_opt_duplicate_pixel();
+    process_opt_masks();    
+
+    return 0;
+}
+
+
+
+static Option *define_string_option(const char* key, const char* desc, int required) {
+	Option *option = G_define_option() ;
+	option->key        = (char*) key;
+	option->type       = TYPE_STRING;
+	option->required   = required;
+	option->description= (char*) desc;
+    return option;
+}
+
+
+
 /** Opens a raster file if name given */
 static Raster* open_raster(const char* filename) {
     if ( !filename ) {
@@ -195,100 +303,15 @@ static Raster* open_raster(const char* filename) {
 }
 
 
-// 
-// get the layer number for the given layer name 
-// if not specified or there is only a single layer, use the first layer 
-//
-static int process_opt_layer(Vector* vect, const char* vector_layername) {
-    int vector_layernum = 0;
-    if ( vector_layername && vect->getLayerCount() != 1 ) { 
-        for ( unsigned i = 0; i < vect->getLayerCount(); i++ ) {    
-            if ( 0 == strcmp(vector_layername, 
-                     vect->getLayer(i)->GetLayerDefn()->GetName()) ) {
-                vector_layernum = i;
-                break;
-            }
-        }
-    }
-    else {
-           vector_layernum = 0; 
-    }
-    return vector_layernum;
-}
 
 
 
-// gets the list of masks, if any
-static vector<const char*>* process_opt_masks(Option* opt_mask_input) {
-    vector<const char*>* mask_filenames = 0;    
-    if ( opt_mask_input->answers ) {
-        mask_filenames = new vector<const char*>();
-        for ( int n = 0; opt_mask_input->answers[n] != NULL; n++ ) {
-            mask_filenames->push_back(opt_mask_input->answers[n]);
-        }
-    }
-    return mask_filenames;
-}
-
-
-// gets the list of selected fields, if any
-static vector<const char*>* process_opt_fields(Option* opt_fields) {
-    vector<const char*>* select_fields = NULL;
-    if ( opt_fields->answer ) {
-        select_fields = new vector<const char*>();
-        // the special name "none" will indicate not fields at all:
-        bool none = false;
-        for ( int n = 0; opt_fields->answers[n] != NULL; n++ ) {
-            const char* str = opt_fields->answers[n];
-            none = none || 0==strcmp(str, "none");
-            if ( !none ) {
-                select_fields->push_back(str);
-            }
-        }
-        if ( none ) {
-            select_fields->clear();
-        }
-    }
-    return select_fields;
-}
-                
-// sets the list of duplicate_pixel modes
-static void process_opt_duplicate_pixel(Option *opt_duplicate_pixel) {
-    if ( !opt_duplicate_pixel->answers ) {
-        return;
-    }
-    for ( int n = 0; opt_duplicate_pixel->answers[n] != NULL; n++ ) {
-        char* mode = opt_duplicate_pixel->answers[n];
-        char dup_code[256];
-        float dup_arg = -1;
-        sscanf(mode, "%[^ ] %f", dup_code, &dup_arg);
-        if ( 0 == strcmp(dup_code, "direction") ) {
-            if ( dup_arg < 0 ) {
-                G_fatal_error("duplicate_pixel: direction: missing angle parameter");
-            }
-            globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, dup_arg));
-        }
-        else if ( 0 == strcmp(dup_code, "distance") ) {
-            // OK.
-            globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code));
-        }
-        else {
-            G_fatal_error("duplicate_pixel: unrecognized mode: %s\n", dup_code);
-        }
-    }
-    if ( globalOptions.verbose ) {
-        cout<< "duplicate_pixel modes given:" << endl;
-        for (int k = 0, count = globalOptions.dupPixelModes.size(); k < count; k++ ) {
-            cout<< "\t" <<globalOptions.dupPixelModes[k].toString() << endl;
-        }
-    }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Command: report
 static int command_report(int argc, char ** argv) {
-	struct Option *opt_vector_input = define_string_option("vector",  "Vector map", NO);
-	struct Option *opt_raster_input = define_string_option("rasters", "Raster map(s)", NO);
+	opt_vector_input = define_string_option("vector",  "Vector map", NO);
+	opt_raster_input = define_string_option("rasters", "Raster map(s)", NO);
     opt_raster_input->multiple = YES;
 
 	if ( call_parser(argc, argv) ) {
@@ -327,18 +350,20 @@ static int command_csv(int argc, char ** argv) {
 	struct Option *opt_raster_input = define_string_option("rasters", "Raster map(s)", YES);
     opt_raster_input->multiple = YES;
     
-	struct Option *opt_mask_input = define_string_option("masks", "Raster mask(s)", NO);
+	opt_mask_input = define_string_option("masks", "Raster mask(s)", NO);
     opt_mask_input->multiple = YES;
     
     struct Option *opt_output = define_string_option("output",  "Output filename", YES);
     
-    struct Option *opt_fields = define_string_option("fields",  "Desired fields", NO);
+    opt_fields = define_string_option("fields",  "Desired fields", NO);
     opt_fields->multiple = YES;
     
-    struct Option *opt_duplicate_pixel = define_string_option("duplicate_pixel",  "Duplicate pixel modes", NO);
+    opt_duplicate_pixel = define_string_option("duplicate_pixel",  "Duplicate pixel modes", NO);
     opt_duplicate_pixel->multiple = YES;
     
-    struct Option *opt_layer_name = define_string_option("layer",  "Layer within vector dataset", NO);
+    opt_layer_name = define_string_option("layer",  "Layer within vector dataset", NO);
+    
+    opt_delimiter = define_string_option("delimiter",  "Separator", NO);
 
     
 	if ( call_parser(argc, argv) ) {
@@ -352,13 +377,15 @@ static int command_csv(int argc, char ** argv) {
     if ( !vect ) {
         return EXIT_FAILURE;
     }
+    
+    process_opt_layer_name();
+
 
     vector<const char*> raster_filenames;    
     for ( int n = 0; opt_raster_input->answers[n] != NULL; n++ ) {
         raster_filenames.push_back(opt_raster_input->answers[n]);
     }
 
-    vector<const char*>* mask_filenames = process_opt_masks(opt_mask_input);    
     if ( mask_filenames ) {
         if ( raster_filenames.size() != mask_filenames->size() ) {
             G_fatal_error(_("Different number of rasters and masks"));
@@ -373,11 +400,6 @@ static int command_csv(int argc, char ** argv) {
         }
     }
 
-    vector<const char*>* select_fields = process_opt_fields(opt_fields);
-    
-    process_opt_duplicate_pixel(opt_duplicate_pixel);
-    
-    int vector_layernum = process_opt_layer(vect, opt_layer_name->answer);
 
     int res;
     if ( globalOptions.dupPixelModes.size() > 0 ) {
