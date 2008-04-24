@@ -476,7 +476,7 @@ static int command_csv(int argc, char ** argv) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// main dispatcher
+// main dispatcher of the GRASS interface
 int starspan_grass(int argc, char ** argv) {
     const char* cmd = argc == 1 ? "help" : argv[1];
     
@@ -494,7 +494,10 @@ int starspan_grass(int argc, char ** argv) {
             "For more details about a command, type:\n"
             "    starspan <command> help\n"
             "\n"
-            "To run the standard (non-GRASS) interface:\n"
+            "To run a command using the GRASS GUI, type:\n"
+            "    starspan <command>\n"
+            "\n"
+            "To run the standard (non-GRASS) StarSpan interface:\n"
             "    starspan S ...arguments...\n"
             "(or just run starspan outside of GRASS)\n"
             "\n"
