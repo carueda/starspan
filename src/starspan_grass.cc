@@ -380,12 +380,15 @@ static int command_csv(int argc, char ** argv) {
     define_cmd_option("csv");
     
 	struct Option *opt_vector_input = define_string_option("vector",  "Vector map", YES);
+	opt_vector_input->gisprompt = (char*) "old,vector,vector";
     
 	struct Option *opt_raster_input = define_string_option("rasters", "Raster map(s)", YES);
     opt_raster_input->multiple = YES;
+    opt_raster_input->gisprompt = (char*) "old,cell,raster";
     
 	opt_mask_input = define_string_option("masks", "Raster mask(s)", NO);
     opt_mask_input->multiple = YES;
+    opt_mask_input->gisprompt = (char*) "old,cell,raster";
     
     struct Option *opt_output = define_string_option("output",  "Output filename", YES);
     
@@ -398,6 +401,7 @@ static int command_csv(int argc, char ** argv) {
     opt_layer_name = define_string_option("layer",  "Layer within vector dataset", NO);
     
     opt_delimiter = define_string_option("delimiter",  "Separator", NO);
+    opt_delimiter->answer = (char*) ",";
 
     
 	if ( call_parser(argc, argv) ) {
