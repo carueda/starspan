@@ -2,6 +2,17 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-04-24
+    - GRASS interface documentation updated in web site: 
+        http://starspan.casil.ucdavis.edu/doku/doku.php?id=grass
+
+    - Rasterization process documented in: 
+        http://starspan.casil.ucdavis.edu/doku/doku.php?id=rasterization
+      --rasterize option still internal for testing purposes.
+      Also added rasterize command to GRASS interface to facilitate this
+      testing, although the GDAL GRASS driver cannot create new GRASS rasters;
+      using ENVI for output rasters for now.
+
 2008-04-22
     - Implemented grass interface commands:
         report

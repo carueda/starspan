@@ -476,6 +476,68 @@ static int command_csv(int argc, char ** argv) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Command: rasterize  (note: preliminary for basic testing)
+static int command_rasterize(int argc, char ** argv) {
+    define_cmd_option("rasterize");
+    
+	struct Option *opt_vector_input = define_string_option("vector",  "Vector map", YES);
+	opt_vector_input->gisprompt = (char*) "old,vector,vector";
+    
+	struct Option *opt_raster_input = define_string_option("raster", "Raster map", YES);
+    opt_raster_input->gisprompt = (char*) "old,cell,raster";
+    
+    struct Option *opt_output = define_string_option("output",  "Output raster", YES);
+    
+    opt_layer_name = define_string_option("layer",  "Layer within vector dataset", NO);
+    
+	if ( call_parser(argc, argv) ) {
+		return EXIT_FAILURE;
+    }
+    
+	Vector* vect = open_vector(opt_vector_input->answer);
+    if ( !vect ) {
+        return EXIT_FAILURE;
+    }
+    
+    process_opt_layer_name();
+
+    Raster* rast = open_raster(opt_raster_input->answer);
+    if ( !rast ) {
+        delete vect;
+        return EXIT_FAILURE;
+    }
+    
+    RasterizeParams rasterizeParams;
+    rasterizeParams.outRaster_filename = opt_output->answer;
+    rasterizeParams.fillNoData = true;
+    
+    GDALDataset* ds = rast->getDataset();
+    rasterizeParams.projection = ds->GetProjectionRef();
+    ds->GetGeoTransform(rasterizeParams.geoTransform);
+    Observer* obs = starspan_getRasterizeObserver(&rasterizeParams);
+    if ( obs ) {
+		Traverser tr;
+		tr.setVerbose(globalOptions.verbose);
+        tr.setVector(vect);
+        tr.setLayerNum(vector_layernum);
+		tr.addRaster(rast);
+        tr.addObserver(obs);
+        
+        tr.traverse();
+        
+        tr.releaseObservers();
+    }
+    
+    delete vect;
+    delete rast;
+    
+    return 0;
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 // main dispatcher of the GRASS interface
 int starspan_grass(int argc, char ** argv) {
     const char* cmd = argc == 1 ? "help" : argv[1];
@@ -516,6 +578,9 @@ int starspan_grass(int argc, char ** argv) {
     else if ( strcmp("csv", cmd) == 0 || strcmp("cmd=csv", cmd) == 0 ) {
         cmd = "csv";
     }
+    else if ( strcmp("rasterize", cmd) == 0 || strcmp("cmd=rasterize", cmd) == 0 ) {
+        cmd = "rasterize";
+    }
     else {
         G_fatal_error(_("%s: command not recognized/implemented"), cmd);
     }
@@ -541,6 +606,9 @@ int starspan_grass(int argc, char ** argv) {
     }
     else if ( strcmp("csv", cmd) == 0 ) {
         res = command_csv(argc, argv);
+    }
+    else if ( strcmp("rasterize", cmd) == 0 ) {
+        res = command_rasterize(argc, argv);
     }
     
 	Vector::end();
