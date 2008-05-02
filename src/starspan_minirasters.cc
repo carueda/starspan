@@ -316,84 +316,36 @@ class MiniRasterStripObserver : public MiniRasterObserver {
     
     OGRLayer* inLayer;  // layer being traversed;
     
-    const char* shpfilename;
     Vector* outVector;
     OGRLayer* outLayer;
 	
 public:
 	MiniRasterStripObserver(Traverser& tr, OGRLayer* layer, Raster* rast, 
-                            const char* bfilename, const char* bshpfilename)
+                            const char* bfilename,
+                            Vector* boutVector,
+                            OGRLayer* boutLayer
+    )
 	: MiniRasterObserver(tr, layer, rast, "dummy", 0)
 	{
 		basefilename = bfilename;
-        shpfilename = bshpfilename;
+        
+        outVector = boutVector;
+        outLayer = boutLayer;
+        
 		prefix = basefilename;
 		prefix += "_TMP_PRFX_";
 		mrbi_list = new vector<MRBasicInfo>();
-        
-        outVector = NULL;
 	}
     
     
     /**
-     * Takes a handle on the layer being traversed
-     * and, if indicated, creates the output shapefile with corresponding 
-     * field definitions.
+     * Takes a handle on the layer being traversed.
      */
     void init(GlobalInfo& info) {
         MiniRasterObserver::init(info);
         
         // remember layer being traversed:
         inLayer = info.layer;
-
-        if ( shpfilename == NULL ) {
-            return;
-        }
-        
-		if ( globalOptions.verbose ) {
-			cout<< "mini_raster_strip: starting creation of output vector " <<shpfilename<< " ...\n";
-        }
-
-        outVector = Vector::create(shpfilename); 
-        if ( outVector == NULL ) {
-            // errors should have been written
-            exit(1);  // TODO: the observer interface should allow for early termination
-        }                
-
-        OGRDataSource *poDS = outVector->getDataSource();
-        
-        // get layer definition:
-        OGRFeatureDefn* inDefn = inLayer->GetLayerDefn();
-
-        // create layer in output vector:
-        outLayer = poDS->CreateLayer(
-                "mini_raster_strip", 
-                inLayer->GetSpatialRef(),
-                inDefn->GetGeomType(),
-                NULL
-        );
-        if ( outLayer == NULL ) {
-            delete outVector;
-            outVector = NULL;
-            cerr<< "Layer creation failed.\n";
-            exit(1);  // TODO: the observer interface should allow for early termination
-        }
-        
-        // TODO Add new fields (eg. RID)
-        // ...
-        
-        // create field definitions from originating layer:
-        for( int iAttr = 0; iAttr < inDefn->GetFieldCount(); iAttr++ ) {
-            OGRFieldDefn* inField = inDefn->GetFieldDefn(iAttr);
-            
-            OGRFieldDefn outField(inField->GetNameRef(), inField->GetType());
-            outField.SetWidth(inField->GetWidth());
-            outField.SetPrecision(inField->GetPrecision());
-            if ( outLayer->CreateField(&outField) != OGRERR_NONE ) {
-                cerr<< "Creating Name field failed.\n";
-                exit(1);  // TODO: the observer interface should allow for early termination
-            }
-        }
     }
     
     
@@ -878,7 +830,45 @@ Observer* starspan_getMiniRasterStripObserver(
 		return 0;
 	}
 	Raster* rast = tr.getRaster(0);
-	MiniRasterStripObserver* obs = new MiniRasterStripObserver(tr, layer, rast, filename, shpfilename);
+    
+    Vector* outVector = 0;
+    OGRLayer* outLayer = 0;
+    
+    // <shp>
+    if ( shpfilename ) {
+        if ( globalOptions.verbose ) {
+            cout<< "starspan_getMiniRasterStripObserver: starting creation of output vector " <<shpfilename<< " ...\n";
+        }
+    
+        outVector = Vector::create(shpfilename); 
+        if ( !outVector ) {
+            // errors should have been written
+            return 0;
+        }                
+    
+        // create layer in output vector:
+        outLayer = starspan_createLayer(
+            layer,
+            outVector,
+            "mini_raster_strip"
+        );
+        
+        if ( outLayer == NULL ) {
+            delete outVector;
+            outVector = NULL;
+            return 0;
+        }
+        
+        // TODO Add definition for new fields (eg. RID)
+        // ...
+    }
+    // </shp>
+    
+    
+    
+	MiniRasterStripObserver* obs = new MiniRasterStripObserver(tr, layer, rast, filename, 
+        outVector, outLayer
+    );
 	return obs;
 }
 

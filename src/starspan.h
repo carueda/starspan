@@ -591,5 +591,19 @@ struct RasterizeParams {
 Observer* starspan_getRasterizeObserver(RasterizeParams* rasterizeParams);
 
 
+
+/** 
+ * Creates a layer for a given vector.
+ * It copies the definition of all fields from input layer.
+ *
+ * @return The created layer.
+ */
+OGRLayer* starspan_createLayer(
+    OGRLayer* inLayer,           // source layer
+    Vector* outVector,           // vector where layer will be created
+    const char *outLayerName     // name for created layer
+);
+
+
 #endif
 

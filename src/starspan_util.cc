@@ -231,4 +231,52 @@ GDALDatasetH starspan_subset_raster(
 }
 
 
+/** 
+ * Creates a layer for a given vector.
+ * It copies the definition of all fields from input layer.
+ *
+ * @return The created layer.
+ */
+OGRLayer* starspan_createLayer(
+    OGRLayer* inLayer,           // source layer
+    Vector* outVector,           // vector where layer will be created
+    const char *outLayerName     // name for created layer
+) {
+    if ( globalOptions.verbose ) {
+        cout<< "starspan_createLayer: starting creation of output layer for vector " <<outVector->getName()<< " ...\n";
+    }
+
+    // get datasource to create layer:
+    OGRDataSource *poDS = outVector->getDataSource();
+    
+    // get layer definition from the input layer:
+    OGRFeatureDefn* inDefn = inLayer->GetLayerDefn();
+
+    // create layer in output vector:
+    OGRLayer* outLayer = poDS->CreateLayer(
+            outLayerName, // "mini_raster_strip", 
+            inLayer->GetSpatialRef(),
+            inDefn->GetGeomType(),
+            NULL
+    );
+    if ( !outLayer ) {
+        cerr<< "Layer creation failed.\n";
+        return 0;
+    }
+    
+    // create field definitions from originating layer:
+    for( int iAttr = 0; iAttr < inDefn->GetFieldCount(); iAttr++ ) {
+        OGRFieldDefn* inField = inDefn->GetFieldDefn(iAttr);
+        
+        OGRFieldDefn outField(inField->GetNameRef(), inField->GetType());
+        outField.SetWidth(inField->GetWidth());
+        outField.SetPrecision(inField->GetPrecision());
+        if ( outLayer->CreateField(&outField) != OGRERR_NONE ) {
+            cerr<< "Creation of field failed: " <<inField->GetNameRef()<< "\n";
+            return 0;
+        }
+    }
+    
+    return outLayer;
+}
 

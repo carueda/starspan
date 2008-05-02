@@ -2,6 +2,10 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-05-01
+    - Refactoring miniraster strip creation to allow duplicate pixel handling
+    
+    
 2008-04-24
     - GRASS interface documentation updated in web site: 
         http://starspan.casil.ucdavis.edu/doku/doku.php?id=grass
