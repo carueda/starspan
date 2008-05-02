@@ -21,36 +21,12 @@
 
 using namespace std;
 
-///////////////////////////////////////////////////
-// mini raster basic information; A list of these elements
-// is gathered by the main miniraster generator and then used by
-// the strip generator to properly locate the minirasters within the strip.
-//
-struct MRBasicInfo {
-	// corresponding FID from which the miniraster was extracted
-	long FID;
-	
-	// dimensions of this miniraster
-	int width;
-	int height;
-    
-    // row to locate this miniraster in strip:
-    int mrs_row;
-	
-	MRBasicInfo(long FID, int width, int height, int mrs_row) : 
-		FID(FID), width(width), height(height), mrs_row(mrs_row)
-	{}
-};
-
 
 /**
   * Creates a miniraster for each traversed feature.
   */
 class MiniRasterObserver : public Observer {
 public:
-	Traverser& tr;
-	OGRLayer* layer;
-	Raster& rast;
 	GlobalInfo* global_info;
 	string prefix;
 	const char* pszOutputSRS;
@@ -70,8 +46,8 @@ public:
 	/**
 	  * Creates the observer for this operation. 
 	  */
-	MiniRasterObserver(Traverser& tr, OGRLayer* layer, Raster* rast, const char* aprefix, const char* pszOutputSRS)
-	: tr(tr), layer(layer), rast(*rast), prefix(aprefix), pszOutputSRS(pszOutputSRS)
+	MiniRasterObserver(const char* aprefix, const char* pszOutputSRS)
+	: prefix(aprefix), pszOutputSRS(pszOutputSRS)
 	{
 		global_info = 0;
 		hOutDS = 0;
@@ -86,7 +62,8 @@ public:
 	~MiniRasterObserver() {
 		end();
 	}
-	
+    
+    
 	/**
 	  * Nothing done in this class.
 	  */
@@ -159,7 +136,7 @@ public:
         OGRFeature* feature = intersInfo.feature;
         OGRGeometry* intersection_geometry = intersInfo.intersection_geometry;
         
-		if ( tr.getPixelSetSize() == 0 )
+		if ( intersInfo.trv->getPixelSetSize() == 0 )
 			return;
 		
         
@@ -216,9 +193,10 @@ public:
 			}
 		}
         
-		
+        Raster* rast = intersInfo.trv->getRaster(0);
+        
 		GDALDatasetH hOutDS = starspan_subset_raster(
-			rast.getDataset(),
+			rast->getDataset(),
 			mini_col0, mini_row0, mini_width, mini_height,
 			mini_filename.c_str(),
 			pszOutputSRS,
@@ -237,7 +215,7 @@ public:
 			int num_points = 0;			
 			for ( int row = mini_row0; row <= mini_row1; row++ ) {
 				for ( int col = mini_col0; col <= mini_col1 ; col++ ) {
-					if ( tr.pixelVisited(col, row) ) {
+					if ( intersInfo.trv->pixelVisited(col, row) ) {
 						num_points++;
 					}
 					else {   // nullify:
@@ -263,7 +241,7 @@ public:
 		}
 
 		if ( mrbi_list ) {
-			mrbi_list->push_back(MRBasicInfo(FID, mini_width, mini_height, next_row));
+			mrbi_list->push_back(MRBasicInfo(FID, mini_filename, mini_width, mini_height, next_row));
             next_row += mini_height + globalOptions.mini_raster_separation;
 		}
 		
@@ -274,29 +252,10 @@ public:
 
 
 Observer* starspan_getMiniRasterObserver(
-	Traverser& tr,
 	const char* prefix,
 	const char* pszOutputSRS 
 ) {	
-	if ( !tr.getVector() ) {
-		cerr<< "vector datasource expected\n";
-		return 0;
-	}
-
-	int layernum = tr.getLayerNum();
-	OGRLayer* layer = tr.getVector()->getLayer(layernum);
-	if ( !layer ) {
-		cerr<< "warning: No layer 0 found\n";
-		return 0;
-	}
-
-	if ( tr.getNumRasters() == 0 ) {
-		cerr<< "raster expected\n";
-		return 0;
-	}
-	Raster* rast = tr.getRaster(0);
-
-	return new MiniRasterObserver(tr, layer, rast, prefix, pszOutputSRS);
+	return new MiniRasterObserver(prefix, pszOutputSRS);
 }
 
 
@@ -316,27 +275,77 @@ class MiniRasterStripObserver : public MiniRasterObserver {
     
     OGRLayer* inLayer;  // layer being traversed;
     
+    // set when output vector should be created:
     Vector* outVector;
     OGRLayer* outLayer;
+    bool ownOutVector;   // outVector and outLayer are mine?
+    
+    // updated in intersectionEnd; also used in end()
+    Raster* rast;
+    
+    // should we create strip at end of traversal?  true by default
+    bool createStrip;    
+    
+    // is mrbi_list mine?  true by default
+    bool ownMrbiList;
 	
 public:
-	MiniRasterStripObserver(Traverser& tr, OGRLayer* layer, Raster* rast, 
-                            const char* bfilename,
-                            Vector* boutVector,
-                            OGRLayer* boutLayer
-    )
-	: MiniRasterObserver(tr, layer, rast, "dummy", 0)
+	MiniRasterStripObserver(const char* bfilename, const char* prefix)
+	: MiniRasterObserver(prefix, 0),
+      basefilename(bfilename), inLayer(0), 
+      outVector(0), outLayer(0), 
+      ownOutVector(true), // although there is no outVector, actually
+      createStrip(true)
 	{
-		basefilename = bfilename;
-        
-        outVector = boutVector;
-        outLayer = boutLayer;
-        
-		prefix = basefilename;
-		prefix += "_TMP_PRFX_";
 		mrbi_list = new vector<MRBasicInfo>();
+        ownMrbiList = true;
 	}
     
+    
+    /**
+     * Sets the createStrip flag. By default true.
+     * If this flag is true, then end() will call starspan_create_strip().
+     */
+    void setCreateStrip(bool b) {
+        createStrip = b;
+    }
+    
+    /**
+     * Sets the list to add MRBasicInfo elements in, but its ownership remains the caller's
+     */
+    void setMrbiList(vector<MRBasicInfo>* mrbiList) {
+        if ( ownMrbiList && this->mrbi_list ) {
+            // release previous object:
+            delete this->mrbi_list;
+        }
+        this->mrbi_list = mrbiList;
+        ownMrbiList = false;
+    }
+    
+    /**
+     * Sets the output vector/layer but its ownership remains the caller's
+     */
+    void setOutVector(Vector* vtr, OGRLayer* lyr) {
+        if ( ownOutVector && this->outVector) {
+            // release previous object:
+            delete this->outVector;
+        }
+        this->outVector = vtr;
+        ownOutVector = false;
+    }
+    
+    /**
+     * Sets the output vector/layer including its ownership.
+     */
+    void setOutVectorDirectly(Vector* vtr, OGRLayer* lyr) {
+        if ( ownOutVector && this->outVector) {
+            // release previous object:
+            delete this->outVector;
+        }
+        this->outVector = vtr;
+        this->outLayer = lyr;
+        ownOutVector = true;
+    }
     
     /**
      * Takes a handle on the layer being traversed.
@@ -356,18 +365,21 @@ public:
 	virtual void intersectionEnd(IntersectionInfo& intersInfo) {
         MiniRasterObserver::intersectionEnd(intersInfo);
 
+        // update rast
+        rast = intersInfo.trv->getRaster(0);
+
+		if ( !outLayer ) {
+			return;  // not output layer under creation
+        }
+        
+		if (intersInfo.trv->getPixelSetSize() == 0 ) {
+			return;   // no pixels were actually intersected
+        }
+        
         OGRFeature* feature = intersInfo.feature;
         OGRGeometry* geometryToIntersect = intersInfo.geometryToIntersect;
         OGRGeometry* intersection_geometry = intersInfo.intersection_geometry;
 
-		if ( outVector == 0 ) {
-			return;  // not output vector creation
-        }
-        
-		if ( tr.getPixelSetSize() == 0 ) {
-			return;   // no pixels were actually intersected
-        }
-        
         // create feature in output vector:
         OGRFeature *outFeature = OGRFeature::CreateFeature(outLayer->GetLayerDefn());
         
@@ -388,7 +400,7 @@ public:
         double offsetY = 0;
         
         double pix_x_size, pix_y_size;
-        rast.getPixelSize(&pix_x_size, &pix_y_size);
+        rast->getPixelSize(&pix_x_size, &pix_y_size);
         
         // Associate the required geometry.
         // This will depend on what geometry was actually used for interesection:
@@ -455,362 +467,30 @@ public:
     }
 
 	/**
-	  * calls create_strip()
+	  * If createStrip is true, calls starspan_create_strip() and releases 
+      * mrbi_list.
+      * Then releases outVector if there is one and we own it.
 	  */
 	virtual void end() {
-		if ( mrbi_list ) {
-			create_strip();
+		if ( createStrip && mrbi_list ) {
+            starspan_create_strip(
+                rast,
+                prefix,
+                mrbi_list,
+                basefilename
+            );
 			delete mrbi_list;
 			mrbi_list = 0;
 		}
-	}
-	  
-	/**
-	  * Creates the output strips according to the minirasters registered
-      * in list mrbi_list.
-	  */
-	void create_strip() {
-		if ( globalOptions.verbose ) {
-			cout<< "Creating miniraster strip...\n";
-        }
-
-        ///////////////////////
-        // get ENVI driver
-		const char * const pszFormat = "ENVI";
-		GDALDriver* hDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
-		if( hDriver == NULL ) {
-			cerr<< "Couldn't get driver " <<pszFormat<< " to create output rasters.\n";
-			return;
-		}
-		
-        // the number of minirasters:
-		const int num_minis = mrbi_list->size();
-
-        /////////////////////////////////////////////////////////////
-		// the dimensions for output strip images (obtained below):
-		int strip_width = 0;		
-		int strip_height = 0;
-        
-        
-        // separation between minirasters:
-		const int mr_separation = globalOptions.mini_raster_separation;
-        
-        ////////////////////////////////////////////////////////
-		// get dimensions for output strip images:
-        
-        // strip_width will be the maximum miniraster width:
-        // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
-        for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
-            if ( strip_width < mrbi->width ) {
-                strip_width = mrbi->width;
-            }
-            strip_height += mrbi->height;
-        }
-        
-		// add pixels to height according to desired separation between minirasters:
-		strip_height += mr_separation * (num_minis - 1);
-		
-        
-        ///////////////////////
-        // get number off bands
-		int strip_bands;
-		rast.getSize(NULL, NULL, &strip_bands);
-
-		if ( globalOptions.verbose ) {
-			cout<< "strip: width x height x bands: " 
-			    <<strip_width<< " x " <<strip_height<< " x " <<strip_bands<< endl;
-		}
-
-        /////////////////////////////////////////////////////////////////////
-		// allocate transfer buffer with enough space for the longest row	
-		const long doubles = (long)strip_width * strip_bands;
-		if ( globalOptions.verbose ) {
-			cout<< "Allocating " <<doubles<< " doubles for buffer\n";
-		}
-		double* buffer = new double[doubles];
-		if ( !buffer ) {
-			cerr<< " Cannot allocate " <<doubles<< " doubles for buffer\n";
-			return;
-		}
-		
-        //////////////////////////////////////////////
-        // the band types for the strips: 
-		const GDALDataType strip_band_type = rast.getDataset()->GetRasterBand(1)->GetRasterDataType();
-		const GDALDataType fid_band_type = GDT_Int32; 
-		const GDALDataType loc_band_type = GDT_Float32; 
-
-        
-		////////////////////////////////////////////////////////////////
-		// create output rasters
-        ///////////////////////////////////////////////////////////////
-
-		char **papszOptions = NULL;
-		
-        /////////////////////////////////////////////////////////////////////
-		// create strip image:
-		string strip_filename = basefilename + "_mr.img";
-		GDALDataset* strip_ds = hDriver->Create(
-			strip_filename.c_str(), strip_width, strip_height, strip_bands, 
-			strip_band_type, 
-			papszOptions 
-		);
-		if ( !strip_ds ) {
-			delete buffer;
-			cerr<< "Couldn't create " <<strip_filename<< endl;
-			return;
-		}
-		// fill with globalOptions.nodata
-		for ( int k = 0; k < strip_bands; k++ ) {
-			strip_ds->GetRasterBand(k+1)->Fill(globalOptions.nodata);
-		}
-		
-        /////////////////////////////////////////////////////////////////////
-		// create FID 1-band image:
-		string fid_filename = basefilename + "_mrid.img";
-		GDALDataset* fid_ds = hDriver->Create(
-			fid_filename.c_str(), strip_width, strip_height, 1, 
-			fid_band_type, 
-			papszOptions 
-		);
-		if ( !fid_ds ) {
-			delete strip_ds;
-			hDriver->Delete(strip_filename.c_str());
-			delete buffer;
-			cerr<< "Couldn't create " <<fid_filename<< endl;
-			return;
-		}
-		// fill with -1 as "background" value. 
-		// -1 is chosen as normally FIDs starts from zero.
-		fid_ds->GetRasterBand(1)->Fill(-1);
-		
-        /////////////////////////////////////////////////////////////////////
-		// create 2-band loc image:
-		string loc_filename = basefilename + "_mrloc.glt";
-		GDALDataset* loc_ds = hDriver->Create(
-			loc_filename.c_str(), strip_width, strip_height, 2, 
-			loc_band_type, 
-			papszOptions 
-		);
-		if ( !loc_ds ) {
-			delete fid_ds;
-			hDriver->Delete(fid_filename.c_str());
-			delete strip_ds;
-			hDriver->Delete(strip_filename.c_str());
-			delete buffer;
-			cerr<< "Couldn't create " <<loc_filename<< endl;
-			return;
-		}
-		// fill with 0 as "background" value.
-		// 0 is arbitrarely chosen.
-		loc_ds->GetRasterBand(1)->Fill(0);
-		loc_ds->GetRasterBand(2)->Fill(0);
-		
-        
-		/////////////////////////////////////////////////////////////////////
-		// transfer data, fid, and loc from minirasters to output strips
-        /////////////////////////////////////////////////////////////////////
-        
-		int processed_minirasters = 0;
-        
-        /////////////////////////////////////////////////////////////////////
-        // for each miniraster (according to mrbi_list):
-		for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); 
-		mrbi != mrbi_list->end(); mrbi++, processed_minirasters++ ) {
-        
-            if ( globalOptions.verbose ) {
-				cout<< "  adding miniraster FID=" <<mrbi->FID<< " to strip...\n";
-            }
-
-			// get miniraster filename:
-			string mini_filename = create_filename(prefix, mrbi->FID);
-			
-            ///////////////////////
-			// open miniraster
-			GDALDataset* mini_ds = (GDALDataset*) GDALOpen(mini_filename.c_str(), GA_ReadOnly);
-			if ( !mini_ds ) {
-				cerr<< " Unexpected: couldn't read " <<mini_filename<< endl;
-				hDriver->Delete(mini_filename.c_str());
-				unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
-				continue;
-			}
-            
-            // row to position miniraster in strip:
-            int next_row = mrbi->mrs_row;
-
-            // column to position miniraster in strip:
-            int next_col = 0;
-            
-
-			///////////////////////////////////////////////////////////////
-			// transfer data to image strip (row by row):			
-			for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
-				
-				// read data from raster into buffer
-                // (note: reading is always (0,0)-relative in source miniraster)
-				mini_ds->RasterIO(GF_Read,
-					0,   	                     //nXOff,
-					0 + i,  	                 //nYOff,
-					mini_ds->GetRasterXSize(),   //nXSize,
-					1,                           //nYSize,
-					buffer,                      //pData,
-					mini_ds->GetRasterXSize(),   //nBufXSize,
-					1,                           //nBufYSize,
-					strip_band_type,             //eBufType,
-					strip_bands,                 //nBandCount,
-					NULL,                        //panBandMap,
-					0,                           //nPixelSpace,
-					0,                           //nLineSpace,
-					0                            //nBandSpace
-				);  	
-				
-				// write buffer in strip image
-                // (note: wiritn is (next_col,next_row)-based in destination strip)
-				strip_ds->RasterIO(GF_Write,
-					next_col,                    //nXOff,
-					next_row + i,                //nYOff,
-					mini_ds->GetRasterXSize(),   //nXSize,
-					1,                           //nYSize,
-					buffer,                      //pData,
-					mini_ds->GetRasterXSize(),   //nBufXSize,
-					1,                           //nBufYSize,
-					strip_band_type,             //eBufType,
-					strip_bands,                 //nBandCount,
-					NULL,                        //panBandMap,
-					0,                           //nPixelSpace,
-					0,                           //nLineSpace,
-					0                            //nBandSpace
-				);  	
-			}
-			
-			///////////////////////////////////////////////////////////////
-			// write FID chunck by replication
-			long fid_datum = mrbi->FID;
-            
-			if ( false ) {  
-                // ----- should work but seems to be a RasterIO bug  -----
-                // NOTE: The arguments in the following call need to be reviewed
-                // since I haven't paid much attention to keep it up to date.
-				fid_ds->RasterIO(GF_Write,
-					next_col,                  //nXOff,
-					next_row,                  //nYOff,
-					mini_ds->GetRasterXSize(), //nXSize,
-					mini_ds->GetRasterYSize(), //nYSize,
-					&fid_datum,                //pData,
-					1,                         //nBufXSize,
-					1,                         //nBufYSize,
-					fid_band_type,             //eBufType,
-					1,                         //nBandCount,
-					NULL,                      //panBandMap,
-					0,                         //nPixelSpace,
-					0,                         //nLineSpace,
-					0                          //nBandSpace
-				);
-			}
-			else { 
-               // ------- workaround  -------------
-				// replicate FID in buffer
-				int* fids = (int*) buffer;
-				for ( int j = 0; j < mini_ds->GetRasterXSize(); j++ ) {
-					fids[j] = (int) mrbi->FID;
-				}
-				for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
-					fid_ds->RasterIO(GF_Write,
-						next_col,                   //nXOff,
-						next_row + i,               //nYOff,
-						mini_ds->GetRasterXSize(),  //nXSize,
-						1,                          //nYSize,
-						fids,                       //pData,
-						mini_ds->GetRasterXSize(),  //nBufXSize,
-						1,                          //nBufYSize,
-						fid_band_type,              //eBufType,
-						1,                          //nBandCount,
-						NULL,                       //panBandMap,
-						0,                          //nPixelSpace,
-						0,                          //nLineSpace,
-						0                           //nBandSpace
-					);
-				}
-			}
-			
-			///////////////////////////////////////////////////////////////
-			// write loc data
-			double adfGeoTransform[6];
-			mini_ds->GetGeoTransform(adfGeoTransform);
-			float pix_x_size = (float) adfGeoTransform[1];
-			float pix_y_size = (float) adfGeoTransform[5];
-			float x0 = (float) adfGeoTransform[0];
-			float y0 = (float) adfGeoTransform[3];
-			float xy[2] = { x0, y0 };
-			for ( int i = 0; i < mini_ds->GetRasterYSize(); i++, xy[1] += pix_y_size ) {
-				xy[0] = x0;
-				for ( int j = 0; j < mini_ds->GetRasterXSize(); j++, xy[0] += pix_x_size ) {
-					loc_ds->RasterIO(GF_Write,
-						next_col + j,               //nXOff,
-						next_row + i,               //nYOff,
-						1,                          //nXSize,
-						1,                          //nYSize,
-						xy,                         //pData,
-						1,                          //nBufXSize,
-						1,                          //nBufYSize,
-						loc_band_type,              //eBufType,
-						2,                          //nBandCount,
-						NULL,                       //panBandMap,
-						0,                          //nPixelSpace,
-						0,                          //nLineSpace,
-						0                           //nBandSpace
-					);
-				}
-			}
-			
-			///////////////////////////////////////////////////////////////
-			if ( processed_minirasters == 0 ) { // is this the first miniraster?
-				// set projection for generated strips using the info from
-				// this (arbitrarely chosen) first miniraster:
-				const char* projection = mini_ds->GetProjectionRef();
-				if ( projection && strlen(projection) > 0 ) {
-					strip_ds->SetProjection(projection);
-					fid_ds->  SetProjection(projection);                   
-					loc_ds->  SetProjection(projection);
-				}
-			}
-			
-			///////////////////////////////////////////////////////////////
-			if ( false ) {  
-				// GDAL bug: ENVIDataset::FlushCache is not idempotent
-				// for header file (repeated items would be generated)
-				strip_ds->FlushCache();
-				fid_ds->FlushCache();
-				loc_ds->FlushCache();
-			}
-			else {
-				// workaround: don't call FlushCache; it seems
-				// we don't need these calls anyway.
-			}
-			
-			// close and delete miniraster
-			delete mini_ds;
-			hDriver->Delete(mini_filename.c_str());
-			unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
-		}
-		
-		// close outputs
-		delete strip_ds;
-		delete fid_ds;
-		delete loc_ds;
-        
-        if ( outVector ) {
+        if ( outVector && ownOutVector ) {
             delete outVector;
         }
-		
-		// release buffer
-		delete buffer;
 	}
-	
 };
 
 Observer* starspan_getMiniRasterStripObserver(
 	Traverser& tr,
-	const char* filename,
+	const char* basefilename,
 	const char* shpfilename
 ) {	
 	if ( !tr.getVector() ) {
@@ -821,21 +501,17 @@ Observer* starspan_getMiniRasterStripObserver(
 	int layernum = tr.getLayerNum();
 	OGRLayer* layer = tr.getVector()->getLayer(layernum);
 	if ( !layer ) {
-		cerr<< "warning: No layer 0 found\n";
+		cerr<< "warning: No layer " <<layernum<< " found\n";
 		return 0;
 	}
 
-	if ( tr.getNumRasters() == 0 ) {
-		cerr<< "raster expected\n";
-		return 0;
-	}
-	Raster* rast = tr.getRaster(0);
-    
     Vector* outVector = 0;
     OGRLayer* outLayer = 0;
     
     // <shp>
     if ( shpfilename ) {
+        // prepare outVector and outLayer:
+        
         if ( globalOptions.verbose ) {
             cout<< "starspan_getMiniRasterStripObserver: starting creation of output vector " <<shpfilename<< " ...\n";
         }
@@ -866,12 +542,52 @@ Observer* starspan_getMiniRasterStripObserver(
     
     
     
-	MiniRasterStripObserver* obs = new MiniRasterStripObserver(tr, layer, rast, filename, 
-        outVector, outLayer
-    );
+    string prefix = basefilename;
+    prefix += "_TMP_PRFX_";
+    
+	MiniRasterStripObserver* obs = new MiniRasterStripObserver(basefilename, prefix.c_str());
+    obs->setOutVectorDirectly(outVector, outLayer);
+    
 	return obs;
 }
 
+
+
+
+/**
+ * Creates a MiniRasterStripObserver with NO ownership over the
+ * given output vector and layer, which could be null.
+ * Ownership won't be taken over the mrbi_list either.
+ * This observer won't call starspan_create_strip() at the end of each 
+ * traversal-- the caller will presumably do that.
+ */
+Observer* starspan_getMiniRasterStripObserver2(
+	const char* basefilename,
+	const char* prefix,
+    Vector* outVector,
+    OGRLayer* outLayer,
+    vector<MRBasicInfo>* mrbi_list
+) {	
+    assert( mrbi_list );
+    
+	MiniRasterStripObserver* obs = new MiniRasterStripObserver(basefilename, prefix);
+    
+    // observer won't own output vector
+    obs->setOutVector(outVector, outLayer); 
+    
+    // observer won't create strips
+    obs->setCreateStrip(false);    
+    
+    // observer won't own the passed list
+    obs->setMrbiList(mrbi_list);
+    
+	return obs;
+}
+
+
+
+////////////////////////////////////////////
+/// geometry translation routines
 
 static void translateLineString(OGRLineString* gg, double deltaX, double deltaY) {
     int numPoints = gg->getNumPoints();

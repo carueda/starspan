@@ -717,6 +717,18 @@ int main(int argc, char ** argv) {
         );
     }
 
+    else if ( mini_raster_strip_filename && globalOptions.dupPixelModes.size() > 0 ) {
+        res = starspan_minirasterstrip2(
+            vect,  
+            raster_filenames,
+            masks,
+            select_fields, 
+            vector_layernum,
+            globalOptions.dupPixelModes,
+            mini_raster_strip_filename, mini_raster_strip_shpfilename
+        );
+    }
+
 	
 	else if ( stats_name ) {
 		//Observer* obs = starspan_getStatsObserver(tr, select_stats, select_fields, stats_name);
@@ -876,16 +888,16 @@ int main(int argc, char ** argv) {
 			Observer* obs = starspan_getMiniRasterStripObserver(
                 tr, mini_raster_strip_filename, mini_raster_strip_shpfilename
             );
-			if ( obs )
+			if ( obs ) {
 				tr.addObserver(obs);
+            }
 		}
 	
 		if ( mini_prefix ) {
-			//OLD: starspan_minirasters(tr, mini_prefix, mini_srs);
-			//NEW:
-			Observer* obs = starspan_getMiniRasterObserver(tr, mini_prefix, mini_srs);
-			if ( obs )
+			Observer* obs = starspan_getMiniRasterObserver(mini_prefix, mini_srs);
+			if ( obs ) {
 				tr.addObserver(obs);
+            }
 		}
 	
 		if ( rasterizeParams.outRaster_filename ) {

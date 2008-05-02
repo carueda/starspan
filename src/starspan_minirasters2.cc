@@ -60,7 +60,7 @@ static void extractFunction(ExtractionItem* item) {
     tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
     
     // - Create and register MiniRasterObserver
-    Observer* obs = starspan_getMiniRasterObserver(tr, mini_prefix, mini_srs);
+    Observer* obs = starspan_getMiniRasterObserver(mini_prefix, mini_srs);
 	tr.addObserver(obs);
 
     // - traverse

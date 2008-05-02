@@ -734,6 +734,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	
     
     IntersectionInfo intersInfo;
+    intersInfo.trv = this;
     intersInfo.feature = feature;
     intersInfo.geometryToIntersect = geometryToIntersect;
     intersInfo.intersection_geometry = intersection_geometry;

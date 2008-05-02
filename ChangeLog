@@ -3,7 +3,17 @@ $Id$
 
 
 2008-05-01
-    - Refactoring miniraster strip creation to allow duplicate pixel handling
+    - Refactoring miniraster strip creation to allow duplicate pixel handling:
+      - MiniRasterObserver: no Traverser as a member any more.
+      - IntersectionInfo: now includes the traverser.
+      - MiniRasterStripObserver: setOutVector() and setOutVectorDirectly()
+        to allow association of output vector either with no ownership or with
+        ownership.
+      - MiniRasterStripObserver.create_strip() removed. Instead, this functionality
+        was moved to new utility starspan_create_strip().
+      - New starspan_getMiniRasterStripObserver2() and starspan_minirasterstrip2()
+        to handle the generation of the strip with duplicate_pixel modes.
+      - TODO: tests!
     
     
 2008-04-24

@@ -304,7 +304,6 @@ Observer* starspan_jtstest(
 /**
   * Creates mini-rasters.
   *
-  * @param tr Data traverser
   * @param prefix
   * @param pszOutputSRS 
   *		see gdal_translate option -a_srs 
@@ -313,7 +312,6 @@ Observer* starspan_jtstest(
   * @return observer to be added to traverser. 
   */
 Observer* starspan_getMiniRasterObserver(
-	Traverser& tr,
 	const char* prefix,
 	const char* pszOutputSRS
 );
@@ -324,14 +322,14 @@ Observer* starspan_getMiniRasterObserver(
   * Creates a strip of mini-rasters.
   *
   * @param tr Data traverser
-  * @param filename  Name used to create output files
+  * @param basefilename  Base name used to create output files
   * @param shpfilename If non-null, name to create output shapefile
   *
   * @return observer to be added to traverser. 
   */
 Observer* starspan_getMiniRasterStripObserver(
 	Traverser& tr,
-	const char* filename,
+	const char* basefilename,
     const char* shpfilename
 );
 
@@ -602,6 +600,74 @@ OGRLayer* starspan_createLayer(
     OGRLayer* inLayer,           // source layer
     Vector* outVector,           // vector where layer will be created
     const char *outLayerName     // name for created layer
+);
+
+
+///////////////////////////////////////////////////
+// mini raster basic information; A list of these elements
+// is gathered by the main miniraster generator and then used by
+// the strip generator to properly locate the minirasters within the strip.
+//
+struct MRBasicInfo {
+	// corresponding FID from which the miniraster was extracted
+	long FID;
+    
+    string mini_filename;
+	
+	// dimensions of this miniraster
+	int width;
+	int height;
+    
+    // row to locate this miniraster in strip:
+    int mrs_row;
+	
+	MRBasicInfo(long FID, string& mini_filename, int width, int height, int mrs_row) : 
+		FID(FID), mini_filename(mini_filename), width(width), height(height), mrs_row(mrs_row)
+	{}
+};
+
+
+/**
+  * Creates output strips according to the minirasters registered
+  * in list mrbi_list.
+  */
+void starspan_create_strip(
+    Raster* rast,
+    string prefix,
+    vector<MRBasicInfo>* mrbi_list,
+    string basefilename
+);
+
+
+/**
+ * Called by starspan_minirasterstrip2()
+ * Creates a MiniRasterStripObserver with NO ownership over the
+ * given output vector and layer, which could be null.
+ * Ownership won't be taken over the mrbi_list either.
+ * This observer won't call starspan_create_strip() at the end of each 
+ * traversal-- the caller will presumably do that.
+ */
+Observer* starspan_getMiniRasterStripObserver2(
+	const char* basefilename,
+    const char* prefix,
+    Vector* outVector,
+    OGRLayer* outLayer,
+    vector<MRBasicInfo>* mrbi_list
+);
+
+
+/**
+ * generates a miniraster strip from multiple rasters with duplicate pixel handling
+ */
+int starspan_minirasterstrip2(
+	Vector* _vect,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames,
+	vector<const char*>* _select_fields,
+	int _layernum,
+	vector<DupPixelMode>& dupPixelModes,
+    const char* basefilename,
+    const char* shpfilename
 );
 
 

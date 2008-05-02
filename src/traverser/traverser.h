@@ -136,10 +136,17 @@ struct GlobalInfo {
 };
 
 
+// forward declaration
+class Traverser;
+
+
 /**
   * Info passed in observer#intersection{Found,End} methods.
   */
 struct IntersectionInfo {
+    /** the traverser sending the notification */
+    Traverser* trv;
+    
     /** Intersecting feature */
     OGRFeature* feature;
     

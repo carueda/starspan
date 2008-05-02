@@ -10,6 +10,7 @@
 #include "jts.h"       
 
 #include <stdlib.h>
+#include <iomanip>
 
 // aux routine for reporting 
 void starspan_report(Traverser& tr) {
@@ -280,3 +281,354 @@ OGRLayer* starspan_createLayer(
     return outLayer;
 }
 
+
+///////////////////////////////////////////////////
+// mini raster strip creation
+
+static string create_filename_hdr(string prefix, long FID) {
+    ostringstream ostr;
+    ostr << prefix << setfill('0') << setw(4) << FID << ".hdr";
+    return ostr.str();
+}
+
+/**
+  * Creates output strips according to the minirasters registered
+  * in list mrbi_list.
+  */
+void starspan_create_strip(
+    Raster* rast,
+    string prefix,
+    vector<MRBasicInfo>* mrbi_list,
+    string basefilename
+) {
+    if ( globalOptions.verbose ) {
+        cout<< "starspan_create_strip: Creating miniraster strip...\n";
+    }
+
+    ///////////////////////
+    // get ENVI driver
+    const char * const pszFormat = "ENVI";
+    GDALDriver* hDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
+    if( hDriver == NULL ) {
+        cerr<< "Couldn't get driver " <<pszFormat<< " to create output rasters.\n";
+        return;
+    }
+    
+    // the number of minirasters:
+    const int num_minis = mrbi_list->size();
+
+    /////////////////////////////////////////////////////////////
+    // the dimensions for output strip images (obtained below):
+    int strip_width = 0;		
+    int strip_height = 0;
+    
+    
+    // separation between minirasters:
+    const int mr_separation = globalOptions.mini_raster_separation;
+    
+    ////////////////////////////////////////////////////////
+    // get dimensions for output strip images:
+    
+    // strip_width will be the maximum miniraster width:
+    // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
+    for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
+        if ( strip_width < mrbi->width ) {
+            strip_width = mrbi->width;
+        }
+        strip_height += mrbi->height;
+    }
+    
+    // add pixels to height according to desired separation between minirasters:
+    strip_height += mr_separation * (num_minis - 1);
+    
+    
+    ///////////////////////
+    // get number off bands
+    int strip_bands;
+    rast->getSize(NULL, NULL, &strip_bands);
+
+    if ( globalOptions.verbose ) {
+        cout<< "strip: width x height x bands: " 
+            <<strip_width<< " x " <<strip_height<< " x " <<strip_bands<< endl;
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // allocate transfer buffer with enough space for the longest row	
+    const long doubles = (long)strip_width * strip_bands;
+    if ( globalOptions.verbose ) {
+        cout<< "Allocating " <<doubles<< " doubles for buffer\n";
+    }
+    double* buffer = new double[doubles];
+    if ( !buffer ) {
+        cerr<< " Cannot allocate " <<doubles<< " doubles for buffer\n";
+        return;
+    }
+    
+    //////////////////////////////////////////////
+    // the band types for the strips: 
+    const GDALDataType strip_band_type = rast->getDataset()->GetRasterBand(1)->GetRasterDataType();
+    const GDALDataType fid_band_type = GDT_Int32; 
+    const GDALDataType loc_band_type = GDT_Float32; 
+
+    
+    ////////////////////////////////////////////////////////////////
+    // create output rasters
+    ///////////////////////////////////////////////////////////////
+
+    char **papszOptions = NULL;
+    
+    /////////////////////////////////////////////////////////////////////
+    // create strip image:
+    string strip_filename = basefilename + "_mr.img";
+    GDALDataset* strip_ds = hDriver->Create(
+        strip_filename.c_str(), strip_width, strip_height, strip_bands, 
+        strip_band_type, 
+        papszOptions 
+    );
+    if ( !strip_ds ) {
+        delete buffer;
+        cerr<< "Couldn't create " <<strip_filename<< endl;
+        return;
+    }
+    // fill with globalOptions.nodata
+    for ( int k = 0; k < strip_bands; k++ ) {
+        strip_ds->GetRasterBand(k+1)->Fill(globalOptions.nodata);
+    }
+    
+    /////////////////////////////////////////////////////////////////////
+    // create FID 1-band image:
+    string fid_filename = basefilename + "_mrid.img";
+    GDALDataset* fid_ds = hDriver->Create(
+        fid_filename.c_str(), strip_width, strip_height, 1, 
+        fid_band_type, 
+        papszOptions 
+    );
+    if ( !fid_ds ) {
+        delete strip_ds;
+        hDriver->Delete(strip_filename.c_str());
+        delete buffer;
+        cerr<< "Couldn't create " <<fid_filename<< endl;
+        return;
+    }
+    // fill with -1 as "background" value. 
+    // -1 is chosen as normally FIDs starts from zero.
+    fid_ds->GetRasterBand(1)->Fill(-1);
+    
+    /////////////////////////////////////////////////////////////////////
+    // create 2-band loc image:
+    string loc_filename = basefilename + "_mrloc.glt";
+    GDALDataset* loc_ds = hDriver->Create(
+        loc_filename.c_str(), strip_width, strip_height, 2, 
+        loc_band_type, 
+        papszOptions 
+    );
+    if ( !loc_ds ) {
+        delete fid_ds;
+        hDriver->Delete(fid_filename.c_str());
+        delete strip_ds;
+        hDriver->Delete(strip_filename.c_str());
+        delete buffer;
+        cerr<< "Couldn't create " <<loc_filename<< endl;
+        return;
+    }
+    // fill with 0 as "background" value.
+    // 0 is arbitrarely chosen.
+    loc_ds->GetRasterBand(1)->Fill(0);
+    loc_ds->GetRasterBand(2)->Fill(0);
+    
+    
+    /////////////////////////////////////////////////////////////////////
+    // transfer data, fid, and loc from minirasters to output strips
+    /////////////////////////////////////////////////////////////////////
+    
+    int processed_minirasters = 0;
+    
+    /////////////////////////////////////////////////////////////////////
+    // for each miniraster (according to mrbi_list):
+    for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); 
+    mrbi != mrbi_list->end(); mrbi++, processed_minirasters++ ) {
+    
+        if ( globalOptions.verbose ) {
+            cout<< "  adding miniraster FID=" <<mrbi->FID<< " to strip...\n";
+        }
+
+        // get miniraster filename:
+        string mini_filename = mrbi->mini_filename; //create_filename(prefix, mrbi->FID);
+        
+        ///////////////////////
+        // open miniraster
+        GDALDataset* mini_ds = (GDALDataset*) GDALOpen(mini_filename.c_str(), GA_ReadOnly);
+        if ( !mini_ds ) {
+            cerr<< " Unexpected: couldn't read " <<mini_filename<< endl;
+            hDriver->Delete(mini_filename.c_str());
+            unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
+            continue;
+        }
+        
+        // row to position miniraster in strip:
+        int next_row = mrbi->mrs_row;
+
+        // column to position miniraster in strip:
+        int next_col = 0;
+        
+
+        ///////////////////////////////////////////////////////////////
+        // transfer data to image strip (row by row):			
+        for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
+            
+            // read data from raster into buffer
+            // (note: reading is always (0,0)-relative in source miniraster)
+            mini_ds->RasterIO(GF_Read,
+                0,   	                     //nXOff,
+                0 + i,  	                 //nYOff,
+                mini_ds->GetRasterXSize(),   //nXSize,
+                1,                           //nYSize,
+                buffer,                      //pData,
+                mini_ds->GetRasterXSize(),   //nBufXSize,
+                1,                           //nBufYSize,
+                strip_band_type,             //eBufType,
+                strip_bands,                 //nBandCount,
+                NULL,                        //panBandMap,
+                0,                           //nPixelSpace,
+                0,                           //nLineSpace,
+                0                            //nBandSpace
+            );  	
+            
+            // write buffer in strip image
+            // (note: wiritn is (next_col,next_row)-based in destination strip)
+            strip_ds->RasterIO(GF_Write,
+                next_col,                    //nXOff,
+                next_row + i,                //nYOff,
+                mini_ds->GetRasterXSize(),   //nXSize,
+                1,                           //nYSize,
+                buffer,                      //pData,
+                mini_ds->GetRasterXSize(),   //nBufXSize,
+                1,                           //nBufYSize,
+                strip_band_type,             //eBufType,
+                strip_bands,                 //nBandCount,
+                NULL,                        //panBandMap,
+                0,                           //nPixelSpace,
+                0,                           //nLineSpace,
+                0                            //nBandSpace
+            );  	
+        }
+        
+        ///////////////////////////////////////////////////////////////
+        // write FID chunck by replication
+        long fid_datum = mrbi->FID;
+        
+        if ( false ) {  
+            // ----- should work but seems to be a RasterIO bug  -----
+            // NOTE: The arguments in the following call need to be reviewed
+            // since I haven't paid much attention to keep it up to date.
+            fid_ds->RasterIO(GF_Write,
+                next_col,                  //nXOff,
+                next_row,                  //nYOff,
+                mini_ds->GetRasterXSize(), //nXSize,
+                mini_ds->GetRasterYSize(), //nYSize,
+                &fid_datum,                //pData,
+                1,                         //nBufXSize,
+                1,                         //nBufYSize,
+                fid_band_type,             //eBufType,
+                1,                         //nBandCount,
+                NULL,                      //panBandMap,
+                0,                         //nPixelSpace,
+                0,                         //nLineSpace,
+                0                          //nBandSpace
+            );
+        }
+        else { 
+           // ------- workaround  -------------
+            // replicate FID in buffer
+            int* fids = (int*) buffer;
+            for ( int j = 0; j < mini_ds->GetRasterXSize(); j++ ) {
+                fids[j] = (int) mrbi->FID;
+            }
+            for ( int i = 0; i < mini_ds->GetRasterYSize(); i++ ) {
+                fid_ds->RasterIO(GF_Write,
+                    next_col,                   //nXOff,
+                    next_row + i,               //nYOff,
+                    mini_ds->GetRasterXSize(),  //nXSize,
+                    1,                          //nYSize,
+                    fids,                       //pData,
+                    mini_ds->GetRasterXSize(),  //nBufXSize,
+                    1,                          //nBufYSize,
+                    fid_band_type,              //eBufType,
+                    1,                          //nBandCount,
+                    NULL,                       //panBandMap,
+                    0,                          //nPixelSpace,
+                    0,                          //nLineSpace,
+                    0                           //nBandSpace
+                );
+            }
+        }
+        
+        ///////////////////////////////////////////////////////////////
+        // write loc data
+        double adfGeoTransform[6];
+        mini_ds->GetGeoTransform(adfGeoTransform);
+        float pix_x_size = (float) adfGeoTransform[1];
+        float pix_y_size = (float) adfGeoTransform[5];
+        float x0 = (float) adfGeoTransform[0];
+        float y0 = (float) adfGeoTransform[3];
+        float xy[2] = { x0, y0 };
+        for ( int i = 0; i < mini_ds->GetRasterYSize(); i++, xy[1] += pix_y_size ) {
+            xy[0] = x0;
+            for ( int j = 0; j < mini_ds->GetRasterXSize(); j++, xy[0] += pix_x_size ) {
+                loc_ds->RasterIO(GF_Write,
+                    next_col + j,               //nXOff,
+                    next_row + i,               //nYOff,
+                    1,                          //nXSize,
+                    1,                          //nYSize,
+                    xy,                         //pData,
+                    1,                          //nBufXSize,
+                    1,                          //nBufYSize,
+                    loc_band_type,              //eBufType,
+                    2,                          //nBandCount,
+                    NULL,                       //panBandMap,
+                    0,                          //nPixelSpace,
+                    0,                          //nLineSpace,
+                    0                           //nBandSpace
+                );
+            }
+        }
+        
+        ///////////////////////////////////////////////////////////////
+        if ( processed_minirasters == 0 ) { // is this the first miniraster?
+            // set projection for generated strips using the info from
+            // this (arbitrarely chosen) first miniraster:
+            const char* projection = mini_ds->GetProjectionRef();
+            if ( projection && strlen(projection) > 0 ) {
+                strip_ds->SetProjection(projection);
+                fid_ds->  SetProjection(projection);                   
+                loc_ds->  SetProjection(projection);
+            }
+        }
+        
+        ///////////////////////////////////////////////////////////////
+        if ( false ) {  
+            // GDAL bug: ENVIDataset::FlushCache is not idempotent
+            // for header file (repeated items would be generated)
+            strip_ds->FlushCache();
+            fid_ds->FlushCache();
+            loc_ds->FlushCache();
+        }
+        else {
+            // workaround: don't call FlushCache; it seems
+            // we don't need these calls anyway.
+        }
+        
+        // close and delete miniraster
+        delete mini_ds;
+        hDriver->Delete(mini_filename.c_str());
+        unlink(create_filename_hdr(prefix, mrbi->FID).c_str()); // hack
+    }
+    
+    // close outputs
+    delete strip_ds;
+    delete fid_ds;
+    delete loc_ds;
+    
+    // release buffer
+    delete buffer;
+}
