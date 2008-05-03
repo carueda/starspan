@@ -642,6 +642,11 @@ int main(int argc, char ** argv) {
             }
         }
     }
+    
+    if ( starspan_validate_rasters_and_masks(vect, vector_layernum, raster_filenames, masks) ) {
+        usage("invalid inputs; check error messages");
+    }        
+    
 
 	if ( globalOptions.dupPixelModes.size() > 0 ) {
 		if ( globalOptions.verbose ) {
@@ -651,8 +656,8 @@ int main(int argc, char ** argv) {
 			}
 		}
 		
-		if ( !csv_name && !mini_prefix) {
-			usage("--duplicate_pixel: No --csv or --mini_rasters command!");
+		if ( !csv_name && !mini_prefix && !mini_raster_strip_filename ) {
+			usage("--duplicate_pixel work with: --csv, --mini_rasters, or mini_raster_strip");
 		}
 	}
 	

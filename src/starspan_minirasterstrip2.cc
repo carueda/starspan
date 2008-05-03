@@ -44,8 +44,8 @@ static void mrs_extractFunction(ExtractionItem* item) {
 	tr.setVector(vect);
 	tr.setLayerNum(layernum);
 
-    Raster* raster = new Raster(item->rasterFilename);  
-    tr.addRaster(raster);
+    Raster raster(item->rasterFilename);  
+    tr.addRaster(&raster);
 
     if ( globalOptions.pix_prop >= 0.0 )
 		tr.setPixelProportion(globalOptions.pix_prop);
@@ -61,8 +61,6 @@ static void mrs_extractFunction(ExtractionItem* item) {
 
     // - traverse
     tr.traverse();
-    
-    delete raster;
 }
 
 //
@@ -155,18 +153,28 @@ int starspan_minirasterstrip2(
         // problems: messages should have been generated.
     }
     else {
-        // OK: create the strip:
-        // take the first raster in the list as a basis:
-        Raster rastr(raster_filenames[0]);
-        starspan_create_strip(
-            &rastr,
-            prefix,
-            &mrbi_list,
-            basefilename
-        );
+        if ( mrbi_list.size() == 0 ) {
+            cout<< "\nstarspan_minirasterstrip2: NOTE: No minirasters were generated.\n"; 
+        }
+        else {
+            // OK: create the strip:
+            // take the first raster in the list as a basis:
+            Raster rastr(raster_filenames[0]);
+            int strip_bands;
+            rastr.getSize(NULL, NULL, &strip_bands);
+            GDALDataType strip_band_type = rastr.getDataset()->GetRasterBand(1)->GetRasterDataType();
+            
+            starspan_create_strip(
+                strip_band_type,
+                strip_bands,
+                prefix,
+                &mrbi_list,
+                basefilename
+            );
+        }
     }
     
-    // release dynamic_cast objects:
+    // release dynamic objects:
     if ( outVector ) {
         delete outVector;
     }

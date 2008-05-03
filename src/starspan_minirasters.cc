@@ -40,7 +40,7 @@ public:
 	vector<MRBasicInfo>* mrbi_list;
     
     // used to update MRBasicInfo::mrs_row in mrbi_list:
-    int next_row;
+    // TODO remove int next_row;
 	
 	
 	/**
@@ -52,6 +52,7 @@ public:
 		global_info = 0;
 		hOutDS = 0;
 		mrbi_list = 0;
+        // TODO remove next_row = 0;
 	}
 	
 	
@@ -83,7 +84,6 @@ public:
 	  */
 	virtual void init(GlobalInfo& info) {
 		global_info = &info;
-        next_row = 0;
 	}
 
 	/**
@@ -241,8 +241,15 @@ public:
 		}
 
 		if ( mrbi_list ) {
+            int next_row = 0;   // will remain zero if mrbi_list is empty
+            if ( mrbi_list->size() > 0 ) {
+                // get last inserted mrbi:
+                MRBasicInfo mrbi = mrbi_list->back();
+                next_row = mrbi.getNextRow() + globalOptions.mini_raster_separation;
+            }
+            
 			mrbi_list->push_back(MRBasicInfo(FID, mini_filename, mini_width, mini_height, next_row));
-            next_row += mini_height + globalOptions.mini_raster_separation;
+            // TODO remove next_row += mini_height + globalOptions.mini_raster_separation;
 		}
 		
 		GDALClose(hOutDS);
@@ -331,6 +338,7 @@ public:
             delete this->outVector;
         }
         this->outVector = vtr;
+        this->outLayer = lyr;
         ownOutVector = false;
     }
     
@@ -406,10 +414,10 @@ public:
         // This will depend on what geometry was actually used for interesection:
         OGRGeometry* feature_geometry = feature->GetGeometryRef();
         if ( geometryToIntersect == feature_geometry ) {
-            // if it was the original feature's geometry, 
+            // if it was original feature's geometry, 
             // then associate intersection_geometry:
             outFeature->SetGeometry(intersection_geometry);
-            // (offsetX,offsetY) will remain == (0,0)
+            // note that (offsetX,offsetY) will remain == (0,0)
         }
         else {
             // else, associate the intersection between original feature's 
@@ -473,8 +481,12 @@ public:
 	  */
 	virtual void end() {
 		if ( createStrip && mrbi_list ) {
+            int strip_bands;
+            rast->getSize(NULL, NULL, &strip_bands);
+            GDALDataType strip_band_type = rast->getDataset()->GetRasterBand(1)->GetRasterDataType();
             starspan_create_strip(
-                rast,
+                strip_band_type,
+                strip_bands,
                 prefix,
                 mrbi_list,
                 basefilename
@@ -482,7 +494,7 @@ public:
 			delete mrbi_list;
 			mrbi_list = 0;
 		}
-        if ( outVector && ownOutVector ) {
+        if ( ownOutVector && outVector ) {
             delete outVector;
         }
 	}
@@ -632,7 +644,14 @@ static void traverseTranslate(OGRGeometry* geometry, double deltaX, double delta
 			break;
 			
 		case wkbGeometryCollection:
-		case wkbGeometryCollection25D: {
+		case wkbGeometryCollection25D: 
+		case wkbMultiPolygon: 
+		case wkbMultiPolygon25D: 
+		case wkbMultiPoint: 
+		case wkbMultiPoint25D: 
+		case wkbMultiLineString: 
+		case wkbMultiLineString25D: 
+        {
 			OGRGeometryCollection* gg = (OGRGeometryCollection*) geometry;
            	for ( int i = 0; i < gg->getNumGeometries(); i++ ) {
            		OGRGeometry* geo = (OGRGeometry*) gg->getGeometryRef(i);

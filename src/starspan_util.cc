@@ -283,6 +283,203 @@ OGRLayer* starspan_createLayer(
 
 
 ///////////////////////////////////////////////////
+/** 
+ * Validates the mutual consistency of the given list of elements.
+ * <p>
+ * Consistency requires that all given elements have:
+ * <ul>
+ *  <li> the same projection
+ *  <li> the same pixel size in the case of rasters
+ * </ul>
+ *
+ * @return 0 iff OK
+ */
+int starspan_validate_rasters_and_masks(
+    Vector* vect,
+    int vector_layernum,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames
+) {
+    // Either no masks are given, or the number of rasters and masks are the same:
+    assert( mask_filenames == 0 || mask_filenames->size() == raster_filenames.size() );
+    
+    // base projection for comparison
+    OGRSpatialReference* spatRef0 = 0;
+    
+    if ( vect ) {
+        // get spatRef0 from vector's later:
+        OGRLayer* layer = vect->getLayer(vector_layernum);
+        spatRef0 = layer->GetSpatialRef();
+        // Note: spatRef0 should NOT be released in this case
+    }
+    
+    
+    // pixel size of first raster:
+    double pix_x_size0 = 0, pix_y_size0 = 0;
+    
+	int res = 0;
+	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
+        // open the raster momentarily to get required info:
+		Raster rastr(raster_filenames[i]);
+        
+        if ( i == 0 ) {
+            if ( spatRef0 ) {
+                // compare first raster against vector's spatial reference:
+                //
+                // check projection:
+                //
+                const char* projection = rastr.getDataset()->GetProjectionRef();    
+                OGRSpatialReference spatRef(projection);
+                
+                if ( !spatRef0->IsSame(&spatRef) ) {
+                    cerr<< "VECTOR and RASTER:\n"
+                        << "   " <<vect->getName()<< "\n"
+                        << "   " <<raster_filenames[0]<< "\n"
+                    ;
+                    char* wkt0;
+                    char* wkt;
+                    spatRef0->exportToProj4(&wkt0); 
+                    spatRef.exportToProj4(&wkt); 
+                    cerr<< "have different spatial references:\n" 
+                        << "   " <<wkt0<< "\n"
+                        << " --- vs. ---\n" 
+                        << "   " <<wkt<< "\n"
+                    ;
+                    CPLFree(wkt0);
+                    CPLFree(wkt);
+                    res = 1;
+                    break;
+                }
+            }
+            else {
+                // get spatRef0 from this first raster:
+                const char* projection = rastr.getDataset()->GetProjectionRef();    
+                spatRef0 = new OGRSpatialReference(projection);
+                // Note: in this case, spatRef0 should be released, of course. 
+            }
+            rastr.getPixelSize(&pix_x_size0, &pix_y_size0);
+        }
+        else {
+            //
+            // check projection:
+            //
+            const char* projection = rastr.getDataset()->GetProjectionRef();    
+            OGRSpatialReference spatRef(projection);
+            
+            if ( !spatRef0->IsSame(&spatRef) ) {
+                cerr<< "RASTERS:\n"
+                    << "   " <<raster_filenames[0]<< "\n"
+                    << "   " <<raster_filenames[i]<< "\n"
+                ;
+                char* wkt0;
+                char* wkt;
+                spatRef0->exportToProj4(&wkt0); 
+                spatRef.exportToProj4(&wkt); 
+                cerr<< "have different spatial references:\n" 
+                    << "   " <<wkt0<< "\n"
+                    << " --- vs. ---\n" 
+                    << "   " <<wkt<< "\n"
+                ;
+                CPLFree(wkt0);
+                CPLFree(wkt);
+                res = 1;
+                break;
+            }
+            
+            //
+            // check pixel size:
+            //
+            double pix_x_size, pix_y_size;
+            rastr.getPixelSize(&pix_x_size, &pix_y_size);
+            if ( pix_x_size0 != pix_x_size || pix_y_size0 != pix_y_size ) {
+                cerr<< "RASTERS:\n"
+                    << "   " <<raster_filenames[0]<< "\n"
+                    << "   " <<raster_filenames[i]<< "\n"
+                    << "have different pixel sizes: " 
+                    << pix_x_size0<< "x" <<pix_y_size0<< " vs. " 
+                    << pix_x_size<< "x" <<pix_y_size<< "\n"
+                ;
+                res = 1;
+                break;
+            }
+        }
+
+        if ( mask_filenames ) {
+            const char* mask_filename = (*mask_filenames)[i];
+            Raster mask(mask_filename);
+
+            //
+            // check projection:
+            //
+            const char* projection = mask.getDataset()->GetProjectionRef();    
+            OGRSpatialReference spatRef(projection);
+            
+            if ( !spatRef0->IsSame(&spatRef) ) {
+                cerr<< "RASTER and MASK:\n"
+                    << "   " <<raster_filenames[0]<< "\n"
+                    << "   " <<mask_filename      << "\n"
+                ;
+                char* wkt0;
+                char* wkt;
+                spatRef0->exportToProj4(&wkt0); 
+                spatRef.exportToProj4(&wkt); 
+                cerr<< "have different spatial references:\n" 
+                    << "   " <<wkt0<< "\n"
+                    << " --- vs. ---\n" 
+                    << "   " <<wkt<< "\n"
+                ;
+                CPLFree(wkt0);
+                CPLFree(wkt);
+                res = 1;
+                break;
+            }
+            
+            //
+            // check pixel size:
+            //
+            double pix_x_size, pix_y_size;
+            mask.getPixelSize(&pix_x_size, &pix_y_size);
+            if ( pix_x_size0 != pix_x_size || pix_y_size0 != pix_y_size ) {
+                cerr<< "RASTER and MASK:\n"
+                    << "   " <<raster_filenames[0]<< "\n"
+                    << "   " <<mask_filename      << "\n"
+                    << "have different pixel sizes: " 
+                    << pix_x_size0<< "x" <<pix_y_size0<< " vs. " 
+                    << pix_x_size<< "x" <<pix_y_size<< "\n"
+                ;
+                res = 1;
+                break;
+            }
+        }
+	}
+    if ( !vect && spatRef0 ) {
+        // spatRef0 was not obtained from vector, so release it:
+        delete spatRef0;
+    }
+
+    if ( !res && globalOptions.verbose ) {
+        cout<< "starspan_validate_rasters_and_masks: OK\n";
+        if ( vect ) {
+            cout<< "  Vector: " <<vect->getName()<< ", layer " <<vector_layernum<< "\n";
+        }
+        else {
+            cout<< "  Vector: not given\n";
+        }
+        cout<< "  Rasters: " <<raster_filenames.size();
+        if ( mask_filenames ) {
+            cout<< "  Masks: " <<mask_filenames->size()<< "\n";
+        }
+        else {
+            cout<< " (no masks given)\n";
+        }
+    }
+    
+    return res;
+}
+
+
+
+///////////////////////////////////////////////////
 // mini raster strip creation
 
 static string create_filename_hdr(string prefix, long FID) {
@@ -292,11 +489,11 @@ static string create_filename_hdr(string prefix, long FID) {
 }
 
 /**
-  * Creates output strips according to the minirasters registered
-  * in list mrbi_list.
+  * Creates output strips according to the minirasters registered in mrbi_list.
   */
 void starspan_create_strip(
-    Raster* rast,
+    GDALDataType strip_band_type,
+    int strip_bands,
     string prefix,
     vector<MRBasicInfo>* mrbi_list,
     string basefilename
@@ -342,11 +539,6 @@ void starspan_create_strip(
     strip_height += mr_separation * (num_minis - 1);
     
     
-    ///////////////////////
-    // get number off bands
-    int strip_bands;
-    rast->getSize(NULL, NULL, &strip_bands);
-
     if ( globalOptions.verbose ) {
         cout<< "strip: width x height x bands: " 
             <<strip_width<< " x " <<strip_height<< " x " <<strip_bands<< endl;
@@ -366,7 +558,6 @@ void starspan_create_strip(
     
     //////////////////////////////////////////////
     // the band types for the strips: 
-    const GDALDataType strip_band_type = rast->getDataset()->GetRasterBand(1)->GetRasterDataType();
     const GDALDataType fid_band_type = GDT_Int32; 
     const GDALDataType loc_band_type = GDT_Float32; 
 

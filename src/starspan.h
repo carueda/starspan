@@ -603,6 +603,25 @@ OGRLayer* starspan_createLayer(
 );
 
 
+/** 
+ * Validates the mutual consistency of the given list of elements.
+ * <p>
+ * Consistency requires that all given elements have:
+ * <ul>
+ *  <li> the same projection
+ *  <li> the same pixel size in the case of rasters
+ * </ul>
+ *
+ * @return 0 iff OK
+ */
+int starspan_validate_rasters_and_masks(
+    Vector* vect,
+    int vector_layernum,
+	vector<const char*> raster_filenames,
+	vector<const char*> *mask_filenames
+);
+
+
 ///////////////////////////////////////////////////
 // mini raster basic information; A list of these elements
 // is gathered by the main miniraster generator and then used by
@@ -624,15 +643,20 @@ struct MRBasicInfo {
 	MRBasicInfo(long FID, string& mini_filename, int width, int height, int mrs_row) : 
 		FID(FID), mini_filename(mini_filename), width(width), height(height), mrs_row(mrs_row)
 	{}
+    
+    /** Returns the next row just below this miniraster */
+    int getNextRow() {
+        return mrs_row + height;
+    }
 };
 
 
 /**
-  * Creates output strips according to the minirasters registered
-  * in list mrbi_list.
+  * Creates output strips according to the minirasters registered in mrbi_list.
   */
 void starspan_create_strip(
-    Raster* rast,
+    GDALDataType strip_band_type,
+    int strip_bands,
     string prefix,
     vector<MRBasicInfo>* mrbi_list,
     string basefilename

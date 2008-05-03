@@ -2,7 +2,7 @@ StarSpan ChangeLog
 $Id$
 
 
-2008-05-01
+2008-05-01,02
     - Refactoring miniraster strip creation to allow duplicate pixel handling:
       - MiniRasterObserver: no Traverser as a member any more.
       - IntersectionInfo: now includes the traverser.
@@ -13,7 +13,7 @@ $Id$
         was moved to new utility starspan_create_strip().
       - New starspan_getMiniRasterStripObserver2() and starspan_minirasterstrip2()
         to handle the generation of the strip with duplicate_pixel modes.
-      - TODO: tests!
+      - TODO: complete preliminary tests.
     
     
 2008-04-24
