@@ -307,10 +307,10 @@ int starspan_validate_rasters_and_masks(
     OGRSpatialReference* spatRef0 = 0;
     
     if ( vect ) {
-        // get spatRef0 from vector's later:
+        // get spatRef0 from vector's layer:
         OGRLayer* layer = vect->getLayer(vector_layernum);
         spatRef0 = layer->GetSpatialRef();
-        // Note: spatRef0 should NOT be released in this case
+        // Note: spatRef0 should NOT be directly released in this case
     }
     
     
@@ -332,7 +332,7 @@ int starspan_validate_rasters_and_masks(
                 OGRSpatialReference spatRef(projection);
                 
                 if ( !spatRef0->IsSame(&spatRef) ) {
-                    cerr<< "VECTOR and RASTER:\n"
+                    cerr<< "Error: VECTOR and RASTER:\n"
                         << "   " <<vect->getName()<< "\n"
                         << "   " <<raster_filenames[0]<< "\n"
                     ;
@@ -367,7 +367,7 @@ int starspan_validate_rasters_and_masks(
             OGRSpatialReference spatRef(projection);
             
             if ( !spatRef0->IsSame(&spatRef) ) {
-                cerr<< "RASTERS:\n"
+                cerr<< "Error: RASTERS:\n"
                     << "   " <<raster_filenames[0]<< "\n"
                     << "   " <<raster_filenames[i]<< "\n"
                 ;
@@ -392,7 +392,7 @@ int starspan_validate_rasters_and_masks(
             double pix_x_size, pix_y_size;
             rastr.getPixelSize(&pix_x_size, &pix_y_size);
             if ( pix_x_size0 != pix_x_size || pix_y_size0 != pix_y_size ) {
-                cerr<< "RASTERS:\n"
+                cerr<< "Error: RASTERS:\n"
                     << "   " <<raster_filenames[0]<< "\n"
                     << "   " <<raster_filenames[i]<< "\n"
                     << "have different pixel sizes: " 
@@ -415,7 +415,7 @@ int starspan_validate_rasters_and_masks(
             OGRSpatialReference spatRef(projection);
             
             if ( !spatRef0->IsSame(&spatRef) ) {
-                cerr<< "RASTER and MASK:\n"
+                cerr<< "Error: RASTER and MASK:\n"
                     << "   " <<raster_filenames[0]<< "\n"
                     << "   " <<mask_filename      << "\n"
                 ;
@@ -440,7 +440,7 @@ int starspan_validate_rasters_and_masks(
             double pix_x_size, pix_y_size;
             mask.getPixelSize(&pix_x_size, &pix_y_size);
             if ( pix_x_size0 != pix_x_size || pix_y_size0 != pix_y_size ) {
-                cerr<< "RASTER and MASK:\n"
+                cerr<< "Error: RASTER and MASK:\n"
                     << "   " <<raster_filenames[0]<< "\n"
                     << "   " <<mask_filename      << "\n"
                     << "have different pixel sizes: " 
@@ -452,6 +452,7 @@ int starspan_validate_rasters_and_masks(
             }
         }
 	}
+    
     if ( !vect && spatRef0 ) {
         // spatRef0 was not obtained from vector, so release it:
         delete spatRef0;
