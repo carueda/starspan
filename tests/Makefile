@@ -18,7 +18,7 @@ test_csv:
 	mkdir -p generated/csv/
 	rm -f generated/csv/*.csv
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan[1-3]raster.img \
 		--csv generated/csv/myoutput.csv
 	zcat expected/csv/myoutput.csv.gz | diff - generated/csv/myoutput.csv
@@ -31,7 +31,7 @@ test_stats:
 	${STARSPAN} \
 		--verbose \
 		--fields none \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan[1-3]raster.img \
 		--nodata 0 \
 		--stats generated/stats/myoutput.csv avg mode stdev min max sum median nulls
@@ -42,7 +42,7 @@ test_stats:
 test_miniraster:
 	mkdir -p generated/miniraster/
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--mini_rasters generated/miniraster/myprefix_ \
 		--in \
@@ -51,7 +51,7 @@ test_miniraster:
 	cmp expected/miniraster/myprefix_0003.img \
 	   generated/miniraster/myprefix_0003.img
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--mini_rasters generated/miniraster/myprefix_buff2_ \
 		--in \
@@ -65,7 +65,7 @@ test_miniraster:
 test_miniraster_strip:
 	mkdir -p generated/mrstrip/
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--mini_raster_strip generated/mrstrip/myoutput \
 		--in
@@ -82,7 +82,7 @@ test_miniraster_strip:
 miniraster_box:
 	mkdir -p generated/miniraster_box/
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--mini_rasters generated/miniraster_box/box_100_ \
 		--box 100
@@ -91,7 +91,7 @@ miniraster_box:
 miniraster_strip_box:
 	mkdir -p generated/mrstrip_box/
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--mini_raster_strip generated/mrstrip_box/box_100_ \
 		--box 100 \
@@ -101,7 +101,7 @@ miniraster_strip_box:
 rasterize:
 	mkdir -p generated/rasterize/
 	${STARSPAN} \
-		--vector data/vector/starspan_testply.shp \
+		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--rasterize generated/rasterize/rasterized
 
