@@ -2,7 +2,7 @@ StarSpan ChangeLog
 $Id$
 
 
-2008-05-07
+2008-05-07 (1.0.08)
     - starspan_create_strip(): Explicitly assigning the geoTransform to the 
       generated strips. It uses the geoTransform from the first miniraster but
       sets the origin point to be (0,0). 
