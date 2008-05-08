@@ -512,32 +512,22 @@ void starspan_create_strip(
         return;
     }
     
-    // the number of minirasters:
-    const int num_minis = mrbi_list->size();
-
-    /////////////////////////////////////////////////////////////
-    // the dimensions for output strip images (obtained below):
-    int strip_width = 0;		
-    int strip_height = 0;
     
-    
-    // separation between minirasters:
-    const int mr_separation = globalOptions.mini_raster_separation;
     
     ////////////////////////////////////////////////////////
     // get dimensions for output strip images:
     
     // strip_width will be the maximum miniraster width:
-    // strip_height will be the sum of the miniraster heights, plus separation pixels (see below):
+    int strip_width = 0;		
     for ( vector<MRBasicInfo>::const_iterator mrbi = mrbi_list->begin(); mrbi != mrbi_list->end(); mrbi++ ) {
         if ( strip_width < mrbi->width ) {
             strip_width = mrbi->width;
         }
-        strip_height += mrbi->height;
     }
     
-    // add pixels to height according to desired separation between minirasters:
-    strip_height += mr_separation * (num_minis - 1);
+    // strip_height will be equal to the index of the getNextRow call on the last element:
+    int strip_height = mrbi_list->back().getNextRow();
+    
     
     
     if ( globalOptions.verbose ) {
@@ -786,15 +776,30 @@ void starspan_create_strip(
         }
         
         ///////////////////////////////////////////////////////////////
-        if ( processed_minirasters == 0 ) { // is this the first miniraster?
-            // set projection for generated strips using the info from
+        //
+        // is this the first miniraster?
+        //
+        if ( processed_minirasters == 0 ) {
+            //
+            // then, set projection for generated strips using the info from
             // this (arbitrarely chosen) first miniraster:
+            //
             const char* projection = mini_ds->GetProjectionRef();
             if ( projection && strlen(projection) > 0 ) {
                 strip_ds->SetProjection(projection);
                 fid_ds->  SetProjection(projection);                   
                 loc_ds->  SetProjection(projection);
             }
+            
+            //
+            // also, set the geotransform accordingly, that is, keep them from
+            // the first miniraster but adjust origin point to be (0,0):
+            //
+            adfGeoTransform[0] = 0;   // top left x
+            adfGeoTransform[3] = 0;   // top left y
+            strip_ds->SetGeoTransform(adfGeoTransform);
+            fid_ds->  SetGeoTransform(adfGeoTransform);                   
+            loc_ds->  SetGeoTransform(adfGeoTransform);
         }
         
         ///////////////////////////////////////////////////////////////

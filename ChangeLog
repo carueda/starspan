@@ -3,6 +3,12 @@ $Id$
 
 
 2008-05-07
+    - starspan_create_strip(): Explicitly assigning the geoTransform to the 
+      generated strips. It uses the geoTransform from the first miniraster but
+      sets the origin point to be (0,0). 
+      In particular, for the --mini_raster_strip command with shapefile creation,
+      this adjustment makes the generated datasets to match properly.
+    
     - Since starspan now checks that the projection of the input datasets be
       the same, I converted the polygon shapefile for the current tests to
       match the projection of the raster files:

@@ -158,7 +158,7 @@ int starspan_minirasterstrip2(
         }
         else {
             // OK: create the strip:
-            // take the first raster in the list as a basis:
+            // use the first raster in the list to get #band and_eq band type:
             Raster rastr(raster_filenames[0]);
             int strip_bands;
             rastr.getSize(NULL, NULL, &strip_bands);

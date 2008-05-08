@@ -193,10 +193,10 @@ public:
 			}
 		}
         
-        Raster* rast = intersInfo.trv->getRaster(0);
+        Raster* rastr = intersInfo.trv->getRaster(0);
         
 		GDALDatasetH hOutDS = starspan_subset_raster(
-			rast->getDataset(),
+			rastr->getDataset(),
 			mini_col0, mini_row0, mini_width, mini_height,
 			mini_filename.c_str(),
 			pszOutputSRS,
@@ -288,7 +288,7 @@ class MiniRasterStripObserver : public MiniRasterObserver {
     bool ownOutVector;   // outVector and outLayer are mine?
     
     // updated in intersectionEnd; also used in end()
-    Raster* rast;
+    Raster* rastr;
     
     // should we create strip at end of traversal?  true by default
     bool createStrip;    
@@ -373,8 +373,8 @@ public:
 	virtual void intersectionEnd(IntersectionInfo& intersInfo) {
         MiniRasterObserver::intersectionEnd(intersInfo);
 
-        // update rast
-        rast = intersInfo.trv->getRaster(0);
+        // update rastr
+        rastr = intersInfo.trv->getRaster(0);
 
 		if ( !outLayer ) {
 			return;  // not output layer under creation
@@ -408,7 +408,7 @@ public:
         double offsetY = 0;
         
         double pix_x_size, pix_y_size;
-        rast->getPixelSize(&pix_x_size, &pix_y_size);
+        rastr->getPixelSize(&pix_x_size, &pix_y_size);
         
         // Associate the required geometry.
         // This will depend on what geometry was actually used for interesection:
@@ -482,8 +482,8 @@ public:
 	virtual void end() {
 		if ( createStrip && mrbi_list ) {
             int strip_bands;
-            rast->getSize(NULL, NULL, &strip_bands);
-            GDALDataType strip_band_type = rast->getDataset()->GetRasterBand(1)->GetRasterDataType();
+            rastr->getSize(NULL, NULL, &strip_bands);
+            GDALDataType strip_band_type = rastr->getDataset()->GetRasterBand(1)->GetRasterDataType();
             starspan_create_strip(
                 strip_band_type,
                 strip_bands,
