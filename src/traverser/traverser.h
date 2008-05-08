@@ -398,15 +398,6 @@ public:
 	  */
 	void setBufferParameters(BufferParams bufferParams);
 	
-	/**
-	  * Sets parameters to use a fixed box centered according to bounding box
-      * of the geometry features before computing the intersection.
-	  * By default, no box is used.
-	  *
-	  * @param boxParams      See description in common.h
-	  */
-	void setBoxParameters(BoxParams boxParams);
-	
 	
 	/**
 	  * Adds an observer to this traverser.
@@ -754,9 +745,6 @@ private:
 
 	// buffer parameters
 	BufferParams bufferParams;
-
-	// box parameters
-	BoxParams boxParams;
 };
 
 #endif

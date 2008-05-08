@@ -46,16 +46,11 @@ Traverser::Traverser() {
 	skip_invalid_polys = false;
 
 	bufferParams.given = false;
-	boxParams.given = false;
 }
 
 
 void Traverser::setBufferParameters(BufferParams _bufferParams) {
 	bufferParams = _bufferParams;
-}
-
-void Traverser::setBoxParameters(BoxParams _boxParams) {
-	boxParams = _boxParams;
 }
 
 
@@ -605,15 +600,15 @@ void Traverser::process_feature(OGRFeature* feature) {
 	//
 	// apply box operation if so indicated:
 	//
-	if ( boxParams.given ) {
+	if ( globalOptions.boxParams.given ) {
         //
         // Create a rectangle with the given box sizes and centered w.r.t.
         // the bounding box of the feature geometry.
         //
         
         // requested box dimension:
-        double rbw = boxParams.width ; 
-        double rbh = boxParams.height;
+        double rbw = globalOptions.boxParams.width ; 
+        double rbh = globalOptions.boxParams.height;
         
         // bounding box
         OGREnvelope bbox;

@@ -34,8 +34,11 @@ struct BufferParams {
 };
 
 
-/** Box parameters
-  */
+/** Box parameters.
+ * Sets a fixed box centered according to bounding box
+ * of the geometry features before computing the intersection.
+ * By default, no box is used.
+ */
 struct BoxParams {
 	/** were given? */
 	bool given;

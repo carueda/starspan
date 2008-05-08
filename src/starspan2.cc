@@ -571,6 +571,16 @@ int main(int argc, char ** argv) {
         usage("Only one of --buffer/--box may be given");
     }
     
+    if ( globalOptions.boxParams.given ) {
+        if ( globalOptions.verbose ) {
+            cout<< "Given box parameters:"
+                << " width = " <<globalOptions.boxParams.width
+                << ", height = " <<globalOptions.boxParams.height
+                <<endl;
+            ;
+        }
+    }
+    
 	time_t time_start = time(NULL);
 	
 	// module initialization
@@ -837,16 +847,6 @@ int main(int argc, char ** argv) {
 				;
 			}
 			tr.setBufferParameters(globalOptions.bufferParams);
-		}
-		else if ( globalOptions.boxParams.given ) {
-			if ( globalOptions.verbose ) {
-				cout<< "Using fixed box parameters:"
-				    << "\n\twidth = " <<globalOptions.boxParams.width
-				    << "\n\theight = " <<globalOptions.boxParams.height
-					<<endl;
-				;
-			}
-			tr.setBoxParameters(globalOptions.boxParams);
 		}
 			
 		if ( csv_name || envi_name || mini_prefix || mini_raster_strip_filename || jtstest_filename) { 

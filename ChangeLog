@@ -2,6 +2,11 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-05-08
+    - Simplifying parameter handling for traverser: instead of replicating them
+      in traverser's own structures, just use the globalOptions structure:
+        - BoxParams: done
+        
 2008-05-07 (1.0.08)
     - starspan_create_strip(): Explicitly assigning the geoTransform to the 
       generated strips. It uses the geoTransform from the first miniraster but
