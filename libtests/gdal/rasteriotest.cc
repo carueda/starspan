@@ -11,6 +11,7 @@ using namespace std;
 /* RasterIO bug:
         $ g++ rasteriotest.cc -lgdal -Wall
         $ ./a.out
+        GDAL_RELEASE_NAME = 1.5.0
         RasterIO returned = 0
         Raster contents should be:
         XXXXXXXXXXXXXXXXXXXXX_______________________________________
@@ -18,6 +19,7 @@ using namespace std;
         _____________X______________________________________________
 */
 int main() {
+    cout<<"GDAL_RELEASE_NAME = " <<GDAL_RELEASE_NAME<< endl;
     GDALAllRegister();
     GDALDriver* hDriver = GetGDALDriverManager()->GetDriverByName("ENVI");
     assert(hDriver);
