@@ -151,6 +151,9 @@ int main(int argc, char ** argv) {
     RasterizeParams rasterizeParams;
 	
 
+    // convenience way to skip validation
+	bool noValidateInputs = getenv("STARSPAN_NO_VALIDATE_INPUTS") != 0;
+    
 	bool report_elapsed_time = false;
 	bool do_report = false;
 	bool show_fields = false;
@@ -666,7 +669,8 @@ int main(int argc, char ** argv) {
         }
     }
     
-    if ( starspan_validate_rasters_and_masks(vect, vector_layernum, raster_filenames, masks) ) {
+    if ( !noValidateInputs 
+    && starspan_validate_rasters_and_masks(vect, vector_layernum, raster_filenames, masks) ) {
         usage("invalid inputs; check error messages");
     }        
     

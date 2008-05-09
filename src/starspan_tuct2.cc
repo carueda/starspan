@@ -52,7 +52,7 @@ int starspan_tuct_2(
 	//
 	calbase_file<< "FID," <<link_name;
 	if ( globalOptions.RID != "none" )
-		calbase_file<< ",RID";
+		calbase_file<< "," <<RID_colName;
 	calbase_file<< ",BandNumber,FieldBandValue";
 	for ( vector<const char*>::const_iterator stat = select_stats.begin(); stat != select_stats.end(); stat++ ) {
 		calbase_file<< "," << *stat << "_ImageBandValue";

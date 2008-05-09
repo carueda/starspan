@@ -24,7 +24,7 @@ public:
 	OGRFeature* currentFeature;
 	vector<const char*>* select_fields;
 	const char* raster_filename;
-	string RID;  //  will be used only if globalOptions.RID != "none".
+	string RID_value;  //  will be used only if globalOptions.RID != "none".
 	bool write_header;
 	FILE* file;
 	int layernum;
@@ -84,7 +84,7 @@ public:
 			
 			// RID column, if to be included
 			if ( globalOptions.RID != "none" ) {
-				csvOut.addString("RID");
+				csvOut.addString(RID_colName);
 			}
 			
 			// Create (col,row) fields, if so indicated
@@ -107,9 +107,9 @@ public:
 		
 		currentFeature = NULL;
 		if ( globalOptions.RID != "none" ) {
-			RID = raster_filename;
+			RID_value = raster_filename;
 			if ( globalOptions.RID == "file" ) {
-				starspan_simplify_filename(RID);
+				starspan_simplify_filename(RID_value);
 			}
 		}
 	}
@@ -163,7 +163,7 @@ public:
 
 		// add RID field
 		if ( globalOptions.RID != "none" ) {
-			csvOut.addString(RID);
+			csvOut.addString(RID_value);
 		}
 		
 		

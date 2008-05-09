@@ -14,6 +14,10 @@
 using namespace std;
 
 
+// TODO: parameterize this name
+#define RID_colName "RID" 
+
+
 /** buffer parameters.
  * These parameters are applied on geometry features
  * before computing the intersection.

@@ -39,10 +39,6 @@ public:
 	// If not null, basic info is added for each created miniraster
 	vector<MRBasicInfo>* mrbi_list;
     
-    // used to update MRBasicInfo::mrs_row in mrbi_list:
-    // TODO remove int next_row;
-	
-	
 	/**
 	  * Creates the observer for this operation. 
 	  */
@@ -52,7 +48,6 @@ public:
 		global_info = 0;
 		hOutDS = 0;
 		mrbi_list = 0;
-        // TODO remove next_row = 0;
 	}
 	
 	
@@ -249,7 +244,6 @@ public:
             }
             
 			mrbi_list->push_back(MRBasicInfo(FID, mini_filename, mini_width, mini_height, next_row));
-            // TODO remove next_row += mini_height + globalOptions.mini_raster_separation;
 		}
 		
 		GDALClose(hOutDS);
@@ -391,17 +385,27 @@ public:
         // create feature in output vector:
         OGRFeature *outFeature = OGRFeature::CreateFeature(outLayer->GetLayerDefn());
         
-        // TODO Add values for new fields:
-        // ...
-        
         // copy everything from incoming feature:
-        // (TODO handled selected fields as in other commands) 
+        // (TODO handle selected fields as in other commands) 
         // (TODO do not copy geometry, but set the corresponding geometry)
         outFeature->SetFrom(feature);
         
         //  make sure we release the copied geometry:
         outFeature->SetGeometryDirectly(NULL);
 
+        // handle RID column:
+        if ( globalOptions.RID != "none" ) {
+            // Add RID value if the field exists:
+            int idx = outFeature->GetFieldIndex(RID_colName);
+            if ( idx >= 0 ) {
+                string RID_value = rastr->getDataset()->GetDescription();
+                if ( globalOptions.RID == "file" ) {
+                    starspan_simplify_filename(RID_value);
+                }
+                outFeature->SetField(idx, RID_value.c_str());
+            }
+        }
+        
         // depending on the associated geometry (see below), these offsets
         // will help in locating the geometry in the strip:
         double offsetX = 0;
@@ -547,8 +551,16 @@ Observer* starspan_getMiniRasterStripObserver(
             return 0;
         }
         
-        // TODO Add definition for new fields (eg. RID)
-        // ...
+        // add RID column, if to be included
+        if ( globalOptions.RID != "none" ) {
+            OGRFieldDefn outField(RID_colName, OFTString);
+            if ( outLayer->CreateField(&outField) != OGRERR_NONE ) {
+                delete outVector;
+                outVector = NULL;
+                cerr<< "Creation of field failed: " <<RID_colName<< "\n";
+                return 0;
+            }
+        }
     }
     // </shp>
     

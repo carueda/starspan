@@ -103,8 +103,16 @@ int starspan_minirasterstrip2(
             return 0;
         }
         
-        // TODO Add definition for new fields (eg. RID)
-        // ...
+        // add RID column, if to be included
+        if ( globalOptions.RID != "none" ) {
+            OGRFieldDefn outField(RID_colName, OFTString);
+            if ( outLayer->CreateField(&outField) != OGRERR_NONE ) {
+                delete outVector;
+                outVector = NULL;
+                cerr<< "Creation of field failed: " <<RID_colName<< "\n";
+                return 0;
+            }
+        }        
     }
     // </shp>
     

@@ -3,6 +3,15 @@ $Id$
 
 
 2008-05-08
+    - common.h: added def:
+        #define RID_colName "RID"
+      TODO: Other similar hard-coded values, but in general with a parameterized
+      mechanism.
+        
+    - mini_raster_strip with shapefile creation: --RID option handled; it creates
+      "RID" (ie, RID_colName) column if RID option != "none" and puts the value
+      accordingly.
+    
     - Simplifying parameter handling for traverser: instead of replicating them
       in traverser's own structures/variables, just use the globalOptions structure:
         - boxParams: done

@@ -193,7 +193,7 @@ public:
 			
 			// RID column, if to be included
 			if ( globalOptions.RID != "none" ) {
-				csvOut.addString("RID");
+				csvOut.addString(RID_colName);
 				//fprintf(file, ",RID");
 			}
 			

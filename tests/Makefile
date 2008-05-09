@@ -93,6 +93,7 @@ miniraster_strip_box:
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
+		--RID path \
 		--mini_raster_strip generated/mrstrip_box/box_100 generated/mrstrip_box/shp_box_100 \
 		--box 100 \
 		--separation 10
