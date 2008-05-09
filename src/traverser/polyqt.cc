@@ -75,16 +75,16 @@ void Traverser::rasterize_poly_QT(_Rect& e, Polygon* i) {
 	}
 	
 	//	
-	// if pixelProportion > 0.0 we can check if the area of intersection
+	// if globalOptions.pix_prop > 0.0 we can check if the area of intersection
 	// is too small compared to the minimum required by that pixel proportion:
-	if ( pixelProportion > 0.0 ) {
+	if ( globalOptions.pix_prop > 0.0 ) {
 		if ( area_i < pixelProportion_times_pix_abs_area ) { 
 			// do nothing (we can safely discard the whole envelope).
 			return;
 		}
 	}
 	else {  
-		// pixelProportion == 0.0: means that just the intersection 
+		// globalOptions.pix_prop == 0.0: means that just the intersection 
 		// (i != null) will be enough condition to include the envelope 
 		// when this is just a pixel:
 		if ( e.cols == e.rows && e.rows == 1 ) {

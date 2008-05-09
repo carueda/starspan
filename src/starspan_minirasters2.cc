@@ -50,14 +50,7 @@ static void extractFunction(ExtractionItem* item) {
     Raster* raster = new Raster(item->rasterFilename);  
     tr.addRaster(raster);
 
-    if ( globalOptions.pix_prop >= 0.0 )
-		tr.setPixelProportion(globalOptions.pix_prop);
-    
-    tr.setVectorSelectionParams(globalOptions.vSelParams);
-    
     tr.setDesiredFID(globalOptions.FID);
-	tr.setVerbose(globalOptions.verbose);
-    tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
     
     // - Create and register MiniRasterObserver
     Observer* obs = starspan_getMiniRasterObserver(mini_prefix, mini_srs);

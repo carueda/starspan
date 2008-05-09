@@ -257,14 +257,7 @@ int starspan_csv(
 
 	tr.setVector(vect);
 	tr.setLayerNum(layernum);
-	if ( globalOptions.pix_prop >= 0.0 )
-		tr.setPixelProportion(globalOptions.pix_prop);
     
-    tr.setVectorSelectionParams(globalOptions.vSelParams);
-    
-	if ( globalOptions.FID >= 0 )
-		tr.setDesiredFID(globalOptions.FID);
-	tr.setVerbose(globalOptions.verbose);
 	if ( globalOptions.progress ) {
 		tr.setProgress(globalOptions.progress_perc, cout);
 		cout << "Number of features: ";
@@ -275,7 +268,6 @@ int starspan_csv(
 			cout << "(not known in advance)";
 		cout<< endl;
 	}
-	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
 	
 	for ( unsigned i = 0; i < raster_filenames.size(); i++ ) {
 		fprintf(stdout, "starspan_csv: %3u: Extracting from %s\n", i+1, raster_filenames[i]);

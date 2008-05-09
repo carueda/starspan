@@ -14,7 +14,10 @@
 using namespace std;
 
 
-/** buffer parameters
+/** buffer parameters.
+ * These parameters are applied on geometry features
+ * before computing the intersection.
+ * By default, no buffer operation will be applied.
   */
 struct BufferParams {
 	/** were given? */
@@ -26,7 +29,7 @@ struct BufferParams {
 	  */
 	string distance;
 
-	/** Number of segments to use to approximate a* quadrant of a circle.
+	/** Number of segments to use to approximate a quadrant of a circle.
 	  * If it starts with '@' then it indicates the name of the attribute 
 	  * from which this value will be obtained.
 	  */
@@ -95,18 +98,26 @@ struct VectorSelectionParams {
 
 
 /** Options that might be used by different services.
-  * This comes in handy while the tool gets more stabilized.
   */
 struct GlobalOptions {
 	bool use_pixpolys;
+    
+    /** should invalid polygons be skipped?
+	 * By default all polygons are processed. 
+     */
 	bool skip_invalid_polys;
 
+	/**
+	 * The proportion of intersected area required for a pixel to be included.
+	 * This parameter is only used during processing of polygons.
+     * Value assumed to be in [0.0, 1.0].
+     */
 	double pix_prop;
 	
-	// vector selection parameters
+	/** vector selection parameters */
 	VectorSelectionParams vSelParams;
 	
-	/** desired FID */
+	/** If non-negative, it will be the desired FID to be extracted */
 	long FID;
 	
 	bool verbose;
@@ -134,13 +145,13 @@ struct GlobalOptions {
 	/** value used as nodata */
 	double nodata;  
 	
-	// buffer parameters
+	/** buffer parameters */
 	BufferParams bufferParams;
 	
-	// box parameters
+	/** box parameters */
 	BoxParams boxParams;
 	
-	// miniraster parity
+	/** miniraster parity */
 	string mini_raster_parity;
 	
 	/** separation in pixels between minirasters in strip */

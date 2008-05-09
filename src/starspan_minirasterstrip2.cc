@@ -47,14 +47,7 @@ static void mrs_extractFunction(ExtractionItem* item) {
     Raster raster(item->rasterFilename);  
     tr.addRaster(&raster);
 
-    if ( globalOptions.pix_prop >= 0.0 )
-		tr.setPixelProportion(globalOptions.pix_prop);
-    
-    tr.setVectorSelectionParams(globalOptions.vSelParams);
-    
     tr.setDesiredFID(globalOptions.FID);
-	tr.setVerbose(globalOptions.verbose);
-    tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
     
     // - Register the common observer
 	tr.addObserver(obs);

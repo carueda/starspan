@@ -4,8 +4,13 @@ $Id$
 
 2008-05-08
     - Simplifying parameter handling for traverser: instead of replicating them
-      in traverser's own structures, just use the globalOptions structure:
-        - BoxParams: done
+      in traverser's own structures/variables, just use the globalOptions structure:
+        - boxParams: done
+        - bufferParams: done
+        - vSelParams: done
+        - verbose: done
+        - pixelProportion: done
+        - skip_invalid_polys: done
         
 2008-05-07 (1.0.08)
     - starspan_create_strip(): Explicitly assigning the geoTransform to the 

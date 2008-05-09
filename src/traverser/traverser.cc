@@ -24,7 +24,6 @@ bool Traverser::_resetReading = true;
 
 Traverser::Traverser() {
 	vect = 0;
-	pixelProportion = 0.5;
 	desired_FID = -1;
 	desired_fieldName = "";
 	desired_fieldValue = "";
@@ -39,18 +38,9 @@ Traverser::Traverser() {
 	
 	lineRasterizer = 0;
 	progress_out = 0;
-	verbose = false;
 	logstream = 0;
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
 	debug_no_spatial_filter = getenv("STARSPAN_NO_SPATIAL_FILTER") != 0;
-	skip_invalid_polys = false;
-
-	bufferParams.given = false;
-}
-
-
-void Traverser::setBufferParameters(BufferParams _bufferParams) {
-	bufferParams = _bufferParams;
 }
 
 
@@ -70,10 +60,6 @@ void Traverser::releaseObservers(void) {
 	notSimpleObserver = false;
 }
 
-
-void Traverser::setPixelProportion(double pixprop) {
-	pixelProportion = pixprop; 
-}
 
 void Traverser::setDesiredFID(long FID) {
 	desired_FID = FID; 
@@ -425,7 +411,7 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 	else {
 		summary.num_invalid_polys++;
 		
-		if ( skip_invalid_polys ) {
+		if ( globalOptions.skip_invalid_polys ) {
 			//cerr<< "--skipping invalid polygon--"<< endl;
 			if ( debug_dump_polys ) {
 				cerr<< "geos_poly = " << wktWriter.write(geos_poly) << endl;
@@ -443,12 +429,12 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 				// get noded linestring:
 				Geometry* noded = 0;
 				const int num_points = lines->getNumPoints();
-                if ( verbose ) {
+                if ( globalOptions.verbose ) {
                     cout << "Exploding external ring with " <<num_points<< " points...\n";
                 }
 				const CoordinateSequence* coordinates = lines->getCoordinatesRO();
 				for ( int i = 1; i < num_points; i++ ) {
-                    if ( verbose && i % 1000 == 0 ) {
+                    if ( globalOptions.verbose && i % 1000 == 0 ) {
                         cout << "\tpoint " <<i<< "\n";
                     }
 					vector<Coordinate>* subcoordinates = new vector<Coordinate>();
@@ -475,8 +461,9 @@ void Traverser::processPolygon(OGRPolygon* poly) {
 					if ( polys ) {
 						summary.num_polys_exploded++;
 						summary.num_sub_polys += polys->size();
-						if ( verbose )
+						if ( globalOptions.verbose ) {
 							cout << polys->size() << " sub-polys obtained\n";
+                        }
 						for ( unsigned i = 0; i < polys->size(); i++ ) {
 							processValidPolygon((*polys)[i]);
 						}
@@ -581,7 +568,7 @@ void Traverser::processGeometry(OGRGeometry* intersection_geometry, bool count) 
 // processes a given feature
 //
 void Traverser::process_feature(OGRFeature* feature) {
-	if ( verbose ) {
+	if ( globalOptions.verbose ) {
 		fprintf(stdout, "\n\nFID: %ld", feature->GetFID());
 	}
 	
@@ -644,13 +631,13 @@ void Traverser::process_feature(OGRFeature* feature) {
 	//
 	// else: apply buffer operation if so indicated:
 	//
-	else if ( bufferParams.given ) {
+	else if ( globalOptions.bufferParams.given ) {
 		OGRGeometry* buffered_geometry = 0;
 		
 		// get distance:
 		double distance; 
-		if ( bufferParams.distance[0] == '@' ) {
-			const char* attr = bufferParams.distance.c_str() + 1;
+		if ( globalOptions.bufferParams.distance[0] == '@' ) {
+			const char* attr = globalOptions.bufferParams.distance.c_str() + 1;
 			int index = feature->GetFieldIndex(attr);
 			if ( index < 0 ) {
 				cerr<< "\n\tField `" <<attr<< "' not found\n";
@@ -659,13 +646,13 @@ void Traverser::process_feature(OGRFeature* feature) {
 			distance = feature->GetFieldAsInteger(index);
 		}
 		else {
-			distance = atoi(bufferParams.distance.c_str());
+			distance = atoi(globalOptions.bufferParams.distance.c_str());
 		}
 		
 		// get quadrantSegments:
 		int quadrantSegments;
-		if ( bufferParams.quadrantSegments[0] == '@' ) {
-			const char* attr = bufferParams.quadrantSegments.c_str() + 1;
+		if ( globalOptions.bufferParams.quadrantSegments[0] == '@' ) {
+			const char* attr = globalOptions.bufferParams.quadrantSegments.c_str() + 1;
 			int index = feature->GetFieldIndex(attr);
 			if ( index < 0 ) {
 				cerr<< "\n\tField `" <<attr<< "' not found\n";
@@ -674,7 +661,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 			quadrantSegments = feature->GetFieldAsInteger(index);
 		}
 		else {
-			quadrantSegments = atoi(bufferParams.quadrantSegments.c_str());
+			quadrantSegments = atoi(globalOptions.bufferParams.quadrantSegments.c_str());
 		}
 		
 		
@@ -713,7 +700,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 	}
 
 	if ( !intersection_geometry ) {
-		if ( verbose ) {
+		if ( globalOptions.verbose ) {
 			cout<< " NO INTERSECTION:\n";
 		}
 		goto done;
@@ -721,7 +708,7 @@ void Traverser::process_feature(OGRFeature* feature) {
 
 	summary.num_intersecting_features++;
 
-	if ( verbose ) {
+	if ( globalOptions.verbose ) {
 		cout<< " Type of intersection: "
 		    << intersection_geometry->getGeometryName()<< endl
 		;
@@ -800,27 +787,27 @@ void Traverser::traverse() {
     bool releaseLayer = false;
     
     // SQL statement?
-    if ( vSelParams.sql.length() > 0 ) {
+    if ( globalOptions.vSelParams.sql.length() > 0 ) {
         OGRDataSource *poDS = vect->getDataSource();
         
 		const char *dialect = 0;
-        if ( vSelParams.dialect.length() > 0 ) {
-            dialect = vSelParams.dialect.c_str();
+        if ( globalOptions.vSelParams.dialect.length() > 0 ) {
+            dialect = globalOptions.vSelParams.dialect.c_str();
         }
 
         OGRGeometry *poSpatialFilter = 0;  // We do not use this here; TODO perhaps enable it later on.
         
-        layer = poDS->ExecuteSQL(vSelParams.sql.c_str(), poSpatialFilter, dialect);
+        layer = poDS->ExecuteSQL(globalOptions.vSelParams.sql.c_str(), poSpatialFilter, dialect);
         if ( layer != 0 ) {
-            if ( vSelParams.where.length() > 0 ) {
-                layer->SetAttributeFilter(vSelParams.where.c_str());
+            if ( globalOptions.vSelParams.where.length() > 0 ) {
+                layer->SetAttributeFilter(globalOptions.vSelParams.where.c_str());
             }
             // the OGR API requires this layer to be explicitly released:
             releaseLayer = true;
         }
         else {
             cerr<< "traverser: No result or an error occured while issueing query: "
-                << vSelParams.sql << endl;
+                << globalOptions.vSelParams.sql << endl;
             return;
         }
     }
@@ -830,8 +817,8 @@ void Traverser::traverse() {
             cerr<< "Couldn't get layer " <<layernum<< " from " << vect->getName()<< endl;
             return;
         }
-        if ( vSelParams.where.length() > 0 ) {
-            layer->SetAttributeFilter(vSelParams.where.c_str());
+        if ( globalOptions.vSelParams.where.length() > 0 ) {
+            layer->SetAttributeFilter(globalOptions.vSelParams.where.c_str());
         }
     }
     
@@ -848,7 +835,7 @@ void Traverser::traverse() {
 	bandValues_buffer = new double[globalInfo.bands.size()];
 
 	// for polygon rasterization:
-	pixelProportion_times_pix_abs_area = pixelProportion * pix_abs_area;
+	pixelProportion_times_pix_abs_area = globalOptions.pix_prop * pix_abs_area;
 
     globalInfo.layer = layer;
     

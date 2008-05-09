@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
     
 	globalOptions.use_pixpolys = false;
 	globalOptions.skip_invalid_polys = false;
-	globalOptions.pix_prop = -1.0;
+	globalOptions.pix_prop = 0.5;
 	globalOptions.FID = -1;
 	globalOptions.verbose = false;
 	globalOptions.progress = false;
@@ -398,11 +398,14 @@ int main(int argc, char ** argv) {
 		// OPTIONS
 		//                                                        
 		else if ( 0==strcmp("--pixprop", argv[i]) ) {
-			if ( ++i == argc || argv[i][0] == '-' )
+			if ( ++i == argc || argv[i][0] == '-' ) {
 				usage("--pixprop: pixel proportion?");
-			globalOptions.pix_prop = atof(argv[i]);
-			if ( globalOptions.pix_prop < 0.0 || globalOptions.pix_prop > 1.0 )
+            }
+			double pix_prop = atof(argv[i]);
+			if ( pix_prop < 0.0 || pix_prop > 1.0 ) {
 				usage("invalid pixel proportion");
+            }
+            globalOptions.pix_prop = pix_prop;
 		}
 		
 		else if ( 0==strcmp("--nodata", argv[i]) ) {
@@ -571,6 +574,16 @@ int main(int argc, char ** argv) {
         usage("Only one of --buffer/--box may be given");
     }
     
+    if ( globalOptions.bufferParams.given ) {
+        if ( globalOptions.verbose ) {
+            cout<< "Using buffer parameters:"
+                << "\n\tdistance = " <<globalOptions.bufferParams.distance
+                << "\n\tquadrantSegments = " <<globalOptions.bufferParams.quadrantSegments
+                <<endl;
+            ;
+        }
+    }
+        
     if ( globalOptions.boxParams.given ) {
         if ( globalOptions.verbose ) {
             cout<< "Given box parameters:"
@@ -815,20 +828,12 @@ int main(int argc, char ** argv) {
 		// the traverser object	
 		Traverser tr;
 	
-		if ( globalOptions.pix_prop >= 0.0 )
-			tr.setPixelProportion(globalOptions.pix_prop);
-	
-        tr.setVectorSelectionParams(globalOptions.vSelParams);
-		
 		if ( globalOptions.FID >= 0 )
 			tr.setDesiredFID(globalOptions.FID);
 		
-		tr.setVerbose(globalOptions.verbose);
 		if ( globalOptions.progress )
 			tr.setProgress(globalOptions.progress_perc, cout);
 	
-		tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
-
 		if ( vect ) {
 			tr.setVector(vect);
 			tr.setLayerNum(vector_layernum);
@@ -838,17 +843,6 @@ int main(int argc, char ** argv) {
 			tr.addRaster(new Raster(raster_filenames[i]));
 		}
 	
-		if ( globalOptions.bufferParams.given ) {
-			if ( globalOptions.verbose ) {
-				cout<< "Using buffer parameters:"
-				    << "\n\tdistance = " <<globalOptions.bufferParams.distance
-				    << "\n\tquadrantSegments = " <<globalOptions.bufferParams.quadrantSegments
-					<<endl;
-				;
-			}
-			tr.setBufferParameters(globalOptions.bufferParams);
-		}
-			
 		if ( csv_name || envi_name || mini_prefix || mini_raster_strip_filename || jtstest_filename) { 
 			if ( tr.getNumRasters() == 0 || !tr.getVector() ) {
 				usage("Specified output option requires both a raster and a vector to proceed\n");

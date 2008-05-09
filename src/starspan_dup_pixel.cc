@@ -199,13 +199,6 @@ static bool within_mask(OGRFeature* feature, RasterInfo* rasterInfo) {
 	tr.setLayerNum(layernum);
 	tr.setDesiredFID(feature->GetFID());
     
-	if ( globalOptions.pix_prop >= 0.0 )
-		tr.setPixelProportion(globalOptions.pix_prop);
-    
-    tr.setVectorSelectionParams(globalOptions.vSelParams);
-    
-	tr.setSkipInvalidPolygons(globalOptions.skip_invalid_polys);
-    
     tr.addRaster(rasterInfo->ri_mask);
     
 	bool prevResetReading = Traverser::_resetReading;

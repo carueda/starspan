@@ -517,7 +517,6 @@ static int command_rasterize(int argc, char ** argv) {
     Observer* obs = starspan_getRasterizeObserver(&rasterizeParams);
     if ( obs ) {
 		Traverser tr;
-		tr.setVerbose(globalOptions.verbose);
         tr.setVector(vect);
         tr.setLayerNum(vector_layernum);
 		tr.addRaster(rast);
