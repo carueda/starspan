@@ -593,9 +593,9 @@ void Traverser::process_feature(OGRFeature* feature) {
         // the bounding box of the feature geometry.
         //
         
-        // requested box dimension:
-        double rbw = globalOptions.boxParams.width ; 
-        double rbh = globalOptions.boxParams.height;
+        // requested box dimensions:
+        double rbw, rbh;
+        globalOptions.boxParams.getParsedDims(&rbw, &rbh);
         
         // bounding box
         OGREnvelope bbox;
@@ -825,6 +825,23 @@ void Traverser::traverse() {
 	if ( _resetReading ) {
 		layer->ResetReading();
 	}
+
+    
+	if ( globalOptions.boxParams.given ) {
+        // parse them:
+        if ( globalOptions.boxParams.parse(pix_x_size, pix_y_size) ) {
+            cerr<< "\nInvalid box dimension specification:\n"
+                << "    width : [" <<globalOptions.boxParams.width<<  "]\n"
+                << "    height: [" <<globalOptions.boxParams.height<< "]\n";
+            return;
+        }
+        if ( globalOptions.verbose ) {
+            double rbw, rbh;
+            globalOptions.boxParams.getParsedDims(&rbw, &rbh);
+            cout << "Parsed box dimensions: width=" <<rbw<< " height=" <<rbh<< "\n";
+        }
+    }    
+
 
 	lineRasterizer = new LineRasterizer(x0, y0, pix_x_size, pix_y_size);
 	lineRasterizer->setObserver(this);

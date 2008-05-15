@@ -435,8 +435,8 @@ int main(int argc, char ** argv) {
             if ( 1 + i < argc && strncmp(argv[1 + i], "--", 2) != 0 ) {
                 bh = argv[++i];
             }
-            globalOptions.boxParams.width  = atof(bw.c_str());
-            globalOptions.boxParams.height = atof(bh.c_str());
+            globalOptions.boxParams.width  = bw;
+            globalOptions.boxParams.height = bh;
             globalOptions.boxParams.given = true;
 		}
 		

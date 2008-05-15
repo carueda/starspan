@@ -10,6 +10,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
@@ -41,7 +42,19 @@ struct BufferParams {
 };
 
 
-/** Box parameters.
+
+/**
+ * Parses a string for a size.
+ * @param sizeStr the input string which may contain a suffix ("px") 
+ * @param pix_size pixel size in case suffix "px" is given
+ * @param size where the parsed size will be stored
+ * @return 0 iff OK
+ */ 
+int parseSize(const char* sizeStr, double pix_size, double *size);
+
+
+/** 
+ * Box parameters.
  * Sets a fixed box centered according to bounding box
  * of the geometry features before computing the intersection.
  * By default, no box is used.
@@ -50,9 +63,47 @@ struct BoxParams {
 	/** were given? */
 	bool given;
 	
-	double width;
-	double height;
+    /** given width and height */
+	string width;
+	string height;
+    
+    BoxParams() : 
+        given(false), width(""), height(""), 
+        parsed(false), pwidth(0), pheight(0) 
+    {}
+    
 	
+    /**
+     * Parses the given width and height.
+     * getParsedDims() can be called after this.
+     * @param pix_x_size pixel size in x in case suffix "px" is given
+     * @param pix_y_size pixel size in y in case suffix "px" is given
+     * @return 0 iff OK
+     */ 
+    int parse(double pix_x_size, double pix_y_size) {
+        int res = 0;
+        if ( (res = parseSize(width.c_str(),  pix_x_size, &pwidth))
+        ||   (res = parseSize(height.c_str(), pix_y_size, &pheight)) ) {
+            return res;
+        }
+        parsed = true;
+        return res;
+    }
+
+    /** Get the parsed dimensiones.
+     * parse() must be called before this. 
+     */
+    void getParsedDims(double *pw, double *ph) {
+        assert( parsed ) ;
+        *pw = pwidth;
+        *ph = pheight;
+    }
+    
+private:
+    bool parsed;
+    double pwidth;
+    double pheight;
+    
 };
 
 

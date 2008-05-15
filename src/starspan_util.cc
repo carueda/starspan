@@ -829,3 +829,33 @@ void starspan_create_strip(
     // release buffer
     delete buffer;
 }
+
+
+/**
+ * Parses a string for a size.
+ * @param sizeStr the input string which may contain a suffix ("px") 
+ * @param pix_size pixel size in case suffix "px" is given
+ * @param size where the parsed size will be stored
+ * @return 0 iff OK
+ */ 
+int parseSize(const char* sizeStr, double pix_size, double *size) {
+    int readChars = 0;
+    sscanf(sizeStr, "%lf%n", size, &readChars);
+    if ( readChars > 0 ) {
+        const char* suffix = sizeStr + readChars;
+cout<< "SUFFIX=[" <<suffix<< "]\n";
+        if ( strcmp(suffix, "px") == 0 ) {
+            (*size) *= pix_size;
+        }
+        else if ( strlen(suffix) > 0 ) {
+            // invalid suffix
+            return -1;
+        }
+        return 0;   // OK
+    }
+    else {
+        // not even the %f was successful:
+        return -2;
+    }
+}
+

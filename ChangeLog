@@ -2,6 +2,11 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-05-15
+    - BoxParams: width and height now allow a qualifier; for now, only the "px"
+      suffix to indicate units in pixels instead of dataset's units.
+      
+      
 2008-05-08
     - common.h: added def:
         #define RID_colName "RID"
