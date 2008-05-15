@@ -110,19 +110,31 @@ private:
 /** Class for duplicate pixel modes.  */
 struct DupPixelMode {
 	string code;
+	string param1;
 	double arg;
 	
 	DupPixelMode(string code, double arg) :
-		code(code), arg(arg), withArg(true) {
+		code(code), param1(""), arg(arg), withArg(true) {
 	}
 	
 	DupPixelMode(string code) :
-		code(code), withArg(false) {
+		code(code), param1(""), withArg(false) {
+	}
+	
+	DupPixelMode(string code, string param1) :
+		code(code), param1(param1), withArg(false) {
+	}
+	
+	DupPixelMode(string code, string param1, int arg) :
+		code(code), param1(param1), arg(arg), withArg(true) {
 	}
 	
 	string toString() {
 		ostringstream ostr;
 		ostr << code;
+        if ( param1.size() > 0 ) {
+            ostr << " " << param1;
+        }
         if ( withArg ) {
             ostr << " " << arg;
         }

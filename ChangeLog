@@ -3,6 +3,17 @@ $Id$
 
 
 2008-05-15
+    - Implemented ignore_nodata mode to select from multiple rasters
+        --duplicate_pixel ignore_nodata {all_bands | any_band | band <#>}
+        
+        Any pixel in the feature being processed that satisfies the condition
+        according to the mode will be ignored. The conditions are:
+        
+        all_bands: all bands with the nodata value
+        any_band:  any band with the nodata value
+        band <#>:  especific band number # with the nodata value
+        
+        
     - BoxParams: width and height now allow a qualifier; for now, only the "px"
       suffix to indicate units in pixels instead of dataset's units.
       

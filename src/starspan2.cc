@@ -74,8 +74,8 @@ static void usage(const char* msg) {
 		"      --mini_raster_parity {even | odd | @<field>} \n"
 		"      --separation <num-pixels> \n"
 		"\n"
-		"      --duplicate_pixel <mode> ...\n"
-		"             <mode>: distance | direction <angle>\n"
+		"      --duplicate_pixel <mode> <mode> ...\n"
+		"          <mode>: distance | direction <angle> | ignore_nodata {all_bands | any_band | band <#>}\n"
 		"      --fields <field1> <field2> ... <fieldn>\n"
 		"      --pixprop <minimum-pixel-proportion>\n"
 		"      --noColRow \n"
@@ -260,9 +260,9 @@ int main(int argc, char ** argv) {
 		else if ( 0==strcmp("--duplicate_pixel", argv[i]) ) {
 			while ( ++i < argc && argv[i][0] != '-' ) {
 				string dup_code = argv[i];
-				double dup_arg = 0;
 				if ( dup_code == "direction" ) {
 					// need angle argument:
+                    double dup_arg = 0;
 					if ( ++i < argc && argv[i][0] != '-' ) {
 						dup_arg = atof(argv[i]);
 					}
@@ -273,6 +273,38 @@ int main(int argc, char ** argv) {
 				}
 				else if ( dup_code == "distance" ) {
                     globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code));
+				}
+				else if ( dup_code == "ignore_nodata" ) {
+                    string band_param;
+					if ( ++i < argc && argv[i][0] != '-' ) {
+						band_param = argv[i];
+                        if ( band_param == "all_bands"
+                        ||   band_param == "any_bands"
+                        ||   band_param == "band" ) {
+                            // OK
+                            if ( band_param == "band" ) {
+                                // need band argument:
+                                int band = 0;
+                                if ( ++i < argc && argv[i][0] != '-' ) {
+                                    band = atoi(argv[i]);
+                                    globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, band_param, band));
+                                }
+                                else {
+                                    usage("--duplicate_pixel: ignore_nodata band: missing band argument");
+                                }
+                            }
+                            else {
+                                globalOptions.dupPixelModes.push_back(DupPixelMode(dup_code, band_param));
+                            }
+                        }
+                        else {
+                            string msg = string("--duplicate_pixel: ignore_nodata: invalid parameter: ") +band_param;
+                            usage_string(msg);
+                        }
+					}
+					else {
+						usage("--duplicate_pixel: ignore_nodata: missing parameter");
+					}
 				}
 				else {
 					string msg = string("--duplicate_pixel: unrecognized mode: ") +dup_code;
