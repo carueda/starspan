@@ -279,7 +279,7 @@ int main(int argc, char ** argv) {
 					if ( ++i < argc && argv[i][0] != '-' ) {
 						band_param = argv[i];
                         if ( band_param == "all_bands"
-                        ||   band_param == "any_bands"
+                        ||   band_param == "any_band"
                         ||   band_param == "band" ) {
                             // OK
                             if ( band_param == "band" ) {
@@ -716,7 +716,7 @@ int main(int argc, char ** argv) {
 		}
 		
 		if ( !csv_name && !mini_prefix && !mini_raster_strip_filename ) {
-			usage("--duplicate_pixel work with: --csv, --mini_rasters, or mini_raster_strip");
+			usage("--duplicate_pixel works with: --csv, --mini_rasters, or mini_raster_strip");
 		}
 	}
 	

@@ -843,7 +843,6 @@ int parseSize(const char* sizeStr, double pix_size, double *size) {
     sscanf(sizeStr, "%lf%n", size, &readChars);
     if ( readChars > 0 ) {
         const char* suffix = sizeStr + readChars;
-cout<< "SUFFIX=[" <<suffix<< "]\n";
         if ( strcmp(suffix, "px") == 0 ) {
             (*size) *= pix_size;
         }
@@ -854,7 +853,7 @@ cout<< "SUFFIX=[" <<suffix<< "]\n";
         return 0;   // OK
     }
     else {
-        // not even the %f was successful:
+        // not even the value was scanned successfully:
         return -2;
     }
 }
