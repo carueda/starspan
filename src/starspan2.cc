@@ -1,7 +1,7 @@
 //
-// STARSpan project
+// StarSpan project
 // Carlos A. Rueda
-// starspan2 
+// starspan2 - main program 
 // $Id$
 //
 
@@ -94,6 +94,7 @@ static void usage(const char* msg) {
 		"      --show-fields \n"
 		"      --report \n"
 		"      --verbose \n"
+		"      --report_elapsed_time \n"
 		"      --version\n"
 		);
 	}
@@ -116,7 +117,7 @@ static void usage_string(string& msg) {
 
 
 ///////////////////////////////////////////////////////////////
-// main test program
+// main program
 int main(int argc, char ** argv) {
     
 	globalOptions.use_pixpolys = false;
@@ -582,6 +583,10 @@ int main(int argc, char ** argv) {
 			report_elapsed_time = true;
 		}
 		
+		else if ( 0==strcmp("--report_elapsed_time", argv[i]) ) {
+			report_elapsed_time = true;
+		}
+		
 		else if ( 0==strcmp("--srs", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--srs: which srs?");
@@ -702,7 +707,7 @@ int main(int argc, char ** argv) {
     }
     
     if ( !noValidateInputs 
-    && starspan_validate_rasters_and_masks(vect, vector_layernum, raster_filenames, masks) ) {
+    && starspan_validate_input_elements(vect, vector_layernum, raster_filenames, masks) ) {
         usage("invalid inputs; check error messages");
     }        
     

@@ -1,4 +1,5 @@
 //
+// StarSpan project
 // starspan declarations
 // Carlos A. Rueda
 // $Id$
@@ -614,7 +615,7 @@ OGRLayer* starspan_createLayer(
  *
  * @return 0 iff OK
  */
-int starspan_validate_rasters_and_masks(
+int starspan_validate_input_elements(
     Vector* vect,
     int vector_layernum,
 	vector<const char*> raster_filenames,

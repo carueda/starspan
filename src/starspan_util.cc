@@ -294,7 +294,7 @@ OGRLayer* starspan_createLayer(
  *
  * @return 0 iff OK
  */
-int starspan_validate_rasters_and_masks(
+int starspan_validate_input_elements(
     Vector* vect,
     int vector_layernum,
 	vector<const char*> raster_filenames,
@@ -459,7 +459,7 @@ int starspan_validate_rasters_and_masks(
     }
 
     if ( !res && globalOptions.verbose ) {
-        cout<< "starspan_validate_rasters_and_masks: OK\n";
+        cout<< "starspan_validate_input_elements: OK\n";
         if ( vect ) {
             cout<< "  Vector: " <<vect->getName()<< ", layer " <<vector_layernum<< "\n";
         }

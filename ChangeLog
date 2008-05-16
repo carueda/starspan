@@ -12,7 +12,8 @@ $Id$
         all_bands: all bands with the nodata value
         any_band:  any band with the nodata value
         band <#>:  especific band number # with the nodata value
-        
+
+    - Renamed starspan_validate_input_elements -> starspan_validate_input_elements        
         
     - BoxParams: width and height now allow a qualifier; for now, only the "px"
       suffix to indicate units in pixels instead of dataset's units.
