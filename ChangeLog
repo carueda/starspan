@@ -2,6 +2,8 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-07-08 (1.2.01) alpha release.
+
 2008-07-07 (starting versions 1.2.xx)
 
     NOTE: Several changes in command line interface.
@@ -33,7 +35,7 @@ $Id$
        Also the GuiE spec gui/base_dist/bin/starspan.guie has been updated
        accordingly.  (BTW, now using GuiE 0.2.8)
             
-            
+
             
     
 2008-05-15
