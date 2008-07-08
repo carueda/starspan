@@ -65,8 +65,10 @@ int starspan_minirasterstrip2(
 	vector<const char*>* _select_fields,
 	int _layernum,
 	vector<DupPixelMode>& dupPixelModes,
-    const char* basefilename,
-    const char* shpfilename
+    string mrst_img_filename,
+    string mrst_shp_filename,
+    string mrst_fid_filename,
+    string mrst_glt_filename
 ) {
     vect = _vect;
     select_fields = _select_fields;
@@ -77,14 +79,14 @@ int starspan_minirasterstrip2(
     OGRLayer* outLayer = 0;
     
     // <shp>
-    if ( shpfilename ) {
+    if ( mrst_shp_filename.length() ) {
         // prepare outVector and outLayer:
         
         if ( globalOptions.verbose ) {
-            cout<< "starspan_minirasterstrip2: starting creation of output vector " <<shpfilename<< " ...\n";
+            cout<< "starspan_minirasterstrip2: starting creation of output vector " <<mrst_shp_filename<< " ...\n";
         }
     
-        outVector = Vector::create(shpfilename); 
+        outVector = Vector::create(mrst_shp_filename.c_str()); 
         if ( !outVector ) {
             // errors should have been written
             return 0;
@@ -117,7 +119,7 @@ int starspan_minirasterstrip2(
     // </shp>
     
     
-    string prefix = basefilename;
+    string prefix = mrst_img_filename;
     prefix += "_TMP_PRFX_";
     
     // our own list to be updated and used later to create final strip:
@@ -127,7 +129,7 @@ int starspan_minirasterstrip2(
     // create any strip -- we will do it after the scan of features below
     // and with the help ow our own list of MRBasicInfo elements:
     obs = starspan_getMiniRasterStripObserver2(
-        basefilename,
+        mrst_img_filename,
         prefix.c_str(),
         outVector,
         outLayer,
@@ -159,8 +161,8 @@ int starspan_minirasterstrip2(
         }
         else {
             // OK: create the strip:
-            // use the first raster in the list to get #band and_eq band type:
-            Raster rastr(raster_filenames[0]);
+            // use the first raster in the list to get #band and band type:
+            Raster rastr(raster_filenames[0]);                     
             int strip_bands;
             rastr.getSize(NULL, NULL, &strip_bands);
             GDALDataType strip_band_type = rastr.getDataset()->GetRasterBand(1)->GetRasterDataType();
@@ -170,7 +172,9 @@ int starspan_minirasterstrip2(
                 strip_bands,
                 prefix,
                 &mrbi_list,
-                basefilename
+                mrst_img_filename,
+                mrst_fid_filename,
+                mrst_glt_filename
             );
         }
     }

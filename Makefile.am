@@ -18,15 +18,11 @@ starspan2_SOURCES =	\
 	src/starspan_minirasterstrip2.cc \
 	src/starspan_stats.cc \
 	src/starspan_countbyclass.cc \
-	src/starspan_update_csv.cc \
 	src/starspan_csv.cc \
-	src/starspan_csv_raster_field.cc \
-	src/starspan_gen_envisl.cc \
 	src/starspan_minirasters.cc \
 	src/starspan_jtstest.cc \
 	src/starspan_util.cc \
 	src/starspan_dump.cc \
-	src/starspan_tuct2.cc \
 	src/csv/Csv.cc \
 	src/csv/CsvOutput.cc \
 	src/jts/jts.cc \

@@ -2,6 +2,40 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-07-07 (starting versions 1.2.xx)
+
+    NOTE: Several changes in command line interface.
+
+    - Removed old stuff that hasn't been tested for a long time.
+      The following options have been removed:
+            --raster_directory <directory>
+            --update-csv <filename>
+            --envi <name>
+            --envisl <name>
+            --speclib <filename>
+            --calbase <link> <filename> [<stats>...]
+            
+       Renamed options:
+            --duplicate_pixel      ->  --duplicate
+            --report_elapsed_time  ->  --elapsed_time
+            
+       Added options according to new command line interface, some of which
+       replace corresponding pre-existing options in the old style:
+       
+		    --out-prefix <string>                --out-type <type>
+		    --table-suffix <string>
+		    --summary-suffix <string>            --stats <stat> <stat>
+            --class-summary-suffix <string>
+		    --mr-img-suffix <string>             --mini_raster_parity <parity>
+		    --mrst-img-suffix <string>           --mrst-shp-suffix <string>
+		    --mrst-fid-suffix <string>           --mrst-glt-suffix <string>
+       
+       Also the GuiE spec gui/base_dist/bin/starspan.guie has been updated
+       accordingly.  (BTW, now using GuiE 0.2.8)
+            
+            
+            
+    
 2008-05-15
     - Implemented ignore_nodata mode to select from multiple rasters
         --duplicate_pixel ignore_nodata {all_bands | any_band | band <#>}
@@ -13,8 +47,6 @@ $Id$
         any_band:  any band with the nodata value
         band <#>:  especific band number # with the nodata value
 
-    - Renamed starspan_validate_input_elements -> starspan_validate_input_elements        
-        
     - BoxParams: width and height now allow a qualifier; for now, only the "px"
       suffix to indicate units in pixels instead of dataset's units.
       

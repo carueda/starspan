@@ -39,6 +39,9 @@ Traverser::Traverser() {
 	lineRasterizer = 0;
 	progress_out = 0;
 	logstream = 0;
+    
+    memset(&summary, 0, sizeof(summary));
+    
 	debug_dump_polys = getenv("STARSPAN_DUMP_POLYS_ON_EXCEPTION") != 0;
 	debug_no_spatial_filter = getenv("STARSPAN_NO_SPATIAL_FILTER") != 0;
 }

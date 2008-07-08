@@ -5,10 +5,22 @@
 
 STARSPAN=../starspan
 
-.PHONY: test init test_csv test_stats test_miniraster test_miniraster_strip
+# TESTS involves comparisons with expected outputs:
+TESTS=test_csv test_stats test_miniraster test_miniraster_strip
 
-ALL_TESTS: init test_csv test_stats test_miniraster test_miniraster_strip
+# GENS involves the generation of some outputs to just check that the program runs:
+GENS=gen_miniraster_box gen_miniraster_strip_box gen_rasterize
+
+.PHONY: test init $(TESTS) $(GENS) ALL_TESTS ALL_GENS ALL
+        
+
+ALL_TESTS: init $(TESTS)
 	@echo "!!!!!!! $@ : OK !!!!!!!"
+
+ALL_GENS: init $(GENS)
+	@echo "!!!!!!! $@ : OK !!!!!!!"
+
+ALL: ALL_TESTS ALL_GENS
 
 init:
 	$(shell if [ ! -x ${STARSPAN} ]; then chmod +x ${STARSPAN}; fi)
@@ -20,8 +32,10 @@ test_csv:
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan[1-3]raster.img \
-		--csv generated/csv/myoutput.csv
-	zcat expected/csv/myoutput.csv.gz | diff - generated/csv/myoutput.csv
+		--out-type table \
+		--out-prefix generated/csv/PRFX \
+		--table-suffix output.csv
+	zcat expected/csv/myoutput.csv.gz | diff - generated/csv/PRFXoutput.csv
 	@echo "$@ : OK"
 	@echo
 	
@@ -34,17 +48,22 @@ test_stats:
 		--vector data/vector/ply \
 		--raster data/raster/starspan[1-3]raster.img \
 		--nodata 0 \
-		--stats generated/stats/myoutput.csv avg mode stdev min max sum median nulls
-	zcat expected/stats/myoutput.csv.gz | diff - generated/stats/myoutput.csv
+		--out-type summary \
+		--out-prefix generated/stats/PRFX \
+		--summary-suffix output.csv \
+		--stats avg mode stdev min max sum median nulls
+	zcat expected/stats/myoutput.csv.gz | diff - generated/stats/PRFXoutput.csv
 	@echo "$@ : OK"
 	@echo
 	
-test_miniraster:
+test_minirasters:
 	mkdir -p generated/miniraster/
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
-		--mini_rasters generated/miniraster/myprefix_ \
+		--out-type mini_rasters \
+		--out-prefix generated/miniraster/myprefix \
+		--mr-img-suffix _ \
 		--in \
 		--nodata 1 \
 		--fid 3 
@@ -53,7 +72,9 @@ test_miniraster:
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
-		--mini_rasters generated/miniraster/myprefix_buff2_ \
+		--out-type mini_rasters \
+		--out-prefix generated/miniraster/myprefix \
+		--mr-img-suffix _buff2_ \
 		--in \
 		--buffer 2 \
 		--fid 3
@@ -67,7 +88,12 @@ test_miniraster_strip:
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
-		--mini_raster_strip generated/mrstrip/myoutput \
+		--out-type mini_raster_strip \
+		--out-prefix generated/mrstrip/myoutput \
+		--mrst-img-suffix _mrst.img \
+		--mrst-shp-suffix _mrst.shp \
+		--mrst-fid-suffix _mrid.img \
+		--mrst-glt-suffix _mrloc.img \
 		--in
 	cmp expected/mrstrip/myoutput_mr.img \
 	   generated/mrstrip/myoutput_mr.img
@@ -79,30 +105,39 @@ test_miniraster_strip:
 	@echo
 
 # preliminary generation of miniraster along with --box option	
-miniraster_box:
+gen_miniraster_box:
 	mkdir -p generated/miniraster_box/
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
-		--mini_rasters generated/miniraster_box/box_100_ \
+		--out-type mini_rasters \
+		--out-prefix generated/miniraster_box/box \
+		--mr-img-suffix _100_ \
 		--box 100
 
-# preliminary generation of miniraster strip along with --box option
-miniraster_strip_box:
+# preliminary generation of miniraster strip along with --box and --separation options
+gen_miniraster_strip_box:
 	mkdir -p generated/mrstrip_box/
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
 		--RID path \
-		--mini_raster_strip generated/mrstrip_box/box_100 generated/mrstrip_box/shp_box_100 \
+		--out-type mini_raster_strip \
+		--out-prefix generated/mrstrip_box/box_100 \
+		--mrst-img-suffix _mrst.img \
+		--mrst-shp-suffix _mrst.shp \
+		--mrst-fid-suffix _mrid.img \
+		--mrst-glt-suffix _mrloc.img \
 		--box 100 \
 		--separation 10
-        
+		
 # preliminary rasterization with --rasterize option
-rasterize:
+gen_rasterize:
 	mkdir -p generated/rasterize/
 	${STARSPAN} \
 		--vector data/vector/ply \
 		--raster data/raster/starspan2raster.img \
-		--rasterize generated/rasterize/rasterized
+		--out-type rasterization \
+		--out-prefix generated/rasterize/ \
+		--rasterize-suffix rasterized
 

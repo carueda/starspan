@@ -1,6 +1,10 @@
 StarSpan news
 $Id$
 
+# (07/07/08)
+Starting development on 1.2.xx series with overhauled command
+line interface.  See ChangeLog.
+
 # (10/30/07)
 Starting development on 1.0.xx series. See ChangeLog.
 

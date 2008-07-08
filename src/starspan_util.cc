@@ -497,7 +497,9 @@ void starspan_create_strip(
     int strip_bands,
     string prefix,
     vector<MRBasicInfo>* mrbi_list,
-    string basefilename
+    string strip_filename,
+    string fid_filename,
+    string loc_filename
 ) {
     if ( globalOptions.verbose ) {
         cout<< "starspan_create_strip: Creating miniraster strip...\n";
@@ -561,7 +563,6 @@ void starspan_create_strip(
     
     /////////////////////////////////////////////////////////////////////
     // create strip image:
-    string strip_filename = basefilename + "_mr.img";
     GDALDataset* strip_ds = hDriver->Create(
         strip_filename.c_str(), strip_width, strip_height, strip_bands, 
         strip_band_type, 
@@ -579,7 +580,6 @@ void starspan_create_strip(
     
     /////////////////////////////////////////////////////////////////////
     // create FID 1-band image:
-    string fid_filename = basefilename + "_mrid.img";
     GDALDataset* fid_ds = hDriver->Create(
         fid_filename.c_str(), strip_width, strip_height, 1, 
         fid_band_type, 
@@ -598,7 +598,6 @@ void starspan_create_strip(
     
     /////////////////////////////////////////////////////////////////////
     // create 2-band loc image:
-    string loc_filename = basefilename + "_mrloc.glt";
     GDALDataset* loc_ds = hDriver->Create(
         loc_filename.c_str(), strip_width, strip_height, 2, 
         loc_band_type, 

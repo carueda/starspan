@@ -42,7 +42,7 @@ public:
 	/**
 	  * Creates the observer for this operation. 
 	  */
-	MiniRasterObserver(const char* aprefix, const char* pszOutputSRS)
+	MiniRasterObserver(string aprefix, const char* pszOutputSRS)
 	: prefix(aprefix), pszOutputSRS(pszOutputSRS)
 	{
 		global_info = 0;
@@ -291,7 +291,7 @@ class MiniRasterStripObserver : public MiniRasterObserver {
     bool ownMrbiList;
 	
 public:
-	MiniRasterStripObserver(const char* bfilename, const char* prefix)
+	MiniRasterStripObserver(string bfilename, string prefix)
 	: MiniRasterObserver(prefix, 0),
       basefilename(bfilename), inLayer(0), 
       outVector(0), outLayer(0), 
@@ -488,12 +488,25 @@ public:
             int strip_bands;
             rastr->getSize(NULL, NULL, &strip_bands);
             GDALDataType strip_band_type = rastr->getDataset()->GetRasterBand(1)->GetRasterDataType();
+            
+            //
+            // NOTE: in this case, we still use the hard-coded suffixes:
+            // instead of the ones given by the --xxx-suffix options.
+            // But this is not to be used normally.
+            // See starspan_minirasterstrip2()
+            //
+            string strip_filename = string(basefilename) + "_mr.img";
+            string fid_filename =   string(basefilename) + "_mrid.img";
+            string loc_filename =   string(basefilename) + "_mrloc.glt";
+            
             starspan_create_strip(
                 strip_band_type,
                 strip_bands,
                 prefix,
                 mrbi_list,
-                basefilename
+                strip_filename,
+                fid_filename,
+                loc_filename
             );
 			delete mrbi_list;
 			mrbi_list = 0;
@@ -506,8 +519,8 @@ public:
 
 Observer* starspan_getMiniRasterStripObserver(
 	Traverser& tr,
-	const char* basefilename,
-	const char* shpfilename
+	string basefilename,
+	string shpfilename
 ) {	
 	if ( !tr.getVector() ) {
 		cerr<< "vector datasource expected\n";
@@ -525,14 +538,14 @@ Observer* starspan_getMiniRasterStripObserver(
     OGRLayer* outLayer = 0;
     
     // <shp>
-    if ( shpfilename ) {
+    if ( shpfilename.length() ) {
         // prepare outVector and outLayer:
         
         if ( globalOptions.verbose ) {
             cout<< "starspan_getMiniRasterStripObserver: starting creation of output vector " <<shpfilename<< " ...\n";
         }
     
-        outVector = Vector::create(shpfilename); 
+        outVector = Vector::create(shpfilename.c_str()); 
         if ( !outVector ) {
             // errors should have been written
             return 0;
@@ -586,8 +599,8 @@ Observer* starspan_getMiniRasterStripObserver(
  * traversal-- the caller will presumably do that.
  */
 Observer* starspan_getMiniRasterStripObserver2(
-	const char* basefilename,
-	const char* prefix,
+	string basefilename,
+	string prefix,
     Vector* outVector,
     OGRLayer* outLayer,
     vector<MRBasicInfo>* mrbi_list

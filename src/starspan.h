@@ -330,8 +330,8 @@ Observer* starspan_getMiniRasterObserver(
   */
 Observer* starspan_getMiniRasterStripObserver(
 	Traverser& tr,
-	const char* basefilename,
-    const char* shpfilename
+	string basefilename,
+    string shpfilename
 );
 
 
@@ -660,7 +660,9 @@ void starspan_create_strip(
     int strip_bands,
     string prefix,
     vector<MRBasicInfo>* mrbi_list,
-    string basefilename
+    string strip_filename,
+    string fid_filename,
+    string loc_filename
 );
 
 
@@ -673,8 +675,8 @@ void starspan_create_strip(
  * traversal-- the caller will presumably do that.
  */
 Observer* starspan_getMiniRasterStripObserver2(
-	const char* basefilename,
-    const char* prefix,
+	string basefilename,
+    string prefix,
     Vector* outVector,
     OGRLayer* outLayer,
     vector<MRBasicInfo>* mrbi_list
@@ -691,8 +693,10 @@ int starspan_minirasterstrip2(
 	vector<const char*>* _select_fields,
 	int _layernum,
 	vector<DupPixelMode>& dupPixelModes,
-    const char* basefilename,
-    const char* shpfilename
+    string basefilename,
+    string shpfilename,
+    string mrst_fid_filename,
+    string mrst_glt_filename
 );
 
 
