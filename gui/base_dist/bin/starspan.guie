@@ -13,7 +13,7 @@
 </gui>
 
 <cldef>
-	<sequence name="StarSpan" prefix="starspan">
+	<sequence name="StarSpan" prefix="starspan2">
 		<gui panel.axis="tabbed"/>
         
         <sequence name="Inputs" required="no">
@@ -21,7 +21,7 @@
                 <file id="V" prefix="--vector" name="*">
                     <gui panel.border="Input vector" tip.text="Specify the input vector file" description="Vector files">
                         <button name="View" action="view" tip.text="View general info about the file">
-                            <view contents="`starspan --vector ${V} --report`" rows="30" cols="80"/>
+                            <view contents="`starspan2 --vector ${V} --report`" rows="30" cols="80"/>
                         </button>
                     </gui>
                 </file>
@@ -31,7 +31,7 @@
                             Specify the input raster files. You can select multiple files.
                         </tip>
                         <button name="View" action="view"  tip.text="View general info about the file(s)">
-                            <view contents="`starspan --raster ${R} --report`" rows="30" cols="80"/>
+                            <view contents="`starspan2 --raster ${R} --report`" rows="30" cols="80"/>
                         </button>
                     </gui>
                 </file>
@@ -41,7 +41,7 @@
                             Masks for the input rasters.
                         </tip>
                         <button name="View" action="view"  tip.text="View general info about the file(s)">
-                            <view contents="`starspan --raster ${M} --report`" rows="30" cols="80"/>
+                            <view contents="`starspan2 --raster ${M} --report`" rows="30" cols="80"/>
                         </button>
                     </gui>
                 </file>
@@ -266,7 +266,7 @@
                         By default, all fields will be extracted.
                     </tip>
                     <button name="Select" action="select" tip.text="Select fields from vector file">
-                        <select multi="yes" list="`starspan --vector ${V} --show-fields`" separator="\n"/>
+                        <select multi="yes" list="`starspan2 --vector ${V} --show-fields`" separator="\n"/>
                     </button>
                 </gui>
             </string>
@@ -427,7 +427,7 @@
 			<sequence name="StarSpan">
 				<gui panel.border="StarSpan help message"/>
 				<string >
-					<gui height="20" width="90" value="`starspan --help`"/>
+					<gui height="20" width="90" value="`starspan2 --help`"/>
 				</string>
 			</sequence>
 			<sequence name="Supported raster formats">

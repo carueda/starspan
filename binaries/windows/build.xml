@@ -66,6 +66,8 @@ Copyright agreement:
 
 	<target name="prepare-inst" depends="init">
 		<delete dir="${dist}/base_dist"/>
+		<copy file="../../starspan.jars/guie.jar" todir="${dist}/base_dist/bin"/>
+		<copy file="../../gui/base_dist/bin/starspan.guie" todir="${dist}/base_dist/bin"/>
 		<copy todir="${dist}/base_dist">
 			<fileset dir="base_dist"/> 
 		</copy>
