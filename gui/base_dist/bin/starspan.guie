@@ -16,11 +16,11 @@
 	<sequence name="StarSpan" prefix="starspan2">
 		<gui panel.axis="tabbed"/>
         
-        <sequence name="Inputs" required="no">
+        <sequence name="Basic" required="no">
             <sequence numsel="*" name="Inputs">
                 <file id="V" prefix="--vector" name="*">
                     <gui panel.border="Input vector" tip.text="Specify the input vector file" description="Vector files">
-                        <button name="View" action="view" tip.text="View general info about the file">
+                        <button name="Metadata" action="view" tip.text="View general info about the file">
                             <view contents="`starspan2 --vector ${V} --report`" rows="30" cols="80"/>
                         </button>
                     </gui>
@@ -30,26 +30,44 @@
                         <tip text="@">
                             Specify the input raster files. You can select multiple files.
                         </tip>
-                        <button name="View" action="view"  tip.text="View general info about the file(s)">
+                        <button name="Metadata" action="view"  tip.text="View general info about the file(s)">
                             <view contents="`starspan2 --raster ${R} --report`" rows="30" cols="80"/>
                         </button>
                     </gui>
                 </file>
-                <file id="M" prefix="--maks" name="*">
-                    <gui panel.border="Input mask(s)" height="6" multi="true" description="Mask raster files">
-                        <tip text="@">
-                            Masks for the input rasters.
-                        </tip>
-                        <button name="View" action="view"  tip.text="View general info about the file(s)">
-                            <view contents="`starspan2 --raster ${M} --report`" rows="30" cols="80"/>
-                        </button>
+                
+                <sequence>                    
+                    <gui panel.border="Output" panel.axis="vertical">
                     </gui>
-                </file>
+                    
+                    <file prefix="--out-prefix" name="Output path and file prefix">
+                        <gui width="70"  tip.text="@" >
+                            This prefix to name the output(s) (depending on type of output).
+                            For example: <b>c:\outputs\myprefix</b>
+                        </gui>
+                    </file>
+                    
+                    
+                    <choice prefix="--out-type" name="Output format">
+                        <gui tip.text="@">
+                            The output type to generate. Go to the corresponding tab 
+                            for related options.
+                        </gui>
+                        <literal prefix="table"  name="Table"/>
+                        <literal prefix="mini_raster_strip" name="Miniraster strip"/>
+                        <literal prefix="mini_rasters"      name="Individual minirasters"/>
+                        <literal prefix="summary"           name="Input file summary"/>
+                    </choice>
+                    
+                </sequence>
+                
+                
             </sequence>
             
         </sequence>
         
-        <sequence name="General" required="no">
+        <sequence name="Advanced" required="no">
+        
             <sequence  required="no">
                 <gui panel.border="" panel.axis="horizontal">
                 </gui>
@@ -59,26 +77,6 @@
                     <gui panel.border="-" panel.axis="vertical">
                     </gui>
 
-                    <sequence>                    
-                        <gui panel.border="Output parameters" panel.axis="vertical">
-                        </gui>
-                        <choice prefix="--out-type" name="Generate">
-                            <gui tip.text="@">
-                                The output type to generate. Go to the corresponding tab 
-                                for related options.
-                            </gui>
-                            <literal prefix="table"  name="Table"/>
-                            <literal prefix="mini_raster_strip" name="Miniraster strip"/>
-                            <literal prefix="mini_rasters"      name="Individual minirasters"/>
-                            <literal prefix="summary"           name="Input file summary"/>
-                        </choice>
-                        
-                        <string prefix="--out-prefix" name="Output filename prefix">
-                            <gui width="20"  tip.text="@" >
-                                This prefix to name the output(s) (depending on type of output).
-                            </gui>
-                        </string>
-                    </sequence>
                     
                     <real name="Nodata value" prefix="--nodata">
                         <gui width="10" tip.text="@">
@@ -205,6 +203,16 @@
                 
             </sequence>
             
+            <file id="M" prefix="--maks" name="*">
+                <gui panel.border="Input mask(s)" height="6" multi="true" description="Mask raster files">
+                    <tip text="@">
+                        Masks for the input rasters.
+                    </tip>
+                    <button name="Metadata" action="view"  tip.text="View general info about the file(s)">
+                        <view contents="`starspan2 --raster ${M} --report`" rows="30" cols="80"/>
+                    </button>
+                </gui>
+            </file>
 		</sequence>
 		
 		
@@ -224,7 +232,10 @@
                 <string prefix="--summary-suffix" name="Output suffix" >
                     <gui tip.text="@">
                         Suffix to name the summary file with the selected statistics.
-                        By default, <b>_summary.csv</b>.
+                        This takes a CSV format so a typical suffix will be something like
+                        <b>_summary.csv</b>
+                        <p></p>
+                        The summary is not created if this field is left empty.
                     </gui>
                 </string>
                 <choice numsel="+" prefix="--stats" name="desired-stats" preselect="avg">
