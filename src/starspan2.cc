@@ -23,9 +23,10 @@
 
 #define DEFAULT_TABLE_SUFFIX                "_table.csv"
 
-#define DEFAULT_SUMMARY_SUFFIX              "_summary.csv"
+#define DEFAULT_SUMMARY_SUFFIX              NULL              
+        //"_summary.csv"
 
-#define DEFAULT_CLASS_SUMMARY_SUFFIX       NULL
+#define DEFAULT_CLASS_SUMMARY_SUFFIX        NULL
        //"_classsummary.csv"
 
 #define DEFAULT_MINIRASTER_SUFFIX           "_mr"
@@ -796,7 +797,6 @@ int main(int argc, char ** argv) {
     }
     
     if ( outtype != "table" 
-    &&   outtype != "summary"
     &&   outtype != "mini_raster_strip" 
     &&   outtype != "mini_rasters"
     &&   outtype != "rasterization"      ) {
@@ -845,23 +845,27 @@ int main(int argc, char ** argv) {
 		else {
 			usage("--out-type table expects at least a raster input (use --raster)");
 		}
-    }
-    
-    else if ( outtype == "summary" ) {
-        string stats_name = string(outprefix) + summary_suffix;
         
-        if ( select_stats.size() == 0 ) {
-            select_stats.push_back(DEFAULT_STAT);
+        //
+        // summaries:
+        //
+        
+        if ( summary_suffix ) {
+            string stats_name = string(outprefix) + summary_suffix;
+            
+            if ( select_stats.size() == 0 ) {
+                select_stats.push_back(DEFAULT_STAT);
+            }
+            
+            res = starspan_stats(
+                vect,  
+                raster_filenames,     
+                select_stats,
+                select_fields, 
+                stats_name.c_str(),
+                vector_layernum
+            );
         }
-        
-		res = starspan_stats(
-			vect,  
-			raster_filenames,     
-			select_stats,
-			select_fields, 
-			stats_name.c_str(),
-			vector_layernum
-		);
         
         if ( class_summary_suffix ) {
             add_rasters_to_traverser(raster_filenames, traversr);

@@ -2,6 +2,11 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-07-19
+    - some fixes with new naming mechanism with suffixes.
+    - Using new version of GuiE that fully shows the output of
+    `sys-commands` in text components.
+    
 2008-07-18 
     - Various adjustments to create Windows releases.
     

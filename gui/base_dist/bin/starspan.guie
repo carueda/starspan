@@ -42,8 +42,9 @@
                     
                     <file prefix="--out-prefix" name="Output path and file prefix">
                         <gui width="70"  tip.text="@" >
-                            This prefix to name the output(s) (depending on type of output).
-                            For example: <b>c:\outputs\myprefix</b>
+                            The contents of this field is used as a prefix to name 
+                            the output(s) (depending on type of output).
+                            For example: <b><tt>c:\outputs\myprefix</tt></b>
                         </gui>
                     </file>
                     
@@ -56,7 +57,6 @@
                         <literal prefix="table"  name="Table"/>
                         <literal prefix="mini_raster_strip" name="Miniraster strip"/>
                         <literal prefix="mini_rasters"      name="Individual minirasters"/>
-                        <literal prefix="summary"           name="Input file summary"/>
                     </choice>
                     
                 </sequence>
@@ -106,12 +106,6 @@
 
                     </string>
                     
-                </sequence>
-                
-                <sequence numsel="*">
-                    <gui panel.border="-" panel.axis="vertical">
-                    </gui>
-                    
                     
                     <sequence>
                         <gui panel.border="Feature selection" panel.axis="vertical"  tip.text="@">
@@ -129,6 +123,15 @@
                         </string>
                         
                     </sequence>
+                    
+                    
+                </sequence>
+                
+                <sequence numsel="*">
+                    <gui panel.border="-" panel.axis="vertical">
+                    </gui>
+                    
+                    
                     
                     
                     <string prefix="--fid" name="Desired FID">
