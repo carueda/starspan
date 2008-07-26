@@ -84,7 +84,7 @@ static void usage(const char* msg) {
 		"      --mrst-img-suffix <string>                  --mrst-shp-suffix <string>\n"
 		"      --mrst-fid-suffix <string>                  --mrst-glt-suffix <string>\n"
 		"\n"
-		"      --duplicate <mode> <mode> ...\n"
+		"      --duplicate <mode> <mode> ...               --validate_inputs\n"
 		"      --in                                        --separation <num-pixels> \n"
 		"      --fields <field1> ... <fieldn>              --pixprop <minimum-pixel-proportion>\n"
 		"      --sql <statement>                           --noColRow \n"
@@ -166,8 +166,7 @@ int main(int argc, char ** argv) {
     RasterizeParams rasterizeParams;
 	
 
-    // convenience way to skip validation
-	bool noValidateInputs = getenv("STARSPAN_NO_VALIDATE_INPUTS") != 0;
+	bool validateInputs = false;
     
 	bool report_elapsed_time = false;
 	bool do_report = false;
@@ -265,6 +264,11 @@ int main(int argc, char ** argv) {
 				--i;
             }
 		}
+        
+        
+        else if ( 0==strcmp("--validate_inputs", argv[i]) ) {
+            validateInputs = true;
+        }
         
         
 		else if ( 0==strcmp("--duplicate", argv[i]) ) {
@@ -700,7 +704,7 @@ int main(int argc, char ** argv) {
         }
     }
     
-    if ( !noValidateInputs 
+    if ( validateInputs 
     && starspan_validate_input_elements(vect, vector_layernum, raster_filenames, masks) ) {
         usage("invalid inputs; check error messages");
     }        
