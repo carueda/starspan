@@ -140,16 +140,6 @@
                     
                     
                     
-                    <flag prefix="--skip_invalid_polys" name="Skip invalid polygons">
-                        <gui tip.text="@">
-                            StarSpan will check each polygon for validity before rasterization. 
-                            If the polygon is invalid (according to a function provided by GEOS),
-                            then the polygon will be skipped. By default, all polygons are considered 
-                            for rasterization. Under some circunstances, the determination of
-                            intersected pixels may fail because of self intersecting polygons.
-                        </gui>
-                    </flag>
-                    
                     <real prefix="--pixprop" name="Pixel proportion for inclusion" min="0" max="1">
                         <gui panel.axis="horizontal" tip.text="@">
                             Minimum proportion of pixel area in intersection so that the pixel is included.
@@ -157,17 +147,7 @@
                             Only used in intersections resulting in polygons. By default, the pixel proportion is 0.5.
                         </gui>
                     </real>
-                    <real prefix="--progress" name="Progress" min="1e-6">
-                        <gui width="5" tip.text="@">
-                            Show a progress indicator in increments of the given amount of percentage 
-                            (by default 10%).  This is based on the total number of geometry features
-                            in input vector datasource, which StarSpan can obtain in advance from some
-                            vector formats (e.g. shapefiles). Otherwise, a simple counting will be shown
-                            (in multiples of the given amount).
-                        </gui>
-                    </real>
-
-
+                    
                     <string prefix="--buffer" name="Buffer">
                         <gui width="20" multi="true" panel.axis="horizontal" tip.text="@">
                             This option allows to specify a buffer
@@ -188,6 +168,36 @@
                             quadrant of curvature. By default, 1.
                         </gui>
                     </string>
+
+
+                    <flag prefix="--validate_inputs" name="Validate inputs">
+                        <gui tip.text="@">
+                            Check this to pre-validate that the inputs are 
+                            consistent in terms of projection.
+                        </gui>
+                    </flag>
+                    
+                    <flag prefix="--skip_invalid_polys" name="Skip invalid polygons">
+                        <gui tip.text="@">
+                            StarSpan will check each polygon for validity before rasterization. 
+                            If the polygon is invalid (according to a function provided by GEOS),
+                            then the polygon will be skipped. By default, all polygons are considered 
+                            for rasterization. Under some circunstances, the determination of
+                            intersected pixels may fail because of self intersecting polygons.
+                        </gui>
+                    </flag>
+                    
+                    <real prefix="--progress" name="Progress" min="1e-6">
+                        <gui width="5" tip.text="@">
+                            Show a progress indicator in increments of the given amount of percentage 
+                            (by default 10%).  This is based on the total number of geometry features
+                            in input vector datasource, which StarSpan can obtain in advance from some
+                            vector formats (e.g. shapefiles). Otherwise, a simple counting will be shown
+                            (in multiples of the given amount).
+                        </gui>
+                    </real>
+
+
                     
                     <flag prefix="--elapsed_time" name="Report elapsed time">
                         <gui tip.text="@">

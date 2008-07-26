@@ -9,9 +9,10 @@ $Id$
       consistent projection info. This flag enables this check.
       (Environment variable STARSPAN_NO_VALIDATE_INPUTS no longer used).
       
-      MinGW build successful using 1.5.2.
+      gui/base_dist/bin/starspan.guie updated.
+      
+    - MinGW build successful using 1.5.2.
       See http://starspan.casil.ucdavis.edu/doku/doku.php?id=mingw
-                            
       
     - New binaries/windows/mingw_prepare_binaries.sh to facilitate preparation
       of windows release.
