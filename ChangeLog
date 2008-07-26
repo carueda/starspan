@@ -11,7 +11,10 @@ $Id$
       
       MinGW build successful using 1.5.2.
       See http://starspan.casil.ucdavis.edu/doku/doku.php?id=mingw
+                            
       
+    - New binaries/windows/mingw_prepare_binaries.sh to facilitate preparation
+      of windows release.
     
 2008-07-19
     - some fixes with new naming mechanism with suffixes.
