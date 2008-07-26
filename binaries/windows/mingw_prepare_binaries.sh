@@ -1,6 +1,6 @@
 # Gets the required binaries and puts them in base_dist/bin/
 # Run this script under MinGW
-# $Id
+# $Id$
 
 if [ "$OSTYPE" != "msys" ]; then
     echo "Warning: are you sure this is the right machine?"
@@ -10,6 +10,7 @@ fi
 win_prefix=/usr/local
 
 # copy required binaries into base_dist/bin/
+echo "Copying required binaries from ${win_prefix} ...
 cp -p ${win_prefix}/bin/libgeos_c-1.dll  base_dist/bin/
 cp -p ${win_prefix}/bin/libgeos-2.dll    base_dist/bin/
 cp -p ${win_prefix}/bin/libgdal-1.dll    base_dist/bin/
