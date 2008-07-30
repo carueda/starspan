@@ -2,6 +2,10 @@ StarSpan ChangeLog
 $Id$
 
 
+2008-07-29 (1.2.04)
+    - fixed bug [#200374] some miniraster strip suffixes not honored
+    
+    
 2008-07-24 (1.2.03) 
     - Fix of bug [200376] Projections do not match under GDAL 1.4:
       Flag --validate_inputs added.

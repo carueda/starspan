@@ -31,10 +31,6 @@
 
 #define DEFAULT_MINIRASTER_SUFFIX           "_mr"
                                             
-#define DEFAULT_MRST_IMG_SUFFIX             "_mrst.img"
-#define DEFAULT_MRST_SHP_SUFFIX             "_mrst.shp"
-#define DEFAULT_MRST_FID_SUFFIX             "_mrstfid.img"
-#define DEFAULT_MRST_GLT_SUFFIX             "_mrstglt.img"
                                             
 #define DEFAULT_STAT                         "avg"
 
@@ -132,6 +128,7 @@ static void add_rasters_to_traverser(vector<const char*>& raster_filenames, Trav
 // main program
 int main(int argc, char ** argv) {
     
+	globalOptions.outprefix = NULL;
 	globalOptions.use_pixpolys = false;
 	globalOptions.skip_invalid_polys = false;
 	globalOptions.pix_prop = 0.5;
@@ -149,7 +146,6 @@ int main(int argc, char ** argv) {
 	globalOptions.bufferParams.quadrantSegments = "1";
 	globalOptions.boxParams.given = false;
 	globalOptions.mini_raster_parity = "";
-	globalOptions.mini_raster_separation = 0;
 	globalOptions.delimiter = ",";
     
 
@@ -173,7 +169,6 @@ int main(int argc, char ** argv) {
 	bool show_fields = false;
     
     
-    const char*  outprefix = NULL;
     string outtype;
     
     
@@ -191,11 +186,6 @@ int main(int argc, char ** argv) {
     const char*  miniraster_suffix = DEFAULT_MINIRASTER_SUFFIX;
 	const char*  mini_srs = NULL;
     
-    
-	const char* mrst_img_suffix = DEFAULT_MRST_IMG_SUFFIX;
-	const char* mrst_shp_suffix = DEFAULT_MRST_SHP_SUFFIX;
-	const char* mrst_fid_suffix = DEFAULT_MRST_FID_SUFFIX;
-	const char* mrst_glt_suffix = DEFAULT_MRST_GLT_SUFFIX;
     
 	const char* jtstest_filename = NULL;
 	
@@ -338,7 +328,7 @@ int main(int argc, char ** argv) {
 		else if ( 0==strcmp("--out-prefix", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--out-prefix: ?");
-			outprefix = argv[i];
+			globalOptions.outprefix = argv[i];
         }
         
 		else if ( 0==strcmp("--out-type", argv[i]) ) {
@@ -388,22 +378,22 @@ int main(int argc, char ** argv) {
 		else if ( 0==strcmp("--mrst-img-suffix", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--mrst-img-suffix: ?");
-            mrst_img_suffix = argv[i];
+            globalOptions.mrstParams.mrst_img_suffix = argv[i];
 		}
 		else if ( 0==strcmp("--mrst-shp-suffix", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--mrst-shp-suffix: ?");
-            mrst_shp_suffix = argv[i];
+            globalOptions.mrstParams.mrst_shp_suffix = argv[i];
 		}
 		else if ( 0==strcmp("--mrst-fid-suffix", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--mrst-fid-suffix: ?");
-            mrst_fid_suffix = argv[i];
+            globalOptions.mrstParams.mrst_fid_suffix = argv[i];
 		}
 		else if ( 0==strcmp("--mrst-glt-suffix", argv[i]) ) {
 			if ( ++i == argc || argv[i][0] == '-' )
 				usage("--mrst-shp-suffix: ?");
-            mrst_glt_suffix = argv[i];
+            globalOptions.mrstParams.mrst_glt_suffix = argv[i];
 		}
 		
 		
@@ -486,9 +476,11 @@ int main(int argc, char ** argv) {
 		else if ( 0==strcmp("--separation", argv[i]) ) {
 			if ( ++i == argc || strncmp(argv[i], "--", 2) == 0 )
 				usage("--separation: number of pixels?");
-			globalOptions.mini_raster_separation = atoi(argv[i]);
-			if ( globalOptions.mini_raster_separation < 0 )
+			int sep = atoi(argv[i]);
+			if ( sep < 0 ) {
 				usage("--separation: invalid number of pixels");
+            }
+            globalOptions.mrstParams.separation = sep;
 		}
 		
 		else if ( 0==strcmp("--fid", argv[i]) ) {
@@ -792,7 +784,7 @@ int main(int argc, char ** argv) {
     // commands with more strict checking of inputs:
     //
     
-    if ( !outprefix ) {
+    if ( !globalOptions.outprefix ) {
         usage("--out-prefix: ?");
     }
     
@@ -825,7 +817,7 @@ int main(int argc, char ** argv) {
 		if ( !vect ) {
 			usage("--out-type table expects a vector input (use --vector)");
 		}
-        csv_name = string(outprefix) + table_suffix;
+        csv_name = string(globalOptions.outprefix) + table_suffix;
         if ( globalOptions.dupPixelModes.size() > 0 ) {
             res = starspan_csv2(
                 vect,
@@ -855,7 +847,7 @@ int main(int argc, char ** argv) {
         //
         
         if ( summary_suffix ) {
-            string stats_name = string(outprefix) + summary_suffix;
+            string stats_name = string(globalOptions.outprefix) + summary_suffix;
             
             if ( select_stats.size() == 0 ) {
                 select_stats.push_back(DEFAULT_STAT);
@@ -874,7 +866,7 @@ int main(int argc, char ** argv) {
         if ( class_summary_suffix ) {
             add_rasters_to_traverser(raster_filenames, traversr);
             
-            string count_by_class_name = string(outprefix) + class_summary_suffix;
+            string count_by_class_name = string(globalOptions.outprefix) + class_summary_suffix;
             Observer* obs = starspan_getCountByClassObserver(traversr, count_by_class_name.c_str());
             if ( obs ) {
                 traversr.addObserver(obs);
@@ -883,10 +875,10 @@ int main(int argc, char ** argv) {
     }
     
     else if ( outtype == "mini_raster_strip" ) {
-        string mrst_img_filename = string(outprefix) + mrst_img_suffix;
-        string mrst_shp_filename = string(outprefix) + mrst_shp_suffix;
-        string mrst_fid_filename = string(outprefix) + mrst_fid_suffix;
-        string mrst_glt_filename = string(outprefix) + mrst_glt_suffix;
+        string mrst_img_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_img_suffix;
+        string mrst_shp_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_shp_suffix;
+        string mrst_fid_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_fid_suffix;
+        string mrst_glt_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_glt_suffix;
         
         if ( globalOptions.dupPixelModes.size() > 0 ) {
             res = starspan_minirasterstrip2(
@@ -916,7 +908,7 @@ int main(int argc, char ** argv) {
     }
     
     else if ( outtype == "mini_rasters" ) {
-        string mini_prefix = string(outprefix) + miniraster_suffix;
+        string mini_prefix = string(globalOptions.outprefix) + miniraster_suffix;
         
         if ( globalOptions.dupPixelModes.size() > 0 ) {
             res = starspan_miniraster2(
@@ -944,7 +936,7 @@ int main(int argc, char ** argv) {
     else if ( outtype == "rasterization" ) {
         add_rasters_to_traverser(raster_filenames, traversr);
         
-        rasterizeParams.outRaster_filename = (string(outprefix) + rasterize_suffix).c_str();
+        rasterizeParams.outRaster_filename = (string(globalOptions.outprefix) + rasterize_suffix).c_str();
         rasterizeParams.fillNoData = true;
         
         GDALDataset* ds = traversr.getRaster(0)->getDataset();

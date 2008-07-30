@@ -240,7 +240,7 @@ public:
             if ( mrbi_list->size() > 0 ) {
                 // get last inserted mrbi:
                 MRBasicInfo mrbi = mrbi_list->back();
-                next_row = mrbi.getNextRow() + globalOptions.mini_raster_separation;
+                next_row = mrbi.getNextRow() + globalOptions.mrstParams.separation;
             }
             
 			mrbi_list->push_back(MRBasicInfo(FID, mini_filename, mini_width, mini_height, next_row));
@@ -489,16 +489,10 @@ public:
             rastr->getSize(NULL, NULL, &strip_bands);
             GDALDataType strip_band_type = rastr->getDataset()->GetRasterBand(1)->GetRasterDataType();
             
-            //
-            // NOTE: in this case, we still use the hard-coded suffixes:
-            // instead of the ones given by the --xxx-suffix options.
-            // But this is not to be used normally.
-            // See starspan_minirasterstrip2()
-            //
-            string strip_filename = string(basefilename) + "_mr.img";
-            string fid_filename =   string(basefilename) + "_mrid.img";
-            string loc_filename =   string(basefilename) + "_mrloc.glt";
-            
+            string strip_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_img_suffix;
+            string fid_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_fid_suffix;
+            string loc_filename = string(globalOptions.outprefix) + globalOptions.mrstParams.mrst_glt_suffix;
+
             starspan_create_strip(
                 strip_band_type,
                 strip_bands,

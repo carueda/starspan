@@ -164,9 +164,45 @@ struct VectorSelectionParams {
 };
 
 
+/** Default miniraster strip suffixes */
+#define DEFAULT_MRST_IMG_SUFFIX    "_mrst.img"
+#define DEFAULT_MRST_SHP_SUFFIX    "_mrst.shp"
+#define DEFAULT_MRST_FID_SUFFIX    "_mrstfid.img"
+#define DEFAULT_MRST_GLT_SUFFIX    "_mrstglt.img"
+
+
+/** 
+ * Miniraster strip parameters
+ */
+struct MrstParams {
+    
+    /** output suffixes */
+	string mrst_img_suffix;
+	string mrst_shp_suffix;
+	string mrst_fid_suffix;
+	string mrst_glt_suffix;
+
+	/** separation in pixels between minirasters in strip */
+	int separation;
+	
+    
+    MrstParams() 
+    : separation(0),
+      mrst_img_suffix(DEFAULT_MRST_IMG_SUFFIX),
+      mrst_shp_suffix(DEFAULT_MRST_SHP_SUFFIX),
+      mrst_fid_suffix(DEFAULT_MRST_FID_SUFFIX),
+      mrst_glt_suffix(DEFAULT_MRST_GLT_SUFFIX)
+    {}
+    
+};
+
+
 /** Options that might be used by different services.
   */
-struct GlobalOptions {
+struct GlobalOptions { 
+    
+    const char*  outprefix;
+    
 	bool use_pixpolys;
     
     /** should invalid polygons be skipped?
@@ -221,8 +257,8 @@ struct GlobalOptions {
 	/** miniraster parity */
 	string mini_raster_parity;
 	
-	/** separation in pixels between minirasters in strip */
-	int mini_raster_separation;
+	/** miniraster strip paramenters */
+	MrstParams mrstParams;
 	
     
 	/** separator for CSV files */
