@@ -45,7 +45,10 @@ case $program_suffix in
 NONE) program_suffix="" ;;
 esac
 
-AC_SUBST(GEOS_INC GEOS_PREFIX program_prefix program_suffix)
+AC_SUBST(GEOS_INC)
+AC_SUBST(GEOS_PREFIX)
+AC_SUBST(program_prefix)
+AC_SUBST(program_suffix)
 
 dnl ###########################################################
 dnl End GEOS
@@ -77,7 +80,8 @@ if test "$GDAL_CONFIG" != "no" ; then
   	AC_MSG_ERROR([$GDAL_CONFIG says OGR is not enabled])
   fi
 fi
-AC_SUBST(GDAL_INC GDAL_PREFIX)
+AC_SUBST(GDAL_INC)
+AC_SUBST(GDAL_PREFIX)
 
 dnl ###########################################################
 dnl End GDAL

@@ -403,7 +403,7 @@ const CoordinateSequenceFactory* global_cs_factory = global_factory->getCoordina
 // included.  
 //
 void Traverser::processPolygon(OGRPolygon* poly) {
-	Polygon* geos_poly = (Polygon*) poly->exportToGEOS();
+	Polygon* geos_poly = (Polygon*) poly->exportToGEOS(0);
 	if ( geos_poly->isValid() ) {
         // 2008-04-18
         if ( geos_poly->getNumInteriorRing() > 0 ) {

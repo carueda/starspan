@@ -134,15 +134,15 @@ void Traverser::rasterize_geometry_QT(_Rect& e, Geometry* i) {
 	GeometryTypeId type = i->getGeometryTypeId();
 	switch ( type ) {
 		case GEOS_POLYGON:
-			rasterize_poly_QT(e, (Polygon*) i);
+			rasterize_poly_QT(e, dynamic_cast<Polygon*>(i));
 			break;
 			
 		case GEOS_MULTIPOLYGON:
 		case GEOS_GEOMETRYCOLLECTION: {
-			GeometryCollection* gc = (GeometryCollection*) i; 
+			GeometryCollection* gc = dynamic_cast<GeometryCollection*>(i); 
 			for ( int j = 0; j < gc->getNumGeometries(); j++ ) {
 				Geometry* g = (Geometry*) gc->getGeometryN(j);
-				rasterize_geometry_QT(e, (Polygon*) g);
+				rasterize_geometry_QT(e, dynamic_cast<Polygon*>(g));
 			}
 			break;
 		}
